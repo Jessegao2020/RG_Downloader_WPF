@@ -2,11 +2,13 @@ import scrapy
 import json
 import time
 import requests
+import sys
 
 class VideosSpider(scrapy.Spider):
     name = "videos"
     custom_settings = {
-        "LOG_ENABLED": False,
+        
+        "LOG_LEVEL": "ERROR"
     }
 
     def __init__(self, user=None, *args, **kwargs):
@@ -29,7 +31,7 @@ class VideosSpider(scrapy.Spider):
             return self.token
 
         # 自动获取 guest token
-        resp = requests.post("https://api.redgifs.com/v2/auth/guest")
+        resp = requests.get("https://api.redgifs.com/v2/auth/temporary", headers=self.headers)
         if resp.status_code != 200:
             self.logger.error(f"获取 token 失败: {resp.status_code}")
             return None
@@ -40,6 +42,7 @@ class VideosSpider(scrapy.Spider):
         return self.token
 
     def start_requests(self):
+        print(f"启动爬虫，user = {self.user}")
         token = self.get_token()
         if token:
             self.headers["Authorization"] = f"Bearer {token}"
@@ -48,6 +51,8 @@ class VideosSpider(scrapy.Spider):
         yield scrapy.Request(url, headers=self.headers, callback=self.parse, errback=self.errback)
 
     def parse(self, response):
+        print(f"收到响应：status={response.status}, url={response.url}")
+        print(f"响应内容前200字节：{response.text[:200]}")
         if response.status in [401, 403]:
             # token 可能过期，刷新一次再请求
             self.logger.info("可能是Token 过期，重新获取Token...")
@@ -59,6 +64,7 @@ class VideosSpider(scrapy.Spider):
 
         data = json.loads(response.text)
         gifs = data.get("gifs", [])
+        self.logger.info(f"Got {len(gifs)} gifs on page {self.page}")
         if not gifs:
             return
 	
@@ -66,9 +72,13 @@ class VideosSpider(scrapy.Spider):
             url = None
             if isinstance(gif.get("urls"), dict):
                 url = gif["urls"].get("hd") or gif["urls"].get("sd")
+
+            userName = gif.get("userName") or "Unknown"
             item = {
-                "id": gif.get("id"),                
-                "url": url                
+                "userName": userName,
+                "id": gif.get("id"),
+                "url": url,
+                "token": self.token
             }
             print(json.dumps(item, ensure_ascii=False))
             yield item
@@ -79,4 +89,4 @@ class VideosSpider(scrapy.Spider):
         yield scrapy.Request(next_url, headers=self.headers, callback=self.parse, errback=self.errback)
 
     def errback(self, failure):
-        self.logger.error(repr(failure))
+        print(f"ERROR: {repr(failure)}", file=sys.stderr)
