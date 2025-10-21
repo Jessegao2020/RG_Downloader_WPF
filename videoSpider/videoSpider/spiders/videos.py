@@ -3,6 +3,8 @@ import json
 import time
 import requests
 import sys
+from scrapy.spidermiddlewares.httperror import HttpError
+from twisted.internet.error import DNSLookupError, TimeoutError, TCPTimedOutError
 
 class VideosSpider(scrapy.Spider):
     name = "videos"
@@ -42,7 +44,7 @@ class VideosSpider(scrapy.Spider):
         return self.token
 
     def start_requests(self):
-        print(f"启动爬虫，user = {self.user}")
+        print(f"启动爬虫，user = {self.user}", file=sys.stderr)
         token = self.get_token()
         if token:
             self.headers["Authorization"] = f"Bearer {token}"
@@ -51,8 +53,8 @@ class VideosSpider(scrapy.Spider):
         yield scrapy.Request(url, headers=self.headers, callback=self.parse, errback=self.errback)
 
     def parse(self, response):
-        print(f"收到响应：status={response.status}, url={response.url}")
-        print(f"响应内容前200字节：{response.text[:200]}")
+        print(f"收到响应：status={response.status}, url={response.url}", file=sys.stderr)
+        print(f"响应内容前200字节：{response.text[:200]}", file=sys.stderr)
         if response.status in [401, 403]:
             # token 可能过期，刷新一次再请求
             self.logger.info("可能是Token 过期，重新获取Token...")
@@ -89,4 +91,26 @@ class VideosSpider(scrapy.Spider):
         yield scrapy.Request(next_url, headers=self.headers, callback=self.parse, errback=self.errback)
 
     def errback(self, failure):
-        print(f"ERROR: {repr(failure)}", file=sys.stderr)
+        # 1️⃣ HTTP 错误（状态码 ≠ 200）
+        if failure.check(HttpError):
+            response = failure.value.response
+            print(f"❌ HTTP错误 {response.status} - {response.url}", file=sys.stderr)
+            # 想要内容就加下面这行（慎用，会很长）
+            print(response.text[:500], file=sys.stderr)
+            return
+
+        # 2️⃣ DNS 错误（域名不存在、网络问题）
+        elif failure.check(DNSLookupError):
+            request = failure.request
+            print(f"❌ DNS解析失败: {request.url}", file=sys.stderr)
+            return
+
+        # 3️⃣ 连接超时 / 无法连接
+        elif failure.check(TimeoutError, TCPTimedOutError):
+            request = failure.request
+            print(f"⏳ 请求超时: {request.url}", file=sys.stderr)
+            return
+
+        # 4️⃣ 其它未知错误
+        else:
+            print(f"❌ 未知错误: {repr(failure)}", file=sys.stderr)
