@@ -116,7 +116,7 @@ namespace RedgifsDownloader
         #region Crawl (BtnCrawl) — 拆分后逻辑清晰
 
         private async void BtnCrawl_Click(object sender, RoutedEventArgs e)
-        {
+        {            
             try
             {
                 var user = GetTrimmedUserInput();
@@ -151,7 +151,10 @@ namespace RedgifsDownloader
         {
             BtnCrawl.IsEnabled = true;
             BtnCrawl.Content = "Crawl";
-            MessageBox.Show($"Finish Crawling, {VideosCount} videos found.");
+            if (VideosCount > 0)
+            {
+                MessageBox.Show($"{VideosCount} videos found.", "Result");
+            }
         }
 
         private async Task StartCrawlAsync(string user)
@@ -203,8 +206,16 @@ namespace RedgifsDownloader
 
             process.ErrorDataReceived += (s, e) =>
             {
-                if (!string.IsNullOrEmpty(e.Data))
-                    Debug.WriteLine(e.Data);
+                if (string.IsNullOrEmpty(e.Data)) return;
+                Debug.WriteLine(e.Data);
+                if (e.Data.StartsWith("ERROR_MSG:"))
+                {
+                    string msg = e.Data.Substring("ERROR_MSG:".Length).Trim();
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        MessageBox.Show(msg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    });
+                }
             };
 
             process.BeginOutputReadLine();
@@ -218,24 +229,15 @@ namespace RedgifsDownloader
         #region Download (BtnDownload) — 拆分并保持行为
 
         private async void BtnDownload_Click(object sender, RoutedEventArgs e)
-        {
-            // 如果正在下载，调用停止逻辑（保持原交互）
-            if (_isDownloading)
-            {
-                _cts?.Cancel();
-                BtnDownload.Content = "下载";
-                _isDownloading = false;
-                return;
-            }
-
-            // 否则启动下载流程
+        {            
             await StartOrStopDownloadAsync();
         }
 
         private async Task StartOrStopDownloadAsync()
         {
             _isDownloading = true;
-            BtnDownload.Content = "停止";
+            BtnDownload.Content = "下载中..";
+            BtnDownload.IsEnabled = false;
 
             string baseDir = EnsureDownloadBaseDirectory();
 
@@ -451,8 +453,14 @@ namespace RedgifsDownloader
         // 预留按钮处理器（如果你之后要实现停止 / 重试全部）
         private void BtnStop_Click(object sender, RoutedEventArgs e)
         {
-            // 如果需要，可直接调用 _cts?.Cancel();
-            _cts?.Cancel();
+            if (_isDownloading)
+            {
+                _cts?.Cancel();
+                BtnDownload.Content = "下载";
+                BtnDownload.IsEnabled = true;
+                _isDownloading = false;
+                return;
+            }            
         }
 
         private void BtnRetryAll_Click(object sender, RoutedEventArgs e)

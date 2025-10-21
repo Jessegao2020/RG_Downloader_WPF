@@ -5,10 +5,11 @@ namespace RedgifsDownloader
     public class VideoItem : INotifyPropertyChanged
     {
         public string? id { get; set; }
-        public string? url { get; set; }
-        public string token { get; set; } = "";
+        public string? url { get; set; }        
         public string? userName { get; set; }
 
+        #region 重构不属于这里的内容
+        public string token { get; set; } = "";        
         public double? _progress { get; set; }
         public string? _status { get; set; } // 待下载/下载中/完成/失败
         public string status
@@ -35,5 +36,6 @@ namespace RedgifsDownloader
 
         public event PropertyChangedEventHandler? PropertyChanged;        
         protected void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        #endregion
     }
 }

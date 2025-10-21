@@ -94,23 +94,30 @@ class VideosSpider(scrapy.Spider):
         # 1️⃣ HTTP 错误（状态码 ≠ 200）
         if failure.check(HttpError):
             response = failure.value.response
-            print(f"❌ HTTP错误 {response.status} - {response.url}", file=sys.stderr)
-            # 想要内容就加下面这行（慎用，会很长）
-            print(response.text[:500], file=sys.stderr)
+            print(f"HTTP错误 {response.status} - {response.url}", file=sys.stderr)
+            try:
+                data = json.loads(response.text)
+                msg = data.get("error", {}).get("message","")
+                if msg:
+                    print(f"ERROR_MSG: {msg}", file=sys.stderr)
+                else:
+                    print(response.text[:500], file=sys.stderr)
+            except Exception:
+                print(response.text[:500], file=sys.stderr)            
             return
 
         # 2️⃣ DNS 错误（域名不存在、网络问题）
         elif failure.check(DNSLookupError):
             request = failure.request
-            print(f"❌ DNS解析失败: {request.url}", file=sys.stderr)
+            print(f"DNS解析失败: {request.url}", file=sys.stderr)
             return
 
         # 3️⃣ 连接超时 / 无法连接
         elif failure.check(TimeoutError, TCPTimedOutError):
             request = failure.request
-            print(f"⏳ 请求超时: {request.url}", file=sys.stderr)
+            print(f"请求超时: {request.url}", file=sys.stderr)
             return
 
         # 4️⃣ 其它未知错误
         else:
-            print(f"❌ 未知错误: {repr(failure)}", file=sys.stderr)
+            print(f"未知错误: {repr(failure)}", file=sys.stderr)
