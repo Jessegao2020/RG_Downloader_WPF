@@ -23,9 +23,9 @@
               Margin="0,0,0,5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
-                <ColumnDefinition MaxWidth="120" MinWidth="80"/>                
+                <ColumnDefinition MaxWidth="110" MinWidth="80"/>                
                 <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" 
@@ -35,12 +35,13 @@
                      x:Name="UserBox"                                         
                      Margin="5,0,0,0"/>
             <TextBlock Grid.Column="2" 
-                       Text="Max Download:"
+                       Text="Max D/L:"
                        VerticalAlignment="Center"
                        Margin="5,0,0,0"/>
             <ComboBox Grid.Column="3"
                       x:Name="maxDownloadComboBox"
                       IsEditable="True"
+                      MaxWidth="50"
                       Margin="5,0,0,0">
                 <ComboBoxItem Content="1"/>
                 <ComboBoxItem Content="2"/>
@@ -56,7 +57,7 @@
             <Button Grid.Column="4" 
                     x:Name="BtnCrawl"                    
                     Content="Crawl"                    
-                    MinWidth="55"
+                    MinWidth="70"
                     Margin="5,0,0,0"
                     HorizontalAlignment="Right"                    
                     Click="BtnCrawl_Click"/>

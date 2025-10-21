@@ -151,6 +151,7 @@ namespace RedgifsDownloader
         {
             BtnCrawl.IsEnabled = true;
             BtnCrawl.Content = "Crawl";
+            MessageBox.Show($"Finish Crawling, {VideosCount} videos found.");
         }
 
         private async Task StartCrawlAsync(string user)
@@ -164,53 +165,52 @@ namespace RedgifsDownloader
             {
                 FileName = "python",
                 WorkingDirectory = spiderPath,
-                Arguments = $"-u -m scrapy crawl videos -a user={user}",
+                Arguments = $"-u -m scrapy crawl videos -a user={user} --loglevel ERROR",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
-
             await RunSpiderProcessAsync(psi);
         }
 
-        private Task RunSpiderProcessAsync(ProcessStartInfo psi)
+        private async Task RunSpiderProcessAsync(ProcessStartInfo psi)
         {
-            return Task.Run(() =>
+
+
+            var process = Process.Start(psi) ?? throw new InvalidOperationException("无法启动爬虫进程");
+
+            process.OutputDataReceived += (s, e) =>
             {
-                var process = Process.Start(psi) ?? throw new InvalidOperationException("无法启动爬虫进程");
-
-                process.OutputDataReceived += (s, e) =>
+                if (string.IsNullOrEmpty(e.Data)) return;
+                try
                 {
-                    if (string.IsNullOrEmpty(e.Data)) return;
-                    try
+                    var video = JsonSerializer.Deserialize<VideoItem>(e.Data);
+                    if (video != null)
                     {
-                        var video = JsonSerializer.Deserialize<VideoItem>(e.Data);
-                        if (video != null)
+                        Application.Current.Dispatcher.BeginInvoke(() =>
                         {
-                            Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                Videos.Add(video);
-                                VideosCount = Videos.Count;
-                            });
-                        }
+                            Videos.Add(video);
+                            VideosCount = Videos.Count;
+                        });
                     }
-                    catch
-                    {
-                        // 忽略非 JSON 输出
-                    }
-                };
-
-                process.ErrorDataReceived += (s, e) =>
+                }
+                catch (Exception ex)
                 {
-                    if (!string.IsNullOrEmpty(e.Data))
-                        Debug.WriteLine("ERR: " + e.Data);
-                };
+                    Debug.WriteLine($"JSON parse error: {ex.Message}: {e.Data}");
+                }
+            };
 
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
-                process.WaitForExit();
-            });
+            process.ErrorDataReceived += (s, e) =>
+            {
+                if (!string.IsNullOrEmpty(e.Data))
+                    Debug.WriteLine(e.Data);
+            };
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            await process.WaitForExitAsync();
+            process.WaitForExit();
         }
 
         #endregion
