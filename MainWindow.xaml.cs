@@ -6,6 +6,7 @@ using System.IO;
 using System.ComponentModel;
 using System.Net.Http;
 using System.Windows.Controls;
+using System.Buffers;
 
 namespace RedgifsDownloader
 {
@@ -116,7 +117,7 @@ namespace RedgifsDownloader
         #region Crawl (BtnCrawl) — 拆分后逻辑清晰
 
         private async void BtnCrawl_Click(object sender, RoutedEventArgs e)
-        {            
+        {
             try
             {
                 var user = GetTrimmedUserInput();
@@ -196,6 +197,7 @@ namespace RedgifsDownloader
                             Videos.Add(video);
                             VideosCount = Videos.Count;
                         });
+                        video.Status = VideoStatus.Pending;
                     }
                 }
                 catch (Exception ex)
@@ -227,9 +229,10 @@ namespace RedgifsDownloader
         #endregion
 
         #region Download (BtnDownload) — 拆分并保持行为
+        
 
         private async void BtnDownload_Click(object sender, RoutedEventArgs e)
-        {            
+        {
             await StartDownloadAsync();
         }
 
@@ -264,7 +267,7 @@ namespace RedgifsDownloader
                 _isDownloading = false;
                 BtnDownload.Content = "下载";
                 BtnDownload.IsEnabled = true;
-                MessageBox.Show($"任务结束。成功 {Videos.Count(v => v.status == "完成" || v.status == "已存在")}，失败 {Failed.Count}。");
+                MessageBox.Show($"任务结束。成功 {Videos.Count(v => v.Status == VideoStatus.Completed || v.Status == VideoStatus.Exists)}，失败 {Failed.Count}。");
             }
         }
 
@@ -291,23 +294,23 @@ namespace RedgifsDownloader
         {
             foreach (var video in Videos)
             {
-                if (string.IsNullOrEmpty(video.url)) continue;
+                if (string.IsNullOrEmpty(video.Url)) continue;
 
-                string userName = string.IsNullOrWhiteSpace(video.userName) ? "Unknown" : video.userName.Trim();
+                string userName = string.IsNullOrWhiteSpace(video.Username) ? "Unknown" : video.Username.Trim();
                 string saveDir = Path.Combine(baseDir, userName);
                 Directory.CreateDirectory(saveDir);
 
-                string path = Path.Combine(saveDir, video.id + ".mp4");
+                string path = Path.Combine(saveDir, video.Id + ".mp4");
 
                 if (File.Exists(path))
                 {
-                    video.status = "已存在";
+                    video.Status = VideoStatus.Exists;
                     // 保持原逻辑：如果已存在则从 Failed 中移除
                     if (Failed.Contains(video)) Application.Current.Dispatcher.Invoke(() => Failed.Remove(video));
                 }
-                else if (video.status == "已存在" || video.status == "完成")
+                else if (video.Status == VideoStatus.Exists || video.Status == VideoStatus.Completed)
                 {
-                    video.status = null;
+                    video.Status = VideoStatus.Pending;
                 }
             }
         }
@@ -317,47 +320,57 @@ namespace RedgifsDownloader
             await semaphore.WaitAsync(token);
             try
             {
-                await DownloadSingleVideoAsync(video, baseDir, token);
+                MarkVideoStatus(video, VideoStatus.Downloading);
+                video.Progress = 0;
+                await DownloadSingleVideoAsync(video, baseDir, token);                
             }
             catch (OperationCanceledException)
             {
-                HandleCancellation(video);
+                MarkVideoStatus(video, VideoStatus.Canceled);
+            }
+            catch (HttpRequestException)
+            {
+                MarkVideoStatus(video, VideoStatus.NetworkError, isFailed: true);
+            }
+            catch (IOException)
+            {
+                MarkVideoStatus(video, VideoStatus.WriteError, isFailed: true);
             }
             catch (Exception)
             {
-                HandleFailure(video);
+                MarkVideoStatus(video, VideoStatus.UnknownError, isFailed: true);
             }
             finally
             {
                 // 在线程结束（无论如何）更新统计并释放信号量
-                Application.Current.Dispatcher.Invoke(UpdateStatusCounters);
+                await Application.Current.Dispatcher.InvokeAsync(UpdateStatusCounters);
                 semaphore.Release();
             }
         }
 
         private async Task DownloadSingleVideoAsync(VideoItem video, string baseDir, CancellationToken token)
         {
-            if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+            if (token.IsCancellationRequested) return;
 
-            if (string.IsNullOrEmpty(video.url)) return;
+            if (string.IsNullOrEmpty(video.Url)) return;
 
-            string userName = string.IsNullOrWhiteSpace(video.userName) ? "Unknown" : video.userName.Trim();
+            string userName = string.IsNullOrWhiteSpace(video.Username) ? "Unknown" : video.Username.Trim();
             string saveDir = Path.Combine(baseDir, userName);
             Directory.CreateDirectory(saveDir);
 
-            string path = Path.Combine(saveDir, video.id + ".mp4");
+            string path = Path.Combine(saveDir, video.Id + ".mp4");
 
             if (File.Exists(path))
             {
-                video.status = "已存在";
-                video.progress = 100;
+                video.Status = VideoStatus.Exists;
+                video.Progress = 100;
                 return;
             }
 
-            using var request = new HttpRequestMessage(HttpMethod.Get, video.url);
+            using var request = new HttpRequestMessage(HttpMethod.Get, video.Url);
             request.Headers.Add("User-Agent", "Mozilla/5.0");
             request.Headers.Add("Referer", "https://www.redgifs.com/");
-            request.Headers.Add("Authorization", "Bearer " + video.token);
+            request.Headers.Add("Authorization", "Bearer " + video.Token);
             request.Headers.Add("Accept", "application/json, text/plain, */*");
 
             using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
@@ -367,56 +380,59 @@ namespace RedgifsDownloader
             bool canReport = totalBytes > 0;
 
             using var stream = await response.Content.ReadAsStreamAsync(token);
-            using var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            using var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 32768, useAsync: true);
 
-            byte[] buffer = new byte[8192];
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(32768);
             long totalRead = 0;
-            int read;
-            video.status = "0%";
-            video.progress = 0;
 
-            // 为避免 UI 过于频繁更新，这里只在进度变化 >= 1% 时更新（可改）
-            double lastReportedPercent = 0;
-
-            while ((read = await stream.ReadAsync(buffer, 0, buffer.Length, token)) > 0)
+            try
             {
-                await fs.WriteAsync(buffer, 0, read, token);
-                totalRead += read;
+                int read;
+                // 为避免 UI 过于频繁更新，这里只在进度变化 >= 1% 时更新（可改）
+                double lastReportedPercent = 0;
 
-                if (canReport)
+                video.Status = VideoStatus.Downloading;
+                video.Progress = 0;
+
+                while ((read = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), token)) > 0)
                 {
-                    double percent = Math.Round((double)totalRead / totalBytes * 100, 1);
-                    if (percent - lastReportedPercent >= 1.0 || percent == 100.0) // 阈值刷新
+                    await fs.WriteAsync(buffer.AsMemory(0, read), token);
+                    totalRead += read;
+
+                    if (canReport)
                     {
-                        lastReportedPercent = percent;
-                        // 只更新绑定属性，界面通过 INotifyPropertyChanged 自动刷新
-                        video.status = $"{percent}%";
-                        video.progress = percent;
+                        double percent = Math.Round((double)totalRead / totalBytes * 100, 1);
+                        if (percent - lastReportedPercent >= 1.0 || percent == 100.0) // 阈值刷新
+                        {
+                            lastReportedPercent = percent;
+                            // 只更新绑定属性，界面通过 INotifyPropertyChanged 自动刷新
+                            video.Status = VideoStatus.Downloading;
+                            video.Progress = percent;
+                        }
                     }
+                }                
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+
+                if (canReport && totalRead < totalBytes)
+                {
+                    // 说明下载中断或未完成
+                    video.Status = VideoStatus.Failed;
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        if (!Failed.Contains(video))
+                            Failed.Add(video);
+                    });
+                }
+                else if (canReport)
+                {
+                    video.Progress = 100;
+                    video.Status = VideoStatus.Completed;
                 }
             }
-
-            video.status = "完成";
-            video.progress = 100;
         }
-
-        private void HandleCancellation(VideoItem video)
-        {
-            // 保留原行为：取消时标记为已停止，但不自动加入 Failed 集合
-            if (video.status != "完成" && video.status != "已存在")
-                video.status = "已停止";
-        }
-
-        private void HandleFailure(VideoItem video)
-        {
-            video.status = "失败";
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                if (!Failed.Contains(video))
-                    Failed.Add(video);
-            });
-        }
-
         #endregion
 
         #region Utilities / UI helpers
@@ -424,8 +440,27 @@ namespace RedgifsDownloader
         private void UpdateStatusCounters()
         {
             int total = Videos.Count;
-            TxtDownloadedCount.Text = $"{Videos.Count(v => v.status == "完成" || v.status == "已存在")}/{total}";
+            TxtDownloadedCount.Text = $"{Videos.Count(v => v.Status == VideoStatus.Completed || v.Status == VideoStatus.Completed)}/{total}";
             TxtFailedCount.Text = Failed.Count.ToString();
+        }
+
+        private void MarkVideoStatus(VideoItem video, VideoStatus status, bool isFailed = false, double? progress = null)
+        {
+            video.Status = status;
+            if (progress.HasValue)
+                video.Progress = progress.Value;
+
+            // 失败加入失败列表
+            if (isFailed)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    if (!Failed.Contains(video))
+                        Failed.Add(video);
+                });
+            }
+
+            Application.Current.Dispatcher.Invoke(UpdateStatusCounters);
         }
 
         #endregion
@@ -434,19 +469,19 @@ namespace RedgifsDownloader
 
         private void ListViewResults_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (ListViewResults.SelectedItem is VideoItem video && !string.IsNullOrEmpty(video.url))
+            if (ListViewResults.SelectedItem is VideoItem video && !string.IsNullOrEmpty(video.Url))
             {
-                Clipboard.SetText(video.url);
-                MessageBox.Show($"已复制 URL:\n{video.url}", "复制成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                Clipboard.SetText(video.Url);
+                MessageBox.Show($"已复制 URL:\n{video.Url}", "复制成功", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
         private void ListViewFailed_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (ListViewFailed.SelectedItem is VideoItem video && !string.IsNullOrEmpty(video.url))
+            if (ListViewFailed.SelectedItem is VideoItem video && !string.IsNullOrEmpty(video.Url))
             {
-                Clipboard.SetText(video.url);
-                MessageBox.Show($"已复制 URL:\n{video.url}", "复制成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                Clipboard.SetText(video.Url);
+                MessageBox.Show($"已复制 URL:\n{video.Url}", "复制成功", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -460,7 +495,7 @@ namespace RedgifsDownloader
                 BtnDownload.IsEnabled = true;
                 _isDownloading = false;
                 return;
-            }            
+            }
         }
 
         private void BtnRetryAll_Click(object sender, RoutedEventArgs e)
@@ -480,11 +515,9 @@ namespace RedgifsDownloader
                     UseShellExecute = true
                 });
             else
-                MessageBox.Show("文件夹不存在。", "Error",MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("文件夹不存在。", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         #endregion
-
-
     }
 }

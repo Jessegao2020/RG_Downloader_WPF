@@ -10,7 +10,7 @@
         MinHeight="450"
         Width="330"
         MinWidth="330" 
-        Closing="Window_Closing">    
+        Closing="Window_Closing">
     <Grid Margin="5">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -71,10 +71,10 @@
             <ListView.View>                
                 <GridView>
                     <GridViewColumn Header="Title" 
-                                    DisplayMemberBinding="{Binding id}" 
+                                    DisplayMemberBinding="{Binding Id}" 
                                     Width="230"/>
                     <GridViewColumn Header="状态" 
-                                    DisplayMemberBinding="{Binding status}" 
+                                    DisplayMemberBinding="{Binding DisplayStatus}" 
                                     Width="60"/>
                 </GridView>
             </ListView.View>
@@ -142,10 +142,10 @@
                 <GridView>
                     <GridViewColumn Header="Title" 
                                     Width="230"
-                                    DisplayMemberBinding="{Binding id}"/>
+                                    DisplayMemberBinding="{Binding Id}"/>
                     <GridViewColumn Header="状态"                                      
                                     Width="60"
-                                    DisplayMemberBinding="{Binding status}"/>
+                                    DisplayMemberBinding="{Binding DisplayStatus}"/>
                 </GridView>
             </ListView.View>
         </ListView>

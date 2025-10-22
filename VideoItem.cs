@@ -2,26 +2,44 @@
 
 namespace RedgifsDownloader
 {
+    public enum VideoStatus
+    {
+        Pending,
+        Downloading,
+        Completed,
+        Exists,
+        Canceled,
+        NetworkError,
+        WriteError,
+        UnknownError,
+        Failed
+    }
+
     public class VideoItem : INotifyPropertyChanged
     {
-        public string? id { get; set; }
-        public string? url { get; set; }        
-        public string? userName { get; set; }
+        public string? Id { get; set; }
+        public string? Url { get; set; }
+        public string? Username { get; set; }
+        public string Token { get; set; } = "";
 
-        #region 重构不属于这里的内容
-        public string token { get; set; } = "";        
-        public double? _progress { get; set; }
-        public string? _status { get; set; } // 待下载/下载中/完成/失败
-        public string status
+        private double? _progress;
+        private VideoStatus _status;
+
+        public VideoStatus Status
         {
             get => _status;
             set
             {
-                _status = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(status)));
+                if (_status != value)
+                {
+                    _status = value;
+                    OnPropertyChanged(nameof(Status));
+                    OnPropertyChanged(nameof(DisplayStatus));
+                }
             }
         }
-        public double? progress
+
+        public double? Progress
         {
             get => _progress;
             set
@@ -29,13 +47,38 @@ namespace RedgifsDownloader
                 if (_progress != value)
                 {
                     _progress = value;
-                    OnPropertyChanged(nameof(progress));
+                    OnPropertyChanged(nameof(Progress));
+                    OnPropertyChanged(nameof(DisplayStatus));
                 }
             }
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;        
-        protected void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        #endregion
+        // 👇 这个属性是给 UI 用的
+        public string DisplayStatus
+        {
+            get
+            {
+                if (Status == VideoStatus.Downloading && Progress.HasValue)
+                    return $"{Progress.Value:F1}%";
+
+                return Status switch
+                {
+                    VideoStatus.Pending => "",
+                    VideoStatus.Downloading => "下载中",
+                    VideoStatus.Completed => "完成",
+                    VideoStatus.Exists => "已存在",
+                    VideoStatus.Failed => "失败",
+                    VideoStatus.Canceled => "已停止",
+                    VideoStatus.NetworkError => "网络错误",
+                    VideoStatus.WriteError => "写入错误",
+                    VideoStatus.UnknownError => "未知错误",
+                    _ => ""
+                };
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged(string name)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }
