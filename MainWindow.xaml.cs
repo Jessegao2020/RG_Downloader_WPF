@@ -1,12 +1,13 @@
-﻿using System.Collections.ObjectModel;
+﻿using RedgifsDownloader.Services;
+using System.Buffers;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
 using System.Text.Json;
 using System.Windows;
-using System.IO;
-using System.ComponentModel;
-using System.Net.Http;
 using System.Windows.Controls;
-using System.Buffers;
 
 namespace RedgifsDownloader
 {
@@ -16,6 +17,8 @@ namespace RedgifsDownloader
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        private readonly DownloadService _downloadService = new();
+
         #region Fields & Properties
 
         public ObservableCollection<VideoItem> Videos { get; } = new();
@@ -320,119 +323,21 @@ namespace RedgifsDownloader
             await semaphore.WaitAsync(token);
             try
             {
-                MarkVideoStatus(video, VideoStatus.Downloading);
-                video.Progress = 0;
-                await DownloadSingleVideoAsync(video, baseDir, token);                
-            }
-            catch (OperationCanceledException)
-            {
-                MarkVideoStatus(video, VideoStatus.Canceled);
-            }
-            catch (HttpRequestException)
-            {
-                MarkVideoStatus(video, VideoStatus.NetworkError, isFailed: true);
-            }
-            catch (IOException)
-            {
-                MarkVideoStatus(video, VideoStatus.WriteError, isFailed: true);
-            }
-            catch (Exception)
-            {
-                MarkVideoStatus(video, VideoStatus.UnknownError, isFailed: true);
-            }
-            finally
-            {
-                // 在线程结束（无论如何）更新统计并释放信号量
-                await Application.Current.Dispatcher.InvokeAsync(UpdateStatusCounters);
-                semaphore.Release();
-            }
-        }
-
-        private async Task DownloadSingleVideoAsync(VideoItem video, string baseDir, CancellationToken token)
-        {
-            if (token.IsCancellationRequested) return;
-
-            if (string.IsNullOrEmpty(video.Url)) return;
-
-            string userName = string.IsNullOrWhiteSpace(video.Username) ? "Unknown" : video.Username.Trim();
-            string saveDir = Path.Combine(baseDir, userName);
-            Directory.CreateDirectory(saveDir);
-
-            string path = Path.Combine(saveDir, video.Id + ".mp4");
-
-            if (File.Exists(path))
-            {
-                video.Status = VideoStatus.Exists;
-                video.Progress = 100;
-                return;
-            }
-
-            using var request = new HttpRequestMessage(HttpMethod.Get, video.Url);
-            request.Headers.Add("User-Agent", "Mozilla/5.0");
-            request.Headers.Add("Referer", "https://www.redgifs.com/");
-            request.Headers.Add("Authorization", "Bearer " + video.Token);
-            request.Headers.Add("Accept", "application/json, text/plain, */*");
-
-            using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
-            response.EnsureSuccessStatusCode();
-
-            var totalBytes = response.Content.Headers.ContentLength ?? -1L;
-            bool canReport = totalBytes > 0;
-
-            using var stream = await response.Content.ReadAsStreamAsync(token);
-            using var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 32768, useAsync: true);
-
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(32768);
-            long totalRead = 0;
-
-            try
-            {
-                int read;
-                // 为避免 UI 过于频繁更新，这里只在进度变化 >= 1% 时更新（可改）
-                double lastReportedPercent = 0;
-
                 video.Status = VideoStatus.Downloading;
                 video.Progress = 0;
 
-                while ((read = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), token)) > 0)
+                await _downloadService.DownloadAsync(video, baseDir, token, progress =>
                 {
-                    await fs.WriteAsync(buffer.AsMemory(0, read), token);
-                    totalRead += read;
-
-                    if (canReport)
-                    {
-                        double percent = Math.Round((double)totalRead / totalBytes * 100, 1);
-                        if (percent - lastReportedPercent >= 1.0 || percent == 100.0) // 阈值刷新
-                        {
-                            lastReportedPercent = percent;
-                            // 只更新绑定属性，界面通过 INotifyPropertyChanged 自动刷新
-                            video.Status = VideoStatus.Downloading;
-                            video.Progress = percent;
-                        }
-                    }
-                }                
+                    Application.Current.Dispatcher.Invoke(() => video.Progress = progress);
+                });
             }
             finally
             {
-                ArrayPool<byte>.Shared.Return(buffer);
-
-                if (canReport && totalRead < totalBytes)
-                {
-                    // 说明下载中断或未完成
-                    video.Status = VideoStatus.Failed;
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        if (!Failed.Contains(video))
-                            Failed.Add(video);
-                    });
-                }
-                else if (canReport)
-                {
-                    video.Progress = 100;
-                    video.Status = VideoStatus.Completed;
-                }
+                semaphore.Release();
+                Application.Current.Dispatcher.Invoke(UpdateStatusCounters);
             }
         }
+
         #endregion
 
         #region Utilities / UI helpers
