@@ -86,19 +86,27 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" Text="结果:"/>
-            <TextBlock Grid.Column="1" Text="{Binding VideosCount}"/>            
-            <Button x:Name="BtnDownload"
+            <TextBlock Grid.Column="1" Text="{Binding VideosCount}"/>
+            <Button x:Name="BtnOpenFolder" 
                     Grid.Column="2" 
+                    Content="D/L Folder"
+                    HorizontalAlignment="Right"
+                    Width="70"
+                    Click="BtnOpenFolder_Click"/>
+            <Button x:Name="BtnDownload"
+                    Grid.Column="3" 
                     Content="下载"
                     Width="70"
                     HorizontalAlignment="Right"
+                    Margin="5,0,0,0"
                     Click="BtnDownload_Click"/>
             <Button x:Name="BtnStop"
-                    Grid.Column="3" 
+                    Grid.Column="4" 
                     Content="停止"
                     Width="35"
                     HorizontalAlignment="Right"

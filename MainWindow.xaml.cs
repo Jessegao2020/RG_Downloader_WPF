@@ -230,10 +230,10 @@ namespace RedgifsDownloader
 
         private async void BtnDownload_Click(object sender, RoutedEventArgs e)
         {            
-            await StartOrStopDownloadAsync();
+            await StartDownloadAsync();
         }
 
-        private async Task StartOrStopDownloadAsync()
+        private async Task StartDownloadAsync()
         {
             _isDownloading = true;
             BtnDownload.Content = "下载中..";
@@ -469,6 +469,22 @@ namespace RedgifsDownloader
             // 目前保留空实现，和原行为一致
         }
 
+        private void BtnOpenFolder_Click(object sender, RoutedEventArgs e)
+        {
+            string folderPath = EnsureDownloadBaseDirectory() + "\\" + GetTrimmedUserInput();
+
+            if (Directory.Exists(folderPath))
+                Process.Start(new ProcessStartInfo()
+                {
+                    FileName = folderPath,
+                    UseShellExecute = true
+                });
+            else
+                MessageBox.Show("文件夹不存在。", "Error",MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
         #endregion
+
+
     }
 }
