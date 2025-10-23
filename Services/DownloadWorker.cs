@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
+using System.Xml;
 
 namespace RedgifsDownloader.Services
 {
@@ -9,55 +11,20 @@ namespace RedgifsDownloader.Services
     {
         private static readonly HttpClient _httpClient = new();
 
-        public async Task<VideoStatus> DownloadAsync(string url, string path, string token, CancellationToken ct, Action<double>? onProgress = null)
+        public async Task<VideoStatus> DownloadAsync(string url, string savePath, string authToken, CancellationToken ct, Action<double>? onProgress = null)
         {
             if (ct.IsCancellationRequested || string.IsNullOrEmpty(url))
                 return VideoStatus.Canceled;
 
             try
             {
-                using var request = new HttpRequestMessage(HttpMethod.Get, url);
-                request.Headers.Add("User-Agent", "Mozilla/5.0");
-                request.Headers.Add("Referer", "https://www.redgifs.com/");
-                request.Headers.Add("Authorization", "Bearer " + token);
-                request.Headers.Add("Accept", "application/json, text/plain, */*");
+                using var response = await SendRequestAsync(url, authToken, ct);  // 发送Http请求
+                response.EnsureSuccessStatusCode();     // 确保服务器返回码为200正常，否则抛异常
 
-                using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
-                response.EnsureSuccessStatusCode();
+                long totalBytes = response.Content.Headers.ContentLength ?? -1L;    // 读取文件总大小，如无返回-1
+                using var stream = await response.Content.ReadAsStreamAsync(ct);    // 接收文件流
 
-                var totalBytes = response.Content.Headers.ContentLength ?? -1L;
-                using var stream = await response.Content.ReadAsStreamAsync(ct);
-                using var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 32768, useAsync: true);
-
-                byte[] buffer = ArrayPool<byte>.Shared.Rent(32768);
-                long totalRead = 0;
-
-                try
-                {
-                    int read;
-                    double lastPercent = 0;
-
-                    while ((read = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), ct)) > 0)
-                    {
-                        await fs.WriteAsync(buffer.AsMemory(0, read), ct);
-                        totalRead += read;
-
-                        // CHECK: 此处暂时未重构进去
-                        if (totalBytes > 0)
-                        {
-                            double percent = Math.Round((double)totalRead / totalBytes * 100, 1);
-                            if (percent - lastPercent >= 1.0 || percent == 100.0)
-                            {
-                                lastPercent = percent;
-                                onProgress?.Invoke(percent);
-                            }
-                        }
-                    }
-                    return VideoStatus.Completed;
-                }
-                catch (OperationCanceledException) { return VideoStatus.Canceled; }
-                catch (IOException) { return VideoStatus.WriteError; }
-                finally { ArrayPool<byte>.Shared.Return(buffer); }
+                return await SaveToFileAsync(stream, savePath, totalBytes, onProgress, ct);
             }
             catch (HttpRequestException) { return VideoStatus.NetworkError; }
             catch (Exception ex)
@@ -65,6 +32,49 @@ namespace RedgifsDownloader.Services
                 Debug.WriteLine(ex.Message);
                 return VideoStatus.UnknownError;
             }
+        }
+
+        private static async Task<HttpResponseMessage> SendRequestAsync(string url, string token, CancellationToken ct)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Add("User-Agent", "Mozilla/5.0");
+            request.Headers.Add("Referer", "https://www.redgifs.com/");
+            request.Headers.Add("Authorization", "Bearer " + token);
+            request.Headers.Add("Accept", "application/json, text/plain, */*");
+            return await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        }
+
+        private static async Task<VideoStatus> SaveToFileAsync(Stream stream, string savePath, long totalBytes, Action<double>? onProgress, CancellationToken ct)
+        {
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(32768);
+
+            try
+            {
+                using var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, 32768, useAsync: true);
+                long totalRead = 0;
+                double lastPercent = 0;
+
+                int read;
+                while ((read = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), ct)) > 0)
+                {
+                    await fs.WriteAsync(buffer.AsMemory(0, read), ct);
+                    totalRead += read;
+
+                    if (totalBytes > 0)
+                    {
+                        double currentPercent = Math.Round((double)totalRead / (double)totalBytes * 100, 1);
+                        if (currentPercent - lastPercent >= 1.0 || currentPercent == 100.0)
+                        {
+                            lastPercent = currentPercent;
+                            onProgress?.Invoke(currentPercent);
+                        }
+                    }
+                }
+                return VideoStatus.Completed;
+            }
+            catch (OperationCanceledException) { return VideoStatus.Canceled; }
+            catch (IOException) { return VideoStatus.WriteError; }
+            finally { ArrayPool<byte>.Shared.Return(buffer); }
         }
     }
 }
