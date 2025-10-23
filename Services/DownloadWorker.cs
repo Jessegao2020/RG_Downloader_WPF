@@ -2,8 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-using System.Reflection;
-using System.Xml;
 
 namespace RedgifsDownloader.Services
 {
@@ -11,7 +9,7 @@ namespace RedgifsDownloader.Services
     {
         private static readonly HttpClient _httpClient = new();
 
-        public async Task<VideoStatus> DownloadAsync(string url, string savePath, string authToken, CancellationToken ct, Action<double>? onProgress = null)
+        public async Task<VideoStatus> DownloadAsync(string url, string filePath, string authToken, CancellationToken ct, Action<double>? onProgress = null)
         {
             if (ct.IsCancellationRequested || string.IsNullOrEmpty(url))
                 return VideoStatus.Canceled;
@@ -24,7 +22,7 @@ namespace RedgifsDownloader.Services
                 long totalBytes = response.Content.Headers.ContentLength ?? -1L;    // 读取文件总大小，如无返回-1
                 using var stream = await response.Content.ReadAsStreamAsync(ct);    // 接收文件流
 
-                return await SaveToFileAsync(stream, savePath, totalBytes, onProgress, ct);
+                return await SaveToFileAsync(stream, filePath, totalBytes, onProgress, ct);
             }
             catch (HttpRequestException) { return VideoStatus.NetworkError; }
             catch (Exception ex)
@@ -44,13 +42,13 @@ namespace RedgifsDownloader.Services
             return await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         }
 
-        private static async Task<VideoStatus> SaveToFileAsync(Stream stream, string savePath, long totalBytes, Action<double>? onProgress, CancellationToken ct)
+        private static async Task<VideoStatus> SaveToFileAsync(Stream stream, string filePath, long totalBytes, Action<double>? onProgress, CancellationToken ct)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(32768);
 
             try
             {
-                using var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, 32768, useAsync: true);
+                using var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 32768, useAsync: true);
                 long totalRead = 0;
                 double lastPercent = 0;
 

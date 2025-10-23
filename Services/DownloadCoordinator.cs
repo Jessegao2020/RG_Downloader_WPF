@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,14 +19,15 @@ namespace RedgifsDownloader.Services
         }
 
         #region // 未审核区块
-        public async Task RunDownloadsAsync(IEnumerable<VideoItem> videos, int concurrency, CancellationToken token, Action? onStatusUpdate = null)
+        public async Task RunDownloadsAsync(IEnumerable<VideoItem> videos, int concurrency, CancellationToken ct, Action? onStatusUpdate = null)
         {
             string baseDir = _fileService.EnsureDownloadBaseDirectory();
             using var semaphore = new SemaphoreSlim(concurrency);
 
             var tasks = videos.Select(async video =>
             {
-                await semaphore.WaitAsync(token);
+                await semaphore.WaitAsync(ct); // 排队等候
+
                 try
                 {
                     if (_fileService.Exists(video, baseDir))
@@ -35,20 +37,25 @@ namespace RedgifsDownloader.Services
                         return;
                     }
 
-                    string path = _fileService.GetVideoPath(video, baseDir);
+                    string filePath = _fileService.GetVideoPath(video, baseDir);
                     video.Status = VideoStatus.Downloading;
 
-                    var result = await _worker.DownloadAsync(video.Url!, path, video.Token, token, p => video.Progress = p);
-                    video.Status = result;
+                    var status = await _worker.DownloadAsync(video.Url!, filePath, video.Token, ct, p => video.Progress = p);
+                    video.Status = status;
                 }
                 catch (OperationCanceledException)
                 {
                     video.Status = VideoStatus.Canceled;
                 }
+                catch(Exception ex) 
+                {
+                    Debug.WriteLine(ex);
+                    video.Status = VideoStatus.UnknownError;
+                }
                 finally
                 {
                     semaphore.Release();
-                    onStatusUpdate?.Invoke();
+                    onStatusUpdate?.Invoke();  // REVIEW： 此处未搞清楚
                 }
             });
 
