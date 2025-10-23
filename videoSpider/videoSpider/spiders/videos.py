@@ -77,10 +77,10 @@ class VideosSpider(scrapy.Spider):
 
             userName = gif.get("userName") or "Unknown"
             item = {
-                "userName": userName,
-                "id": gif.get("id"),
-                "url": url,
-                "token": self.token
+                "Username": userName,
+                "Id": gif.get("id"),
+                "Url": url,
+                "Token": self.token
             }
             print(json.dumps(item, ensure_ascii=False))
             yield item

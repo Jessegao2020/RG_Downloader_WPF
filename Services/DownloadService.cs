@@ -61,6 +61,7 @@ namespace RedgifsDownloader.Services
                     await fs.WriteAsync(buffer.AsMemory(0, read), token);
                     totalRead += read;
 
+                    // CHECK: 此处暂时未重构进去
                     if (canReport)
                     {
                         double percent = Math.Round((double)totalRead / totalBytes * 100, 1);
