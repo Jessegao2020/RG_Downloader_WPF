@@ -10,6 +10,8 @@ namespace RedgifsDownloader.Services
         private readonly DownloadWorker _worker;
         private readonly VideoFileService _fileService;
 
+        
+
         public DownloadCoordinator(DownloadWorker worker, VideoFileService fileService)
         {
             _worker = worker;
@@ -58,8 +60,8 @@ namespace RedgifsDownloader.Services
             });
 
             await Task.WhenAll(tasks);
-            int completed = videos.Count(v=>v.Status == VideoStatus.Completed);
-            int failed = videos.Count(v => v.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled);
+            int completed = videos.Count(video=>video.Status == VideoStatus.Completed);
+            int failed = videos.Count(video => video.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled);
             return new DownloadSummary(completed, failed);
         }
 
@@ -77,6 +79,7 @@ namespace RedgifsDownloader.Services
                 else if (video.Status is VideoStatus.Completed or VideoStatus.Exists)
                 {
                     video.Status = VideoStatus.Pending;
+                    video.Progress = 0;
                 }
             }
         }

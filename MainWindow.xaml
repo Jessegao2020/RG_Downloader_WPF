@@ -38,7 +38,8 @@
             <TextBox Grid.Column="1"  
                      x:Name="UserBox"                                         
                      Margin="5,0,0,0"
-                     Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"/>
+                     Text="{Binding Username, 
+                            UpdateSourceTrigger=PropertyChanged}"/>
             <TextBlock Grid.Column="2" 
                        Text="Max D/L:"
                        VerticalAlignment="Center"
@@ -47,7 +48,11 @@
                       x:Name="maxDownloadComboBox"
                       IsEditable="True"
                       MaxWidth="50"
-                      Margin="5,0,0,0">
+                      Margin="5,0,0,0"
+                      
+                      Text="{Binding MaxConcurrency, 
+                                      Mode=TwoWay, 
+                                      UpdateSourceTrigger=PropertyChanged}">
                 <ComboBoxItem Content="1"/>
                 <ComboBoxItem Content="2"/>
                 <ComboBoxItem Content="3"/>
@@ -66,7 +71,9 @@
                     Margin="5,0,0,0"
                     HorizontalAlignment="Right"                    
                     Command="{Binding CrawlCommand}"
-                    IsEnabled="{Binding IsCrawling, Converter={StaticResource InverseBoolConverter}}"/>
+                    IsEnabled="{Binding IsCrawling, 
+                                Converter={StaticResource 
+                                InverseBoolConverter}}"/>
         </Grid>
         <ListView x:Name="ListViewResults"
                   Grid.Row="1"
@@ -130,9 +137,9 @@
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" Text="失败:"/>
-            <TextBlock Grid.Column="1" x:Name="TxtFailedCount"/>
+            <TextBlock Grid.Column="1" x:Name="TxtFailedCount" Text="{Binding FailedCount}"/>
             <TextBlock Grid.Column="2" Text="已下载:"/>
-            <TextBlock Grid.Column="3" x:Name="TxtDownloadedCount"/>
+            <TextBlock Grid.Column="3" x:Name="TxtDownloadedCount" Text="{Binding CompletedCount}"/>
             <Button x:Name="BtnRetryAll"
                     Grid.Column="4" 
                     Content="全部重试"

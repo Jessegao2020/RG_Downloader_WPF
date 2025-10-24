@@ -10,7 +10,7 @@ namespace RedgifsDownloader.ViewModel
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-# region 字段 属性
+        #region 字段 属性
         private readonly CrawlService _crawler;
         private readonly DownloadCoordinator _coordinator;
         private CancellationTokenSource? _cts;
@@ -23,6 +23,7 @@ namespace RedgifsDownloader.ViewModel
         private int _completedCount;
         private int _failedCount;
         private string _username;
+        private int _maxConcurrency;
 
         public string CrawlBtnText => IsCrawling ? "Crawling.." : "Crawl";
 
@@ -71,6 +72,18 @@ namespace RedgifsDownloader.ViewModel
             set { _failedCount = value; OnPropertyChanged(); }
         }
 
+        public int MaxConcurrency
+        {
+            get => _maxConcurrency;
+            set
+            {
+                if (_maxConcurrency != value)
+                {
+                    _maxConcurrency = value; OnPropertyChanged();
+                }
+            }
+        }
+
         public ICommand CrawlCommand { get; }
         public ICommand DownloadCommand { get; }
         public ICommand StopCommand { get; }
@@ -81,9 +94,11 @@ namespace RedgifsDownloader.ViewModel
             _crawler = crawler;
             _coordinator = coordinator;
 
+            MaxConcurrency = Properties.Settings.Default.MaxDownloadCount;
+
             CrawlCommand = new RelayCommand(async _ => await StartCrawlAsync(), _ => !IsCrawling && !IsDownloading && !string.IsNullOrWhiteSpace(Username));
 
-            DownloadCommand = new RelayCommand(async _ => await StartDownloadAsync(5), _ => !IsDownloading && Videos.Any());
+            DownloadCommand = new RelayCommand(async _ => await StartDownloadAsync(MaxConcurrency), _ => !IsDownloading && Videos.Any());
 
             StopCommand = new RelayCommand(_ => CancelDownload(), _ => IsDownloading);
 
@@ -118,7 +133,7 @@ namespace RedgifsDownloader.ViewModel
 
             try
             {
-                var summary = await _coordinator.RunDownloadsAsync(Videos, concurrency, _cts.Token, UpdateStatusCounters);
+                var summary = await _coordinator.RunDownloadsAsync(Videos, concurrency, _cts.Token, CountLiveResult);
                 CompletedCount = summary.Completed;
                 FailedCount = summary.Failed;
 
@@ -127,7 +142,7 @@ namespace RedgifsDownloader.ViewModel
             catch (OperationCanceledException) { }
             finally
             {
-                IsDownloading = false; 
+                IsDownloading = false;
                 _cts.Dispose();
                 _cts = null;
             }
@@ -138,7 +153,7 @@ namespace RedgifsDownloader.ViewModel
             _cts?.Cancel();
         }
 
-        private void UpdateStatusCounters()
+        private void CountLiveResult()
         {
             CompletedCount = Videos.Count(v => v.Status == VideoStatus.Completed);
             FailedCount = Videos.Count(v => v.Status is VideoStatus.Canceled or VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError);
