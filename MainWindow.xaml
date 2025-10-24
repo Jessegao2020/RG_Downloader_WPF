@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RedgifsDownloader"
+        xmlns:conv="clr-namespace:RedgifsDownloader.Converter"
         mc:Ignorable="d"
         Title="Redgifs Downloader v1.0.1" 
         Height="450"
@@ -11,6 +12,9 @@
         Width="330"
         MinWidth="330" 
         Closing="Window_Closing">
+    <Window.Resources>
+        <conv:InverseBoolConverter x:Key="InverseBoolConverter" />
+    </Window.Resources>
     <Grid Margin="5">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -33,7 +37,8 @@
                        VerticalAlignment="Center"/>
             <TextBox Grid.Column="1"  
                      x:Name="UserBox"                                         
-                     Margin="5,0,0,0"/>
+                     Margin="5,0,0,0"
+                     Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"/>
             <TextBlock Grid.Column="2" 
                        Text="Max D/L:"
                        VerticalAlignment="Center"
@@ -56,11 +61,12 @@
             </ComboBox>
             <Button Grid.Column="4" 
                     x:Name="BtnCrawl"                    
-                    Content="Crawl"                    
+                    Content="{Binding CrawlBtnText}"                    
                     MinWidth="70"
                     Margin="5,0,0,0"
                     HorizontalAlignment="Right"                    
-                    Click="BtnCrawl_Click"/>
+                    Command="{Binding CrawlCommand}"
+                    IsEnabled="{Binding IsCrawling, Converter={StaticResource InverseBoolConverter}}"/>
         </Grid>
         <ListView x:Name="ListViewResults"
                   Grid.Row="1"
@@ -104,14 +110,14 @@
                     Width="70"
                     HorizontalAlignment="Right"
                     Margin="5,0,0,0"
-                    Click="BtnDownload_Click"/>
+                    Command="{Binding DownloadCommand}"/>
             <Button x:Name="BtnStop"
                     Grid.Column="4" 
                     Content="停止"
                     Width="35"
                     HorizontalAlignment="Right"
                     Margin="5,0,0,0"
-                    Click="BtnStop_Click"/>
+                    />
         </Grid>
         <Grid Grid.Row="3"
               Height="20"

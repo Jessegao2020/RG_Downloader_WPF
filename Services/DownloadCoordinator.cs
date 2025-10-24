@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using RedgifsDownloader.Model;
+using System.CodeDom.Compiler;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RedgifsDownloader.Services
 {
+    public record DownloadSummary(int Completed, int Failed);
     public class DownloadCoordinator
     {
         private readonly DownloadWorker _worker;
@@ -17,11 +15,11 @@ namespace RedgifsDownloader.Services
             _worker = worker;
             _fileService = fileService;
         }
-
-        #region // 未审核区块
-        public async Task RunDownloadsAsync(IEnumerable<VideoItem> videos, int concurrency, CancellationToken ct, Action? onStatusUpdate = null)
+        
+        public async Task<DownloadSummary> RunDownloadsAsync(IEnumerable<VideoItem> videos, int concurrency, CancellationToken ct, Action? onStatusUpdate = null)
         {
             string baseDir = _fileService.EnsureDownloadBaseDirectory();
+            InitializeVideoStatuses(videos, baseDir);
             using var semaphore = new SemaphoreSlim(concurrency);
 
             var tasks = videos.Select(async video =>
@@ -55,12 +53,32 @@ namespace RedgifsDownloader.Services
                 finally
                 {
                     semaphore.Release();
-                    onStatusUpdate?.Invoke();  // REVIEW： 此处未搞清楚
+                    onStatusUpdate?.Invoke();  
                 }
             });
 
             await Task.WhenAll(tasks);
+            int completed = videos.Count(v=>v.Status == VideoStatus.Completed);
+            int failed = videos.Count(v => v.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled);
+            return new DownloadSummary(completed, failed);
         }
-        #endregion
+
+        private void InitializeVideoStatuses(IEnumerable<VideoItem> videos, string baseDir)
+        {
+            foreach (var video in videos)
+            {
+                if (string.IsNullOrEmpty(video.Url)) continue;
+
+                if (_fileService.Exists(video, baseDir))
+                {
+                    video.Status = VideoStatus.Exists;
+                    video.Progress = 100;
+                }
+                else if (video.Status is VideoStatus.Completed or VideoStatus.Exists)
+                {
+                    video.Status = VideoStatus.Pending;
+                }
+            }
+        }
     }
 }

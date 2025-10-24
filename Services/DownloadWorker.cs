@@ -1,4 +1,5 @@
-﻿using System.Buffers;
+﻿using RedgifsDownloader.Model;
+using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;

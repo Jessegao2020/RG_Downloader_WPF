@@ -1,20 +1,8 @@
-﻿using System.ComponentModel;
+﻿using RedgifsDownloader.Model;
+using System.ComponentModel;
 
 namespace RedgifsDownloader
-{
-    public enum VideoStatus
-    {
-        Pending,
-        Downloading,
-        Completed,
-        Exists,
-        Canceled,
-        NetworkError,
-        WriteError,
-        UnknownError,
-        Failed
-    }
-
+{   
     public class VideoItem : INotifyPropertyChanged
     {
         public string? Id { get; set; }

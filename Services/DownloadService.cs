@@ -1,11 +1,7 @@
-﻿using System;
+﻿using RedgifsDownloader.Model;
 using System.Buffers;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RedgifsDownloader.Services
 {
