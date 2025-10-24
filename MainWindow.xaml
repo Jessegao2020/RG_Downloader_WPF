@@ -80,6 +80,7 @@
                   MinHeight="120"
                   Margin="0,0,0,5"
                   HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding ActiveVideosView}"
                   MouseDoubleClick="ListViewResults_MouseDoubleClick">                      
             <ListView.View>                
                 <GridView>
@@ -145,11 +146,12 @@
                     Content="全部重试"
                     Width="70"
                     HorizontalAlignment="Right"
-                    Click="BtnRetryAll_Click"/>
+                    Command="{Binding RetryAllCommand}"/>
         </Grid>
         <ListView x:Name="ListViewFailed"
                   Grid.Row="4"
                   MinHeight="100"
+                  ItemsSource="{Binding FailedVideosView}"
                   MouseDoubleClick="ListViewFailed_MouseDoubleClick">
             <ListView.View>
                 <GridView>

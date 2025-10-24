@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace RedgifsDownloader.ViewModel
@@ -16,7 +17,8 @@ namespace RedgifsDownloader.ViewModel
         private CancellationTokenSource? _cts;
 
         public ObservableCollection<VideoItem> Videos { get; } = new();
-        public ObservableCollection<VideoItem> Failed { get; } = new();
+        public ICollectionView ActiveVideosView { get; }
+        public ICollectionView FailedVideosView { get; }
 
         private bool _isCrawling;
         private bool _isDownloading;
@@ -69,7 +71,12 @@ namespace RedgifsDownloader.ViewModel
         public int FailedCount
         {
             get => _failedCount;
-            set { _failedCount = value; OnPropertyChanged(); }
+            set
+            {
+                _failedCount = value; 
+                OnPropertyChanged();
+                (RetryAllCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
         }
 
         public int MaxConcurrency
@@ -87,12 +94,30 @@ namespace RedgifsDownloader.ViewModel
         public ICommand CrawlCommand { get; }
         public ICommand DownloadCommand { get; }
         public ICommand StopCommand { get; }
+        public ICommand RetryAllCommand { get; }
         #endregion
 
         public MainViewModel(DownloadCoordinator coordinator, CrawlService crawler)
         {
             _crawler = crawler;
             _coordinator = coordinator;
+
+            ActiveVideosView = CollectionViewSource.GetDefaultView(Videos);
+            ActiveVideosView.Filter = o =>
+            {
+                var v = (VideoItem)o;
+                return v.Status is not (VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled);
+            };
+
+            FailedVideosView = new CollectionViewSource { Source = Videos }.View;
+            FailedVideosView.Filter = o =>
+            {
+                var v = (VideoItem)o;
+                return v.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled;
+            };
+
+            // 订阅进度刷新事件
+            _coordinator.StatusUpdated += RefreshViews;
 
             MaxConcurrency = Properties.Settings.Default.MaxDownloadCount;
 
@@ -102,12 +127,17 @@ namespace RedgifsDownloader.ViewModel
 
             StopCommand = new RelayCommand(_ => CancelDownload(), _ => IsDownloading);
 
+            RetryAllCommand = new RelayCommand(async _ => await RetryAllAsync(), _ => FailedCount > 0);
+
             Videos.CollectionChanged += (_, __) =>
             {
                 OnPropertyChanged(nameof(VideosCount));
                 (DownloadCommand as RelayCommand)?.RaiseCanExecuteChanged();
             };
         }
+
+        private static bool IsFailed(VideoItem v)
+            => v.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled;
 
         private async Task StartCrawlAsync()
         {
@@ -133,7 +163,7 @@ namespace RedgifsDownloader.ViewModel
 
             try
             {
-                var summary = await _coordinator.RunDownloadsAsync(Videos, concurrency, _cts.Token, CountLiveResult);
+                var summary = await _coordinator.RunDownloadsAsync(Videos, concurrency, _cts.Token);
                 CompletedCount = summary.Completed;
                 FailedCount = summary.Failed;
 
@@ -148,9 +178,29 @@ namespace RedgifsDownloader.ViewModel
             }
         }
 
-        private void CancelDownload()
+        private async Task RetryAllAsync()
         {
-            _cts?.Cancel();
+            foreach (var video in Videos.Where(IsFailed))
+            {
+                video.Status = VideoStatus.Pending;
+                video.Progress = 0;
+            }
+
+            await StartDownloadAsync(MaxConcurrency);
+        }
+
+        private void CancelDownload() => _cts?.Cancel();
+
+        private void RefreshViews()
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                ActiveVideosView.Refresh();
+                FailedVideosView.Refresh();
+
+                CompletedCount = Videos.Count(v => v.Status == VideoStatus.Completed);
+                FailedCount = Videos.Count(v => IsFailed(v));
+            });
         }
 
         private void CountLiveResult()

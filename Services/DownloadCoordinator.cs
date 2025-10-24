@@ -10,7 +10,7 @@ namespace RedgifsDownloader.Services
         private readonly DownloadWorker _worker;
         private readonly VideoFileService _fileService;
 
-        
+        public event Action StatusUpdated;
 
         public DownloadCoordinator(DownloadWorker worker, VideoFileService fileService)
         {
@@ -18,7 +18,7 @@ namespace RedgifsDownloader.Services
             _fileService = fileService;
         }
         
-        public async Task<DownloadSummary> RunDownloadsAsync(IEnumerable<VideoItem> videos, int concurrency, CancellationToken ct, Action? onStatusUpdate = null)
+        public async Task<DownloadSummary> RunDownloadsAsync(IEnumerable<VideoItem> videos, int concurrency, CancellationToken ct)
         {
             string baseDir = _fileService.EnsureDownloadBaseDirectory();
             InitializeVideoStatuses(videos, baseDir);
@@ -55,11 +55,12 @@ namespace RedgifsDownloader.Services
                 finally
                 {
                     semaphore.Release();
-                    onStatusUpdate?.Invoke();  
+                    StatusUpdated?.Invoke();  
                 }
             });
 
             await Task.WhenAll(tasks);
+
             int completed = videos.Count(video=>video.Status == VideoStatus.Completed);
             int failed = videos.Count(video => video.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled);
             return new DownloadSummary(completed, failed);

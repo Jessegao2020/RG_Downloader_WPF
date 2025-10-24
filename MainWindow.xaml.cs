@@ -36,7 +36,6 @@ namespace RedgifsDownloader
 
             // 绑定集合到 ListView（同原）
             ListViewResults.ItemsSource = _vm.Videos;
-            ListViewFailed.ItemsSource = _vm.Failed;
             DataContext = _vm;
 
             // 恢复上次设置（最大并发、窗口位置）
@@ -134,16 +133,7 @@ namespace RedgifsDownloader
                 MessageBox.Show($"已复制 URL:\n{video.Url}", "复制成功", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
-
-        // 预留按钮处理器（如果你之后要实现停止 / 重试全部）
-        
-
-        private void BtnRetryAll_Click(object sender, RoutedEventArgs e)
-        {
-            // 预留：将 Failed 项移回 Videos 并重置状态，然后触发下载
-            // 目前保留空实现，和原行为一致
-        }
-
+                     
         private void BtnOpenFolder_Click(object sender, RoutedEventArgs e)
         {
             string folderPath = System.IO.Path.Combine(AppContext.BaseDirectory, "Downloads");
