@@ -117,7 +117,7 @@
                     Width="35"
                     HorizontalAlignment="Right"
                     Margin="5,0,0,0"
-                    />
+                    Command="{Binding StopCommand}"/>
         </Grid>
         <Grid Grid.Row="3"
               Height="20"

@@ -10,9 +10,10 @@ namespace RedgifsDownloader.ViewModel
 {
     public class MainViewModel : INotifyPropertyChanged
     {
+# region 字段 属性
         private readonly CrawlService _crawler;
         private readonly DownloadCoordinator _coordinator;
-        private readonly CancellationTokenSource _cts = new();
+        private CancellationTokenSource? _cts;
 
         public ObservableCollection<VideoItem> Videos { get; } = new();
         public ObservableCollection<VideoItem> Failed { get; } = new();
@@ -30,12 +31,13 @@ namespace RedgifsDownloader.ViewModel
         public bool IsCrawling
         {
             get => _isCrawling;
-            set {
+            set
+            {
                 if (_isCrawling != value)
                 {
                     _isCrawling = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(CrawlBtnText)); 
+                    OnPropertyChanged(nameof(CrawlBtnText));
                 }
             }
         }
@@ -43,7 +45,7 @@ namespace RedgifsDownloader.ViewModel
         public bool IsDownloading
         {
             get => _isDownloading;
-            set { _isDownloading = value; OnPropertyChanged(); }
+            set { _isDownloading = value; OnPropertyChanged(); ((RelayCommand)StopCommand).RaiseCanExecuteChanged(); }
         }
 
         public string Username
@@ -72,6 +74,7 @@ namespace RedgifsDownloader.ViewModel
         public ICommand CrawlCommand { get; }
         public ICommand DownloadCommand { get; }
         public ICommand StopCommand { get; }
+        #endregion
 
         public MainViewModel(DownloadCoordinator coordinator, CrawlService crawler)
         {
@@ -104,13 +107,15 @@ namespace RedgifsDownloader.ViewModel
 
                 MessageBox.Show($"共爬取到 {Videos.Count} 个视频。");
             }
-            catch (Exception ex){ MessageBox.Show($"爬虫异常: {ex.Message}");}
+            catch (Exception ex) { MessageBox.Show($"爬虫异常: {ex.Message}"); }
             finally { IsCrawling = false; }
         }
 
         public async Task StartDownloadAsync(int concurrency)
         {
             IsDownloading = true;
+            _cts = new CancellationTokenSource();
+
             try
             {
                 var summary = await _coordinator.RunDownloadsAsync(Videos, concurrency, _cts.Token, UpdateStatusCounters);
@@ -120,7 +125,12 @@ namespace RedgifsDownloader.ViewModel
                 MessageBox.Show($"任务结束。\n成功: {summary.Completed}，失败: {summary.Failed}。");
             }
             catch (OperationCanceledException) { }
-            finally { IsDownloading = false; _cts.Dispose(); }
+            finally
+            {
+                IsDownloading = false; 
+                _cts.Dispose();
+                _cts = null;
+            }
         }
 
         private void CancelDownload()
@@ -136,7 +146,5 @@ namespace RedgifsDownloader.ViewModel
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-
-
     }
 }
