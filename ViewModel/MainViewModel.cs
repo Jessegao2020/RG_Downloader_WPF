@@ -1,11 +1,11 @@
-﻿using RedgifsDownloader.Model;
-using RedgifsDownloader.Services;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using RedgifsDownloader.Model;
+using RedgifsDownloader.Services;
 
 namespace RedgifsDownloader.ViewModel
 {
@@ -56,6 +56,7 @@ namespace RedgifsDownloader.ViewModel
                 OnPropertyChanged(nameof(DownloadBtnText));
                 ((RelayCommand)StopCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)DownloadCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)RetryAllCommand).RaiseCanExecuteChanged();
             }
         }
 
@@ -128,15 +129,15 @@ namespace RedgifsDownloader.ViewModel
             _coordinator.StatusUpdated += RefreshViews;
 
             MaxConcurrency = Properties.Settings.Default.MaxDownloadCount;
-
+            #region Commands
             CrawlCommand = new RelayCommand(async _ => await StartCrawlAsync(), _ => !IsCrawling && !IsDownloading && !string.IsNullOrWhiteSpace(Username));
 
-            DownloadCommand = new RelayCommand(async _ => await StartDownloadAsync(Videos, MaxConcurrency), _ => !IsDownloading && Videos.Any());
+            DownloadCommand = new RelayCommand(async _ => await ExecuteDownloadAsync(), _ => !IsDownloading && Videos.Any());
 
             StopCommand = new RelayCommand(_ => CancelDownload(), _ => IsDownloading);
 
-            RetryAllCommand = new RelayCommand(async _ => await RetryAllAsync(), _ => FailedCount > 0);
-
+            RetryAllCommand = new RelayCommand(async _ => await RetryAllAsync(), _ => FailedCount > 0 && !IsDownloading);
+            #endregion
             Videos.CollectionChanged += (_, __) =>
             {
                 OnPropertyChanged(nameof(VideosCount));
@@ -155,23 +156,44 @@ namespace RedgifsDownloader.ViewModel
             {
                 var list = await _crawler.CrawlAsync(Username, msg => MessageBox.Show(msg, "爬虫错误", MessageBoxButton.OK, MessageBoxImage.Error));
 
-                foreach (var video in list)
-                    Videos.Add(video);
+                if (list.Any())
+                {
+                    foreach (var video in list)
+                        Videos.Add(video);
 
-                MessageBox.Show($"共爬取到 {Videos.Count} 个视频。");
+                    MessageBox.Show($"共爬取到 {Videos.Count} 个视频。");
+                }
             }
             catch (Exception ex) { MessageBox.Show($"爬虫异常: {ex.Message}"); }
             finally { IsCrawling = false; }
         }
 
-        public async Task StartDownloadAsync(IEnumerable<VideoItem> videos, int concurrency)
+        private async Task ExecuteDownloadAsync()
+        {
+            var pendingVideos = Videos.Where(video => video.Status is not
+                                            (VideoStatus.NetworkError
+                                            or VideoStatus.WriteError
+                                            or VideoStatus.UnknownError
+                                            or VideoStatus.Canceled))
+                .ToList();
+
+            if (!pendingVideos.Any())
+            {
+                MessageBox.Show("没有可下载视频。");
+                return;
+            }
+
+            await StartDownloadAsync(pendingVideos, MaxConcurrency, strictCheck: false);
+        }
+
+        public async Task StartDownloadAsync(IEnumerable<VideoItem> videos, int concurrency, bool strictCheck = false)
         {
             IsDownloading = true;
             _cts = new CancellationTokenSource();
 
             try
             {
-                var summary = await _coordinator.RunDownloadsAsync(videos, concurrency, _cts.Token);
+                var summary = await _coordinator.RunDownloadsAsync(videos, concurrency, strictCheck, _cts.Token);
                 CompletedCount = summary.Completed;
                 FailedCount = summary.Failed;
 
@@ -188,15 +210,15 @@ namespace RedgifsDownloader.ViewModel
 
         private async Task RetryAllAsync()
         {
-            var failedVideos = Videos.Where(video => video.Status is 
-                                VideoStatus.Failed 
+            var failedVideos = Videos.Where(video => video.Status is
+                                VideoStatus.Failed
                                 or VideoStatus.NetworkError
-                                or VideoStatus.UnknownError 
+                                or VideoStatus.UnknownError
                                 or VideoStatus.WriteError
                                 or VideoStatus.Canceled)
                 .ToList();
 
-            await StartDownloadAsync(failedVideos, MaxConcurrency);
+            await StartDownloadAsync(failedVideos, MaxConcurrency, strictCheck: true);
         }
 
         private void CancelDownload() => _cts?.Cancel();
@@ -208,7 +230,7 @@ namespace RedgifsDownloader.ViewModel
                 ActiveVideosView.Refresh();
                 FailedVideosView.Refresh();
 
-                CompletedCount = Videos.Count(v => v.Status == VideoStatus.Completed);
+                CompletedCount = Videos.Count(video => video.Status is VideoStatus.Completed or VideoStatus.Exists);
                 FailedCount = Videos.Count(v => IsFailed(v));
             });
         }

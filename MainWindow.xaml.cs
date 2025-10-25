@@ -11,13 +11,10 @@ using System.Windows.Input;
 
 namespace RedgifsDownloader
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         private readonly MainViewModel _vm;
-              
+
         #region ctor & Window lifecycle
 
         public MainWindow()
@@ -94,7 +91,7 @@ namespace RedgifsDownloader
         }
 
         #endregion
-                
+
         #region Misc UI Handlers (暂时不用重构)
 
         private void ListViewResults_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -114,7 +111,7 @@ namespace RedgifsDownloader
                 MessageBox.Show($"已复制 URL:\n{video.Url}", "复制成功", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
-                     
+
         private void BtnOpenFolder_Click(object sender, RoutedEventArgs e)
         {
             string folderPath = System.IO.Path.Combine(AppContext.BaseDirectory, "Downloads");
@@ -129,8 +126,6 @@ namespace RedgifsDownloader
                 MessageBox.Show("文件夹不存在。", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
-        #endregion
-
         private void UserBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -138,5 +133,7 @@ namespace RedgifsDownloader
                 _vm.CrawlCommand.Execute(null);
             }
         }
+
+        #endregion
     }
 }

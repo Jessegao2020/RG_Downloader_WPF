@@ -87,7 +87,7 @@
                 <GridView>
                     <GridViewColumn Header="Title" 
                                     DisplayMemberBinding="{Binding Id}" 
-                                    Width="230"/>
+                                    Width="210"/>
                     <GridViewColumn Header="状态" 
                                     DisplayMemberBinding="{Binding DisplayStatus}" 
                                     Width="60"/>
@@ -139,9 +139,11 @@
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" Text="失败:"/>
-            <TextBlock Grid.Column="1" x:Name="TxtFailedCount" Text="{Binding FailedCount}"/>
+            <TextBlock Grid.Column="1" x:Name="TxtFailedCount" 
+                       Text="{Binding FailedCount}"/>
             <TextBlock Grid.Column="2" Text="已下载:"/>
-            <TextBlock Grid.Column="3" x:Name="TxtDownloadedCount" Text="{Binding CompletedCount}"/>
+            <TextBlock Grid.Column="3" x:Name="TxtDownloadedCount" 
+                       Text="{Binding CompletedCount}"/>
             <Button x:Name="BtnRetryAll"
                     Grid.Column="4" 
                     Content="全部重试"
@@ -157,7 +159,7 @@
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Title" 
-                                    Width="230"
+                                    Width="210"
                                     DisplayMemberBinding="{Binding Id}"/>
                     <GridViewColumn Header="状态"                                      
                                     Width="60"

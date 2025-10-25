@@ -1,7 +1,5 @@
-﻿using RedgifsDownloader.Model;
-using System.CodeDom.Compiler;
-using System.Diagnostics;
-using System.IO;
+﻿using System.Diagnostics;
+using RedgifsDownloader.Model;
 
 namespace RedgifsDownloader.Services
 {
@@ -19,10 +17,10 @@ namespace RedgifsDownloader.Services
             _fileService = fileService;
         }
 
-        public async Task<DownloadSummary> RunDownloadsAsync(IEnumerable<VideoItem> videos, int concurrency, CancellationToken ct)
+        public async Task<DownloadSummary> RunDownloadsAsync(IEnumerable<VideoItem> videos, int concurrency, bool strictCheck, CancellationToken ct)
         {
             string baseDir = _fileService.EnsureDownloadBaseDirectory();
-            InitializeVideoStatuses(videos, baseDir);
+            InitializeVideoStatuses(videos, baseDir, strictCheck);
             using var semaphore = new SemaphoreSlim(concurrency);
 
             var tasks = videos.Select(async video =>
@@ -31,8 +29,7 @@ namespace RedgifsDownloader.Services
 
                 try
                 {
-
-                    if (_fileService.Exists(video, baseDir))
+                    if (_fileService.Exists(video, baseDir, strictCheck))
                     {
                         video.Status = VideoStatus.Exists;
                         video.Progress = 100;
@@ -70,16 +67,16 @@ namespace RedgifsDownloader.Services
             return new DownloadSummary(completed, failed);
         }
 
-        private void InitializeVideoStatuses(IEnumerable<VideoItem> videos, string baseDir)
+        private void InitializeVideoStatuses(IEnumerable<VideoItem> videos, string baseDir, bool strictCheck)
         {
             foreach (var video in videos)
             {
                 if (string.IsNullOrEmpty(video.Url)) continue;
 
-                if (_fileService.Exists(video, baseDir))
+                if (_fileService.Exists(video, baseDir, strictCheck))
                 {
                     video.Status = VideoStatus.Exists;
-                    video.Progress = 100;
+                    //video.Progress = 100;
                 }
                 else if (video.Status is VideoStatus.Completed or VideoStatus.Exists)
                 {

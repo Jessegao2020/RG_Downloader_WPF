@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+
 namespace RedgifsDownloader.Model
 {
     public class VideoItem : INotifyPropertyChanged

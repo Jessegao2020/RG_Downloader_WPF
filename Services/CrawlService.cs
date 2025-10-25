@@ -1,12 +1,6 @@
-﻿using RedgifsDownloader.Model;
-using System;
-using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+﻿using System.Diagnostics;
 using System.Text.Json;
-using System.Threading.Tasks;
+using RedgifsDownloader.Model;
 
 namespace RedgifsDownloader.Services
 {
