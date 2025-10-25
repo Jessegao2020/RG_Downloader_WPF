@@ -31,20 +31,20 @@ namespace RedgifsDownloader.Services
 
                 try
                 {
-                                       
-                        if (_fileService.Exists(video, baseDir))
-                        {
-                            video.Status = VideoStatus.Exists;
-                            video.Progress = 100;
-                            return;
-                        }
-                   
-                                            string filePath = _fileService.GetVideoPath(video, baseDir);
+
+                    if (_fileService.Exists(video, baseDir))
+                    {
+                        video.Status = VideoStatus.Exists;
+                        video.Progress = 100;
+                        return;
+                    }
+
+                    string filePath = _fileService.GetVideoPath(video, baseDir);
                     video.Status = VideoStatus.Downloading;
 
                     var downloadResult = await _worker.DownloadAsync(video.Url!, filePath, video.Token, ct, p => video.Progress = p);
                     video.Status = downloadResult.Status;
-                    if (downloadResult.TotalBytes > 0) 
+                    if (downloadResult.TotalBytes > 0)
                         video.ExpectedSize = downloadResult.TotalBytes;
                 }
                 catch (OperationCanceledException)

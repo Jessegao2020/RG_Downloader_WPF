@@ -51,8 +51,8 @@ namespace RedgifsDownloader.ViewModel
             get => _isDownloading;
             set
             {
-                _isDownloading = value; 
-                OnPropertyChanged(); 
+                _isDownloading = value;
+                OnPropertyChanged();
                 OnPropertyChanged(nameof(DownloadBtnText));
                 ((RelayCommand)StopCommand).RaiseCanExecuteChanged();
                 ((RelayCommand)DownloadCommand).RaiseCanExecuteChanged();
@@ -166,7 +166,7 @@ namespace RedgifsDownloader.ViewModel
 
         public async Task StartDownloadAsync(IEnumerable<VideoItem> videos, int concurrency)
         {
-            IsDownloading = true;            
+            IsDownloading = true;
             _cts = new CancellationTokenSource();
 
             try
@@ -188,13 +188,13 @@ namespace RedgifsDownloader.ViewModel
 
         private async Task RetryAllAsync()
         {
-            var failedVideos = Videos.Where(video => video.Status == VideoStatus.Failed).ToList();
-
-            foreach (var video in Videos.Where(IsFailed))
-            {
-                video.Status = VideoStatus.Pending;
-                video.Progress = 0;
-            }
+            var failedVideos = Videos.Where(video => video.Status is 
+                                VideoStatus.Failed 
+                                or VideoStatus.NetworkError
+                                or VideoStatus.UnknownError 
+                                or VideoStatus.WriteError
+                                or VideoStatus.Canceled)
+                .ToList();
 
             await StartDownloadAsync(failedVideos, MaxConcurrency);
         }

@@ -18,7 +18,6 @@ namespace RedgifsDownloader.Services
             try
             {
                 using var response = await SendRequestAsync(url, authToken, ct);  // 发送Http请求
-                Debug.WriteLine($"url: {url}, auth: {authToken}");
                 response.EnsureSuccessStatusCode();     // 确保服务器返回码为200正常，否则抛异常
 
                 long totalBytes = response.Content.Headers.ContentLength ?? -1L;    // 读取文件总大小，如无返回-1
