@@ -1,14 +1,13 @@
-﻿using RedgifsDownloader.Model;
-using System.ComponentModel;
-
-namespace RedgifsDownloader
-{   
+﻿using System.ComponentModel;
+namespace RedgifsDownloader.Model
+{
     public class VideoItem : INotifyPropertyChanged
     {
         public string? Id { get; set; }
         public string? Url { get; set; }
         public string? Username { get; set; }
         public string Token { get; set; } = "";
+        public long ExpectedSize { get; set; }
 
         private double? _progress;
         private VideoStatus _status;

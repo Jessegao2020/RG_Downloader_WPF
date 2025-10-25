@@ -39,7 +39,8 @@
                      x:Name="UserBox"                                         
                      Margin="5,0,0,0"
                      Text="{Binding Username, 
-                            UpdateSourceTrigger=PropertyChanged}"/>
+                            UpdateSourceTrigger=PropertyChanged}"
+                     KeyDown="UserBox_KeyDown"/>
             <TextBlock Grid.Column="2" 
                        Text="Max D/L:"
                        VerticalAlignment="Center"
@@ -114,7 +115,7 @@
                     Click="BtnOpenFolder_Click"/>
             <Button x:Name="BtnDownload"
                     Grid.Column="3" 
-                    Content="下载"
+                    Content="{Binding DownloadBtnText}"
                     Width="70"
                     HorizontalAlignment="Right"
                     Margin="5,0,0,0"

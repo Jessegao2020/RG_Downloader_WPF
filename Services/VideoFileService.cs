@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using RedgifsDownloader.Model;
 
 namespace RedgifsDownloader.Services
 {

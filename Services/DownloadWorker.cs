@@ -10,10 +10,10 @@ namespace RedgifsDownloader.Services
     {
         private static readonly HttpClient _httpClient = new();
 
-        public async Task<VideoStatus> DownloadAsync(string url, string filePath, string authToken, CancellationToken ct, Action<double>? onProgress = null)
+        public async Task<DownloadResult> DownloadAsync(string url, string filePath, string authToken, CancellationToken ct, Action<double>? onProgress = null)
         {
             if (ct.IsCancellationRequested || string.IsNullOrEmpty(url))
-                return VideoStatus.Canceled;
+                return new DownloadResult(VideoStatus.Canceled, 0);
 
             try
             {
@@ -24,13 +24,13 @@ namespace RedgifsDownloader.Services
                 long totalBytes = response.Content.Headers.ContentLength ?? -1L;    // 读取文件总大小，如无返回-1
                 using var stream = await response.Content.ReadAsStreamAsync(ct);    // 接收文件流
 
-                return await SaveToFileAsync(stream, filePath, totalBytes, onProgress, ct);
+                return new DownloadResult(await SaveToFileAsync(stream, filePath, totalBytes, onProgress, ct), totalBytes); 
             }
-            catch (HttpRequestException) { return VideoStatus.NetworkError; }
+            catch (HttpRequestException) { return new DownloadResult(VideoStatus.NetworkError, 0); }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
-                return VideoStatus.UnknownError;
+                return new DownloadResult(VideoStatus.UnknownError, 0);
             }
         }
 
@@ -76,5 +76,7 @@ namespace RedgifsDownloader.Services
             catch (IOException) { return VideoStatus.WriteError; }
             finally { ArrayPool<byte>.Shared.Return(buffer); }
         }
+
+        public record DownloadResult(VideoStatus Status, long TotalBytes);
     }
 }

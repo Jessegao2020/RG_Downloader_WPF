@@ -28,6 +28,7 @@ namespace RedgifsDownloader.ViewModel
         private int _maxConcurrency;
 
         public string CrawlBtnText => IsCrawling ? "Crawling.." : "Crawl";
+        public string DownloadBtnText => IsDownloading ? "下载中" : "下载";
 
         public int VideosCount => Videos.Count;
 
@@ -48,7 +49,14 @@ namespace RedgifsDownloader.ViewModel
         public bool IsDownloading
         {
             get => _isDownloading;
-            set { _isDownloading = value; OnPropertyChanged(); ((RelayCommand)StopCommand).RaiseCanExecuteChanged(); }
+            set
+            {
+                _isDownloading = value; 
+                OnPropertyChanged(); 
+                OnPropertyChanged(nameof(DownloadBtnText));
+                ((RelayCommand)StopCommand).RaiseCanExecuteChanged();
+                ((RelayCommand)DownloadCommand).RaiseCanExecuteChanged();
+            }
         }
 
         public string Username
@@ -73,7 +81,7 @@ namespace RedgifsDownloader.ViewModel
             get => _failedCount;
             set
             {
-                _failedCount = value; 
+                _failedCount = value;
                 OnPropertyChanged();
                 (RetryAllCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
@@ -123,7 +131,7 @@ namespace RedgifsDownloader.ViewModel
 
             CrawlCommand = new RelayCommand(async _ => await StartCrawlAsync(), _ => !IsCrawling && !IsDownloading && !string.IsNullOrWhiteSpace(Username));
 
-            DownloadCommand = new RelayCommand(async _ => await StartDownloadAsync(MaxConcurrency), _ => !IsDownloading && Videos.Any());
+            DownloadCommand = new RelayCommand(async _ => await StartDownloadAsync(Videos, MaxConcurrency), _ => !IsDownloading && Videos.Any());
 
             StopCommand = new RelayCommand(_ => CancelDownload(), _ => IsDownloading);
 
@@ -156,14 +164,14 @@ namespace RedgifsDownloader.ViewModel
             finally { IsCrawling = false; }
         }
 
-        public async Task StartDownloadAsync(int concurrency)
+        public async Task StartDownloadAsync(IEnumerable<VideoItem> videos, int concurrency)
         {
-            IsDownloading = true;
+            IsDownloading = true;            
             _cts = new CancellationTokenSource();
 
             try
             {
-                var summary = await _coordinator.RunDownloadsAsync(Videos, concurrency, _cts.Token);
+                var summary = await _coordinator.RunDownloadsAsync(videos, concurrency, _cts.Token);
                 CompletedCount = summary.Completed;
                 FailedCount = summary.Failed;
 
@@ -180,13 +188,15 @@ namespace RedgifsDownloader.ViewModel
 
         private async Task RetryAllAsync()
         {
+            var failedVideos = Videos.Where(video => video.Status == VideoStatus.Failed).ToList();
+
             foreach (var video in Videos.Where(IsFailed))
             {
                 video.Status = VideoStatus.Pending;
                 video.Progress = 0;
             }
 
-            await StartDownloadAsync(MaxConcurrency);
+            await StartDownloadAsync(failedVideos, MaxConcurrency);
         }
 
         private void CancelDownload() => _cts?.Cancel();
@@ -201,12 +211,6 @@ namespace RedgifsDownloader.ViewModel
                 CompletedCount = Videos.Count(v => v.Status == VideoStatus.Completed);
                 FailedCount = Videos.Count(v => IsFailed(v));
             });
-        }
-
-        private void CountLiveResult()
-        {
-            CompletedCount = Videos.Count(v => v.Status == VideoStatus.Completed);
-            FailedCount = Videos.Count(v => v.Status is VideoStatus.Canceled or VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

@@ -1,6 +1,7 @@
 ﻿using RedgifsDownloader.Model;
 using System.CodeDom.Compiler;
 using System.Diagnostics;
+using System.IO;
 
 namespace RedgifsDownloader.Services
 {
@@ -17,7 +18,7 @@ namespace RedgifsDownloader.Services
             _worker = worker;
             _fileService = fileService;
         }
-        
+
         public async Task<DownloadSummary> RunDownloadsAsync(IEnumerable<VideoItem> videos, int concurrency, CancellationToken ct)
         {
             string baseDir = _fileService.EnsureDownloadBaseDirectory();
@@ -30,24 +31,27 @@ namespace RedgifsDownloader.Services
 
                 try
                 {
-                    if (_fileService.Exists(video, baseDir))
-                    {
-                        video.Status = VideoStatus.Exists;
-                        video.Progress = 100;
-                        return;
-                    }
-
-                    string filePath = _fileService.GetVideoPath(video, baseDir);
+                                       
+                        if (_fileService.Exists(video, baseDir))
+                        {
+                            video.Status = VideoStatus.Exists;
+                            video.Progress = 100;
+                            return;
+                        }
+                   
+                                            string filePath = _fileService.GetVideoPath(video, baseDir);
                     video.Status = VideoStatus.Downloading;
 
-                    var status = await _worker.DownloadAsync(video.Url!, filePath, video.Token, ct, p => video.Progress = p);
-                    video.Status = status;
+                    var downloadResult = await _worker.DownloadAsync(video.Url!, filePath, video.Token, ct, p => video.Progress = p);
+                    video.Status = downloadResult.Status;
+                    if (downloadResult.TotalBytes > 0) 
+                        video.ExpectedSize = downloadResult.TotalBytes;
                 }
                 catch (OperationCanceledException)
                 {
                     video.Status = VideoStatus.Canceled;
                 }
-                catch(Exception ex) 
+                catch (Exception ex)
                 {
                     Debug.WriteLine(ex);
                     video.Status = VideoStatus.UnknownError;
@@ -55,13 +59,13 @@ namespace RedgifsDownloader.Services
                 finally
                 {
                     semaphore.Release();
-                    StatusUpdated?.Invoke();  
+                    StatusUpdated?.Invoke();
                 }
             });
 
             await Task.WhenAll(tasks);
 
-            int completed = videos.Count(video=>video.Status == VideoStatus.Completed);
+            int completed = videos.Count(video => video.Status == VideoStatus.Completed);
             int failed = videos.Count(video => video.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled);
             return new DownloadSummary(completed, failed);
         }

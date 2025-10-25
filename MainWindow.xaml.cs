@@ -1,4 +1,5 @@
-﻿using RedgifsDownloader.Services;
+﻿using RedgifsDownloader.Model;
+using RedgifsDownloader.Services;
 using RedgifsDownloader.ViewModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -6,6 +7,7 @@ using System.IO;
 using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace RedgifsDownloader
 {
@@ -15,13 +17,7 @@ namespace RedgifsDownloader
     public partial class MainWindow : Window
     {
         private readonly MainViewModel _vm;
-
-        #region Fields & Properties
-
-        private static readonly HttpClient httpClient = new HttpClient();
-
-        #endregion
-
+              
         #region ctor & Window lifecycle
 
         public MainWindow()
@@ -98,22 +94,7 @@ namespace RedgifsDownloader
         }
 
         #endregion
-
-        #region Download (BtnDownload) — 拆分并保持行为
-        
-        // 暂时不重构，后期可用Command控制
-        private int GetMaxConcurrencyFromUi()
-        {
-            int maxConcurrency = 5;
-            if (maxDownloadComboBox.SelectedItem is ComboBoxItem selectedItem &&
-                int.TryParse(selectedItem.Content.ToString(), out int parsed))
-            {
-                maxConcurrency = parsed;
-            }
-            return maxConcurrency;
-        }
-        #endregion
-
+                
         #region Misc UI Handlers (暂时不用重构)
 
         private void ListViewResults_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -149,5 +130,13 @@ namespace RedgifsDownloader
         }
 
         #endregion
+
+        private void UserBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                _vm.CrawlCommand.Execute(null);
+            }
+        }
     }
 }
