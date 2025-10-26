@@ -34,8 +34,8 @@ namespace RedgifsDownloader.ViewModel
             {
                 "Settings" => new SettingsViewModel(),
                 "Download" => new DownloadsViewModel(new Services.DownloadCoordinator(
-                                                         new Services.DownloadWorker(),
-                                                         new Services.VideoFileService()),
+                                                     new Services.DownloadWorker(),
+                                                     new Services.VideoFileService()),
                                                      new Services.CrawlService()),
                 _ => CurrentView
             };

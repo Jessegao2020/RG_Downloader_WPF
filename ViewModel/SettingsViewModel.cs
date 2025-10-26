@@ -1,13 +1,24 @@
-﻿using System.Windows.Input;
+﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Ookii.Dialogs.Wpf;
 using RedgifsDownloader.Helpers;
 
 
 namespace RedgifsDownloader.ViewModel
 {
-    public class SettingsViewModel
+    public class SettingsViewModel : INotifyPropertyChanged
     {
-        public string DownloadDirectory { get; set; }
+        private string _downloadDirectory;
+        public string DownloadDirectory
+        {
+            get => _downloadDirectory;
+            set
+            {
+                _downloadDirectory = value;
+                OnPropertyChanged();
+            }
+        }
 
         public ICommand SaveCommand { get; }
         public ICommand ChooseDownloadFolderCommand { get; }
@@ -27,5 +38,8 @@ namespace RedgifsDownloader.ViewModel
                 DownloadDirectory = dialog.SelectedPath;
             }
         }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }

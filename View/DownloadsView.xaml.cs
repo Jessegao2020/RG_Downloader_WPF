@@ -25,7 +25,6 @@ namespace RedgifsDownloader.View
             var coordinator = new DownloadCoordinator(worker, fileService);
             var crawler = new CrawlService();
 
-
             _downloadsvm = new DownloadsViewModel(coordinator, crawler);
 
             // 绑定集合到 ListView（同原）
