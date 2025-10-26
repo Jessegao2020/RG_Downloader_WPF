@@ -1,0 +1,167 @@
+﻿<UserControl x:Class="RedgifsDownloader.View.DownloadsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RedgifsDownloader.View"
+             xmlns:conv="clr-namespace:RedgifsDownloader.Converter"
+             
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <conv:InverseBoolConverter x:Key="InverseBoolConverter"/>
+    </UserControl.Resources>
+    <Grid Grid.Row="1" Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0"
+  Margin="0,0,0,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition MaxWidth="110" MinWidth="80"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" 
+           Text="User:"
+           VerticalAlignment="Center"/>
+            <TextBox Grid.Column="1"  
+         x:Name="UserBox"                                         
+         Margin="5,0,0,0"
+         Text="{Binding Username, 
+                UpdateSourceTrigger=PropertyChanged}"
+         KeyDown="UserBox_KeyDown"/>
+            <TextBlock Grid.Column="2" 
+           Text="Max D/L:"
+           VerticalAlignment="Center"
+           Margin="5,0,0,0"/>
+            <ComboBox Grid.Column="3"
+          x:Name="maxDownloadComboBox"
+          IsEditable="True"
+          MaxWidth="50"
+          Margin="5,0,0,0"
+          
+          Text="{Binding MaxConcurrency, 
+                          Mode=TwoWay, 
+                          UpdateSourceTrigger=PropertyChanged}">
+                <ComboBoxItem Content="1"/>
+                <ComboBoxItem Content="2"/>
+                <ComboBoxItem Content="3"/>
+                <ComboBoxItem Content="4"/>
+                <ComboBoxItem Content="5"/>
+                <ComboBoxItem Content="6"/>
+                <ComboBoxItem Content="7"/>
+                <ComboBoxItem Content="8"/>
+                <ComboBoxItem Content="9"/>
+                <ComboBoxItem Content="10"/>
+            </ComboBox>
+            <Button Grid.Column="4" 
+        x:Name="BtnCrawl"                    
+        Content="{Binding CrawlBtnText}"                    
+        MinWidth="70"
+        Margin="5,0,0,0"
+        HorizontalAlignment="Right"                    
+        Command="{Binding CrawlCommand}"
+        IsEnabled="{Binding IsCrawling, 
+                    Converter={StaticResource 
+                    InverseBoolConverter}}"/>
+        </Grid>
+        <ListView x:Name="ListViewResults"
+      Grid.Row="1"
+      MinHeight="120"
+      Margin="0,0,0,5"
+      HorizontalAlignment="Stretch"
+      ItemsSource="{Binding ActiveVideosView}"
+      MouseDoubleClick="ListViewResults_MouseDoubleClick">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Title" 
+                        DisplayMemberBinding="{Binding Id}" 
+                        Width="210"/>
+                    <GridViewColumn Header="状态" 
+                        DisplayMemberBinding="{Binding DisplayStatus}" 
+                        Width="60"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <Grid Grid.Row="2"
+  Height="20"
+  Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="结果:"/>
+            <TextBlock Grid.Column="1" Text="{Binding VideosCount}"/>
+            <Button x:Name="BtnOpenFolder" 
+        Grid.Column="2" 
+        Content="D/L Folder"
+        HorizontalAlignment="Right"
+        Width="70"
+        Click="BtnOpenFolder_Click"/>
+            <Button x:Name="BtnDownload"
+        Grid.Column="3" 
+        Content="{Binding DownloadBtnText}"
+        Width="70"
+        HorizontalAlignment="Right"
+        Margin="5,0,0,0"
+        Command="{Binding DownloadCommand}"/>
+            <Button x:Name="BtnStop"
+        Grid.Column="4" 
+        Content="停止"
+        Width="35"
+        HorizontalAlignment="Right"
+        Margin="5,0,0,0"
+        Command="{Binding StopCommand}"/>
+        </Grid>
+        <Grid Grid.Row="3"
+  Height="20"
+  Margin="0,0,0,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="失败:"/>
+            <TextBlock Grid.Column="1" x:Name="TxtFailedCount" 
+           Text="{Binding FailedCount}"/>
+            <TextBlock Grid.Column="2" Text="已下载:"/>
+            <TextBlock Grid.Column="3" x:Name="TxtDownloadedCount" 
+           Text="{Binding CompletedCount}"/>
+            <Button x:Name="BtnRetryAll"
+        Grid.Column="4" 
+        Content="全部重试"
+        Width="70"
+        HorizontalAlignment="Right"
+        Command="{Binding RetryAllCommand}"/>
+        </Grid>
+        <ListView x:Name="ListViewFailed"
+      Grid.Row="4"
+      MinHeight="100"
+      ItemsSource="{Binding FailedVideosView}"
+      MouseDoubleClick="ListViewFailed_MouseDoubleClick">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Title" 
+                        Width="210"
+                        DisplayMemberBinding="{Binding Id}"/>
+                    <GridViewColumn Header="状态"                                      
+                        Width="60"
+                        DisplayMemberBinding="{Binding DisplayStatus}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</UserControl>

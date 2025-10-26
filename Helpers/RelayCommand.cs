@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace RedgifsDownloader.ViewModel
+namespace RedgifsDownloader.Helpers
 {
     public class RelayCommand : ICommand
     {
