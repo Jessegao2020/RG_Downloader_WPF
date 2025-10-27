@@ -46,20 +46,10 @@
           IsEditable="True"
           MaxWidth="50"
           Margin="5,0,0,0"
-          
+          ItemsSource="{Binding MaxConcurrencyOptions}"
           Text="{Binding MaxConcurrency, 
                           Mode=TwoWay, 
                           UpdateSourceTrigger=PropertyChanged}">
-                <ComboBoxItem Content="1"/>
-                <ComboBoxItem Content="2"/>
-                <ComboBoxItem Content="3"/>
-                <ComboBoxItem Content="4"/>
-                <ComboBoxItem Content="5"/>
-                <ComboBoxItem Content="6"/>
-                <ComboBoxItem Content="7"/>
-                <ComboBoxItem Content="8"/>
-                <ComboBoxItem Content="9"/>
-                <ComboBoxItem Content="10"/>
             </ComboBox>
             <Button Grid.Column="4" 
         x:Name="BtnCrawl"                    

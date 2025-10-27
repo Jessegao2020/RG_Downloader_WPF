@@ -27,6 +27,7 @@ namespace RedgifsDownloader
             //底层
             services.AddSingleton<VideoFileService>();
             services.AddSingleton<DownloadWorker>();
+            services.AddSingleton<ISettingsService, PropertySettingService>();
 
             //生成容器
             ServiceProvider = services.BuildServiceProvider();

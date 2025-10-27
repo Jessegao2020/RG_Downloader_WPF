@@ -16,6 +16,7 @@ namespace RedgifsDownloader.ViewModel
         #region 字段 属性
         private readonly ICrawlService _crawler;
         private readonly DownloadCoordinator _coordinator;
+        private readonly ISettingsService _settingsService;
         private CancellationTokenSource? _cts;
 
         public ObservableCollection<VideoItem> Videos { get; } = new();
@@ -27,7 +28,6 @@ namespace RedgifsDownloader.ViewModel
         private int _completedCount;
         private int _failedCount;
         private string _username;
-        private int _maxConcurrency;
 
         public string CrawlBtnText => IsCrawling ? "Crawling.." : "Crawl";
         public string DownloadBtnText => IsDownloading ? "下载中" : "下载";
@@ -83,14 +83,17 @@ namespace RedgifsDownloader.ViewModel
                 (RetryAllCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
         }
+        public ObservableCollection<int> MaxConcurrencyOptions { get; } = new(new[] {1,2,3,4,5,6,7,8,9,10});
         public int MaxConcurrency
         {
-            get => _maxConcurrency;
+            get => _settingsService.MaxDownloadCount;
             set
             {
-                if (_maxConcurrency != value)
+                if (_settingsService.MaxDownloadCount != value)
                 {
-                    _maxConcurrency = value; OnPropertyChanged();
+                    _settingsService.MaxDownloadCount = value;
+                    _settingsService.Save();
+                    OnPropertyChanged();
                 }
             }
         }
@@ -102,11 +105,11 @@ namespace RedgifsDownloader.ViewModel
 
         #endregion
 
-        public DownloadsViewModel(DownloadCoordinator coordinator, ICrawlService crawler)
+        public DownloadsViewModel(DownloadCoordinator coordinator, ICrawlService crawler, ISettingsService settingsService)
         {
             _crawler = crawler;
             _coordinator = coordinator;
-
+            _settingsService = settingsService;
 
             ActiveVideosView = CollectionViewSource.GetDefaultView(Videos);
             ActiveVideosView.Filter = o =>
@@ -141,6 +144,7 @@ namespace RedgifsDownloader.ViewModel
                 OnPropertyChanged(nameof(VideosCount));
                 (DownloadCommand as RelayCommand)?.RaiseCanExecuteChanged();
             };
+            
         }
         private static bool IsFailed(VideoItem v)
             => v.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled;
