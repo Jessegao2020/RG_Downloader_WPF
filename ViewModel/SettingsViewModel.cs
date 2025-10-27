@@ -3,28 +3,34 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Ookii.Dialogs.Wpf;
 using RedgifsDownloader.Helpers;
-
+using RedgifsDownloader.Interfaces;
 
 namespace RedgifsDownloader.ViewModel
 {
     public class SettingsViewModel : INotifyPropertyChanged
     {
-        private string _downloadDirectory;
+        private readonly ISettingsService _settingsService;
+        
         public string DownloadDirectory
         {
-            get => _downloadDirectory;
+            get => _settingsService.DownloadDirectory;
             set
             {
-                _downloadDirectory = value;
-                OnPropertyChanged();
+                if(_settingsService.DownloadDirectory != value)
+                {
+                    _settingsService.DownloadDirectory = value;
+                    _settingsService.Save();
+                    OnPropertyChanged();
+                }
             }
         }
 
         public ICommand SaveCommand { get; }
         public ICommand ChooseDownloadFolderCommand { get; }
 
-        public SettingsViewModel()
+        public SettingsViewModel(ISettingsService settingsService)
         {
+            _settingsService = settingsService;
             ChooseDownloadFolderCommand = new RelayCommand(_ => GetDownloadDirectory());
         }
 

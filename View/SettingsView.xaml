@@ -12,22 +12,25 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         <GroupBox Grid.Row="0"
-                  Margin="5">
-            <Grid>
+                  Header="下载"
+                  Margin="5"
+                  VerticalAlignment="Top">
+            <Grid Margin="0,15,0,15">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition MaxWidth="70"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" 
-                           Text="选择路径:"
+                           Text="下载路径:"
                            Margin="5,0,0,0"/>
                 <TextBox Grid.Column="1" x:Name="DirectoryBox"
-                         MaxHeight="50"
+                         MaxHeight="30"
+                         Margin="5,0,0,0"
                          Text="{Binding DownloadDirectory}"/>
                 <Button Grid.Column="2" x:Name="ChooseBtn"
                         Content="选择"
-                        MaxHeight="50"
+                        MaxHeight="30"
                         Margin="5,0,0,0"
                         Command="{Binding ChooseDownloadFolderCommand}"/>
             </Grid>

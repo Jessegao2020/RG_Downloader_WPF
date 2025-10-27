@@ -17,18 +17,17 @@ namespace RedgifsDownloader.ViewModel
         private readonly ICrawlService _crawler;
         private readonly DownloadCoordinator _coordinator;
         private readonly ISettingsService _settingsService;
+
         private CancellationTokenSource? _cts;
-
-        public ObservableCollection<VideoItem> Videos { get; } = new();
-        public ICollectionView ActiveVideosView { get; }
-        public ICollectionView FailedVideosView { get; }
-
         private bool _isCrawling;
         private bool _isDownloading;
         private int _completedCount;
         private int _failedCount;
         private string _username;
 
+        public ObservableCollection<VideoItem> Videos { get; } = new();
+        public ICollectionView ActiveVideosView { get; }
+        public ICollectionView FailedVideosView { get; }
         public string CrawlBtnText => IsCrawling ? "Crawling.." : "Crawl";
         public string DownloadBtnText => IsDownloading ? "下载中" : "下载";
         public int VideosCount => Videos.Count;
@@ -83,7 +82,7 @@ namespace RedgifsDownloader.ViewModel
                 (RetryAllCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
         }
-        public ObservableCollection<int> MaxConcurrencyOptions { get; } = new(new[] {1,2,3,4,5,6,7,8,9,10});
+        public ObservableCollection<int> MaxConcurrencyOptions { get; } = new(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
         public int MaxConcurrency
         {
             get => _settingsService.MaxDownloadCount;
@@ -129,6 +128,7 @@ namespace RedgifsDownloader.ViewModel
             _coordinator.StatusUpdated += RefreshViews;
 
             MaxConcurrency = Properties.Settings.Default.MaxDownloadCount;
+
             #region Commands
             CrawlCommand = new RelayCommand(async _ => await StartCrawlAsync(), _ => !IsCrawling && !IsDownloading && !string.IsNullOrWhiteSpace(Username));
 
@@ -139,12 +139,12 @@ namespace RedgifsDownloader.ViewModel
             RetryAllCommand = new RelayCommand(async _ => await RetryAllAsync(), _ => FailedCount > 0 && !IsDownloading);
 
             #endregion
+
             Videos.CollectionChanged += (_, __) =>
             {
                 OnPropertyChanged(nameof(VideosCount));
                 (DownloadCommand as RelayCommand)?.RaiseCanExecuteChanged();
             };
-            
         }
         private static bool IsFailed(VideoItem v)
             => v.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled;
