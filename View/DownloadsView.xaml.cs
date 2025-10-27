@@ -1,35 +1,23 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Extensions.DependencyInjection;
+using RedgifsDownloader.Model;
+using RedgifsDownloader.ViewModel;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using RedgifsDownloader.Model;
-using RedgifsDownloader.Services;
-using RedgifsDownloader.ViewModel;
 
 namespace RedgifsDownloader.View
 {
-    /// <summary>
-    /// Interaction logic for DownloadsView.xaml
-    /// </summary>
     public partial class DownloadsView : UserControl
     {
-        private readonly DownloadsViewModel _downloadsvm;
+        private DownloadsViewModel _downloadsvm => (DownloadsViewModel)DataContext;
 
         public DownloadsView()
         {
             InitializeComponent();
 
-            var fileService = new VideoFileService();
-            var worker = new DownloadWorker();
-            var coordinator = new DownloadCoordinator(worker, fileService);
-            var crawler = new CrawlService();
-
-            _downloadsvm = new DownloadsViewModel(coordinator, crawler);
-
-            // 绑定集合到 ListView（同原）
-            ListViewResults.ItemsSource = _downloadsvm.Videos;
-            DataContext = _downloadsvm;
+            DataContext = App.ServiceProvider.GetRequiredService<DownloadsViewModel>();
         }
 
         private void RestoreMaxConcurrencyFromSettings()

@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
+using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Model;
 
 namespace RedgifsDownloader.Services
 {
-    public class CrawlService
+    public class CrawlService : ICrawlService
     {
         public async Task<List<VideoItem>> CrawlAsync (string userName, Action<string>? onError = null)
         {

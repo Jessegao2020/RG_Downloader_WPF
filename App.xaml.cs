@@ -1,14 +1,38 @@
-﻿using System.Configuration;
-using System.Data;
+﻿using Microsoft.Extensions.DependencyInjection;
+using RedgifsDownloader.Interfaces;
+using RedgifsDownloader.Services;
+using RedgifsDownloader.ViewModel;
 using System.Windows;
 
 namespace RedgifsDownloader
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
+        public static IServiceProvider ServiceProvider { get; private set; }
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            var services = new ServiceCollection();
+
+            // 注册依赖
+            // 顶层
+            services.AddSingleton<MainViewModel>(); 
+            services.AddSingleton<DownloadsViewModel>();
+            services.AddSingleton<SettingsViewModel>();
+
+            // 中间层
+            services.AddSingleton<ICrawlService, CrawlService>();
+            services.AddSingleton<DownloadCoordinator>();
+
+            //底层
+            services.AddSingleton<VideoFileService>();
+            services.AddSingleton<DownloadWorker>();
+
+            //生成容器
+            ServiceProvider = services.BuildServiceProvider();
+
+            base.OnStartup(e);
+        }
     }
 
 }

@@ -1,28 +1,19 @@
-﻿using RedgifsDownloader.Model;
-using RedgifsDownloader.Services;
+﻿using Microsoft.Extensions.DependencyInjection;
 using RedgifsDownloader.ViewModel;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace RedgifsDownloader
 {
     public partial class MainWindow : Window
     {
         #region ctor & Window lifecycle
-
         public MainWindow()
         {
             InitializeComponent();
-
             RestoreWindowPosition();
             
-            DataContext = new MainViewModel();
+            DataContext = App.ServiceProvider.GetRequiredService<MainViewModel>();
         }
 
         private void RestoreWindowPosition()

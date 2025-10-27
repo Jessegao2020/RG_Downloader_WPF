@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using RedgifsDownloader.Helpers;
+using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Model;
 using RedgifsDownloader.Services;
 
@@ -13,7 +14,7 @@ namespace RedgifsDownloader.ViewModel
     public class DownloadsViewModel : INotifyPropertyChanged
     {
         #region 字段 属性
-        private readonly CrawlService _crawler;
+        private readonly ICrawlService _crawler;
         private readonly DownloadCoordinator _coordinator;
         private CancellationTokenSource? _cts;
 
@@ -101,7 +102,7 @@ namespace RedgifsDownloader.ViewModel
 
         #endregion
 
-        public DownloadsViewModel(DownloadCoordinator coordinator, CrawlService crawler)
+        public DownloadsViewModel(DownloadCoordinator coordinator, ICrawlService crawler)
         {
             _crawler = crawler;
             _coordinator = coordinator;
