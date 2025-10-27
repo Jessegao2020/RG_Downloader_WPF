@@ -206,6 +206,9 @@ namespace RedgifsDownloader.ViewModel
                 IsDownloading = false;
                 _cts.Dispose();
                 _cts = null;
+
+                RefreshViews();
+                ((RelayCommand)RetryAllCommand).RaiseCanExecuteChanged();
             }
         }
 

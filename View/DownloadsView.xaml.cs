@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using RedgifsDownloader.Model;
-using RedgifsDownloader.ViewModel;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
+using RedgifsDownloader.Model;
+using RedgifsDownloader.ViewModel;
 
 namespace RedgifsDownloader.View
 {
@@ -27,7 +27,7 @@ namespace RedgifsDownloader.View
             if (ListViewResults.SelectedItem is VideoItem video && !string.IsNullOrEmpty(video.Url))
             {
                 Clipboard.SetText(video.Url);
-                MessageBox.Show($"已复制 URL:\n{video.Url}", "复制成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                new ToastWindow($"已复制 URL:\n{video.Url}").Show();
             }
         }
 
