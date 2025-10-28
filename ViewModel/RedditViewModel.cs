@@ -3,6 +3,8 @@ using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Services.Reddit;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
+using System.Printing;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -14,6 +16,8 @@ namespace RedgifsDownloader.ViewModel
     {
         private readonly IRedditAuthService _auth;
         private readonly IRedditApiService _api;
+        private readonly RedditImageDownloadService _downloader;
+        private readonly ILogService _logger;
 
         private string _usernameInput = "";
         private string _submittedJson = "";
@@ -25,7 +29,12 @@ namespace RedgifsDownloader.ViewModel
         public string UsernameInput
         {
             get => _usernameInput;
-            set { _usernameInput = value; OnPropertyChanged(); }
+            set
+            {
+                _usernameInput = value;
+                OnPropertyChanged();
+                (GetSubmittedCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
         }
 
         public string SubmittedJson
@@ -37,24 +46,68 @@ namespace RedgifsDownloader.ViewModel
         public bool IsLoggedIn
         {
             get => _isLoggedIn;
-            set { _isLoggedIn = value; OnPropertyChanged(); }
+            set
+            {
+                _isLoggedIn = value;
+                OnPropertyChanged();
+                (GetSubmittedCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
         }
 
-        public RedditViewModel(IRedditApiService api, IRedditAuthService auth)
+        public RedditViewModel(IRedditApiService api, IRedditAuthService auth, ILogService logger)
         {
             _auth = auth;
             _api = api;
+            _logger = logger;
+            _downloader = new RedditImageDownloadService();
 
-            LoginCommand = new RelayCommand(async _=> await  _auth.LoginAsync());
+            LoginCommand = new RelayCommand(async _ => await TryLogin());
             GetSubmittedCommand = new RelayCommand(async _ => await GetSubmittedAsync(), _ => IsLoggedIn && !string.IsNullOrEmpty(UsernameInput));
+            _ = CheckLoginStatus();
         }
 
+        private async Task TryLogin()
+        {
+            try
+            {
+                await _auth.LoginAsync();
+                IsLoggedIn = true;
+            }
+            catch (Exception ex)
+            {
+                SubmittedJson = $"Login failed: {ex.Message}";
+            }
+        }
+
+        private async Task CheckLoginStatus()
+        {
+            try
+            {
+                string token = await _auth.GetAccessTokenAsync();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    IsLoggedIn = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ShowMessage($"[RedditVM] 自动登陆失败:{ex.Message}");
+                IsLoggedIn = false;
+            }
+        }
         private async Task GetSubmittedAsync()
         {
             try
             {
-                SubmittedJson = await _api.GetUserSubmittedAsync(UsernameInput);
-            }catch (Exception ex)
+                var posts = await _api.GetUserImagePostsAsync(UsernameInput);
+                SubmittedJson = $"共获取 {posts.Count} 张图片, 开始下载";
+
+                string baseDir = Path.Combine(AppContext.BaseDirectory, "Downloads", UsernameInput);
+                await _downloader.DownloadImageAsync(posts.Select(post => post.Url), baseDir);
+
+                SubmittedJson = $"下载完成，共保存{posts.Count}张图片。";
+            }
+            catch (Exception ex)
             {
                 SubmittedJson = $"Error: {ex.Message}";
             }

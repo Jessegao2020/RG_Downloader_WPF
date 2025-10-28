@@ -8,6 +8,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <StackPanel>
         <Button Content="Login" Command="{Binding LoginCommand}"/>
+        <TextBox Text="{Binding UsernameInput, UpdateSourceTrigger=PropertyChanged}"/>
         <Button Content="Get Submitted" Command="{Binding GetSubmittedCommand}"/>
     </StackPanel>
 </UserControl>

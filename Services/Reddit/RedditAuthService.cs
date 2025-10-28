@@ -1,57 +1,103 @@
-﻿using RedgifsDownloader.Interfaces;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Web;
+using RedgifsDownloader.Interfaces;
 
 namespace RedgifsDownloader.Services.Reddit
 {
     public class RedditAuthService : IRedditAuthService
     {
+        private readonly ILogService _logService;
+
         private readonly string _clientId = "iM34IicIqcttie1nwDJNhQ";
-        private readonly string _redirectUri = "http://localhost:7890/redirect/";
-        private readonly string[] _scopes = new[] { "identity", "read" };
+        private readonly string _redirectUri = "http://127.0.0.1:13579/";
+        private readonly string[] _scopes = new[] { "identity", "read", "history" };
         private readonly string _userAgent = "Redgifsdownloader/1.0 (by u/test_user)";
 
         private string _accessToken = null!;
         private string _refreshToken = null!;
         private DateTime _expiresAt;
 
+        private readonly string _tokenFile = System.IO.Path.Combine(AppContext.BaseDirectory, "reddit_token.json");
+
         public bool IsLoggedIn => !string.IsNullOrEmpty(_accessToken) && DateTime.UtcNow < _expiresAt;
+
+        public RedditAuthService(ILogService logService)
+        {
+            _logService = logService;
+            LoadTokens();
+        }
 
         public async Task LoginAsync()
         {
             string state = Guid.NewGuid().ToString("N");
             string scopeStr = string.Join(" ", _scopes);
-            string authorizeUrl = $"https://www.reddit.com/api/v1/authorize?client_id={_clientId}" +
-            $"&response_type=code&state={state}&redirect_uri={Uri.EscapeDataString(_redirectUri)}" +
-            $"&duration=permanent&scope={Uri.EscapeDataString(scopeStr)}";
+            string authorizeUrl =
+                $"https://www.reddit.com/api/v1/authorize?client_id={_clientId}" +
+                $"&response_type=code&state={state}" +
+                $"&redirect_uri={Uri.EscapeDataString(_redirectUri)}" +
+                $"&duration=permanent&scope={Uri.EscapeDataString(scopeStr)}";
 
+            // 启动轻量级 TCP 回调监听（代替 HttpListener）
+            var waitTask = WaitForRedirectAsync(13579);
 
-            var listenerTask = Task.Run(async () =>
+            // 打开 Reddit 授权页面
+            Process.Start(new ProcessStartInfo
             {
-                using var listener = new HttpListener();
-                listener.Prefixes.Add(_redirectUri);
-                listener.Start();
-                var context = await listener.GetContextAsync();
-
-                var resp = context.Response;
-                string html = "<html><body><h2>Authorization successful.</h2>You may close this window.</body></html>";
-                byte[] buffer = Encoding.UTF8.GetBytes(html);
-                resp.ContentLength64 = buffer.Length;
-                await resp.OutputStream.WriteAsync(buffer);
-                resp.OutputStream.Close();
-                return context.Request.QueryString;
+                FileName = authorizeUrl,
+                UseShellExecute = true
             });
 
-            // 浏览器授权
-            Process.Start(new ProcessStartInfo { FileName = authorizeUrl, UseShellExecute = true });
+            var (code, returnedState) = await waitTask;
 
-            var query = await listenerTask;
-            if (query["error"] != null) throw new Exception($"OAuth error: {query["error"]}");
-            string code = query["code"] ?? throw new Exception("No code in callback");
+            if (returnedState != state)
+                throw new Exception("OAuth state mismatch.");
+
             await ExchangeCodeForTokenAsync(code);
+            SaveTokens();
+        }
+
+        private async Task<(string Code, string State)> WaitForRedirectAsync(int port)
+        {
+            var listener = new TcpListener(IPAddress.Loopback, port);
+            listener.Start();
+
+            using var client = await listener.AcceptTcpClientAsync();
+            using var stream = client.GetStream();
+            using var reader = new StreamReader(stream, Encoding.ASCII, false, 1024, leaveOpen: true);
+            using var writer = new StreamWriter(stream, new UTF8Encoding(false)) { NewLine = "\r\n", AutoFlush = true };
+
+            string? line = await reader.ReadLineAsync();
+            if (line == null || !line.StartsWith("GET "))
+                throw new Exception("Invalid HTTP request.");
+
+            // 解析 ?code= 和 ?state=
+            string path = line.Split(' ')[1];
+            var uri = new Uri("http://127.0.0.1" + path);
+            var query = HttpUtility.ParseQueryString(uri.Query);
+
+            string code = query["code"] ?? throw new Exception("No code returned.");
+            string state = query["state"] ?? "";
+
+            // 丢弃剩余 header
+            while (!string.IsNullOrEmpty(await reader.ReadLineAsync())) { }
+
+            string html = "<html><body><h2>Authorization successful.</h2>You may close this window.</body></html>";
+            byte[] body = Encoding.UTF8.GetBytes(html);
+            await writer.WriteLineAsync("HTTP/1.1 200 OK");
+            await writer.WriteLineAsync("Content-Type: text/html; charset=utf-8");
+            await writer.WriteLineAsync($"Content-Length: {body.Length}");
+            await writer.WriteLineAsync();
+            await stream.WriteAsync(body);
+
+            listener.Stop();
+            return (code, state);
         }
 
         private async Task ExchangeCodeForTokenAsync(string code)
@@ -64,10 +110,10 @@ namespace RedgifsDownloader.Services.Reddit
 
             var post = new FormUrlEncodedContent(new[]
             {
-            new KeyValuePair<string,string>("grant_type","authorization_code"),
-            new KeyValuePair<string,string>("code",code),
-            new KeyValuePair<string,string>("redirect_uri",_redirectUri)
-        });
+                new KeyValuePair<string,string>("grant_type","authorization_code"),
+                new KeyValuePair<string,string>("code",code),
+                new KeyValuePair<string,string>("redirect_uri",_redirectUri)
+            });
 
             var resp = await http.PostAsync("https://www.reddit.com/api/v1/access_token", post);
             string body = await resp.Content.ReadAsStringAsync();
@@ -87,10 +133,14 @@ namespace RedgifsDownloader.Services.Reddit
                 return _accessToken;
 
             if (!string.IsNullOrEmpty(_refreshToken))
+            {
                 await RefreshTokenAsync();
-            else
-                throw new Exception("Not logged in");
+                SaveTokens();
+                return _accessToken;
+            }
 
+            await LoginAsync();
+            SaveTokens();
             return _accessToken;
         }
 
@@ -104,9 +154,9 @@ namespace RedgifsDownloader.Services.Reddit
 
             var post = new FormUrlEncodedContent(new[]
             {
-            new KeyValuePair<string,string>("grant_type","refresh_token"),
-            new KeyValuePair<string,string>("refresh_token",_refreshToken)
-        });
+                new KeyValuePair<string,string>("grant_type","refresh_token"),
+                new KeyValuePair<string,string>("refresh_token",_refreshToken)
+            });
 
             var resp = await http.PostAsync("https://www.reddit.com/api/v1/access_token", post);
             string body = await resp.Content.ReadAsStringAsync();
@@ -117,6 +167,41 @@ namespace RedgifsDownloader.Services.Reddit
             _accessToken = doc.RootElement.GetProperty("access_token").GetString()!;
             int expiresIn = doc.RootElement.GetProperty("expires_in").GetInt32();
             _expiresAt = DateTime.UtcNow.AddSeconds(expiresIn - 60);
+        }
+
+        private void SaveTokens()
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(new
+                {
+                    refresh = _refreshToken,
+                    expires = _expiresAt
+                });
+
+                byte[] data = Encoding.UTF8.GetBytes(json);
+                byte[] encrypted = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
+
+                File.WriteAllBytes(_tokenFile, encrypted);
+            }
+            catch (Exception ex) { _logService.ShowMessage($"[RedditAuth] SaveTokens failed: {ex.Message}"); }
+        }
+
+        private void LoadTokens()
+        {
+            try
+            {
+                if (!File.Exists(_tokenFile))
+                    return;
+
+                byte[] encrypted = File.ReadAllBytes(_tokenFile);
+                byte[] decrypted = ProtectedData.Unprotect(encrypted, null, DataProtectionScope.CurrentUser);
+
+                using var doc = JsonDocument.Parse(decrypted);
+                _refreshToken = doc.RootElement.GetProperty("refresh").GetString()!;
+                _expiresAt = doc.RootElement.GetProperty("expires").GetDateTime();
+            }
+            catch (Exception ex) { _logService.ShowMessage($"[RedditAuth] LoadTokens failed: {ex.Message}"); }
         }
     }
 }

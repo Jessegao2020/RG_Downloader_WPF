@@ -32,6 +32,7 @@ namespace RedgifsDownloader
             services.AddSingleton<ISettingsService, PropertySettingService>();
             services.AddSingleton<IRedditApiService, RedditApiService>();
             services.AddSingleton<IRedditAuthService, RedditAuthService>();
+            services.AddSingleton<ILogService, LogService>();
             services.AddSingleton<RedditApiService>();
 
             
