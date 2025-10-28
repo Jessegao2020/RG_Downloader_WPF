@@ -17,6 +17,7 @@ namespace RedgifsDownloader.ViewModel
         private readonly IRedditAuthService _auth;
         private readonly IRedditApiService _api;
         private readonly RedditImageDownloadService _downloader;
+        private readonly RedditDownloadCoordinator _coordinator;
         private readonly ILogService _logger;
 
         private string _usernameInput = "";
@@ -54,12 +55,14 @@ namespace RedgifsDownloader.ViewModel
             }
         }
 
-        public RedditViewModel(IRedditApiService api, IRedditAuthService auth, ILogService logger)
+
+        public RedditViewModel(IRedditApiService api, IRedditAuthService auth, RedditDownloadCoordinator coordinator, ILogService logger)
         {
             _auth = auth;
             _api = api;
             _logger = logger;
             _downloader = new RedditImageDownloadService();
+            _coordinator = coordinator;
 
             LoginCommand = new RelayCommand(async _ => await TryLogin());
             GetSubmittedCommand = new RelayCommand(async _ => await GetSubmittedAsync(), _ => IsLoggedIn && !string.IsNullOrEmpty(UsernameInput));
@@ -99,13 +102,11 @@ namespace RedgifsDownloader.ViewModel
         {
             try
             {
-                var posts = await _api.GetUserImagePostsAsync(UsernameInput);
-                SubmittedJson = $"共获取 {posts.Count} 张图片, 开始下载";
-
                 string baseDir = Path.Combine(AppContext.BaseDirectory, "Downloads", UsernameInput);
-                await _downloader.DownloadImageAsync(posts.Select(post => post.Url), baseDir);
+                SubmittedJson = "正在检查并下载中...";
 
-                SubmittedJson = $"下载完成，共保存{posts.Count}张图片。";
+                var (downloaded, skipped) = await _coordinator.DownloadAllImagesAsync(UsernameInput, baseDir, concurrency: 8);
+                SubmittedJson = $"下载完成：新下载 {downloaded} 张，跳过 {skipped} 张。";
             }
             catch (Exception ex)
             {

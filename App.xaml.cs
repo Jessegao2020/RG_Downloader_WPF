@@ -25,6 +25,7 @@ namespace RedgifsDownloader
             // 中间层
             services.AddSingleton<ICrawlService, CrawlService>();
             services.AddSingleton<DownloadCoordinator>();
+            services.AddSingleton<RedditDownloadCoordinator>();
 
             //底层
             services.AddSingleton<VideoFileService>();
@@ -34,6 +35,7 @@ namespace RedgifsDownloader
             services.AddSingleton<IRedditAuthService, RedditAuthService>();
             services.AddSingleton<ILogService, LogService>();
             services.AddSingleton<RedditApiService>();
+            services.AddSingleton<RedditImageDownloadService>();
 
             
 

@@ -1,82 +1,97 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 using RedgifsDownloader.Model.Reddit;
 
 namespace RedgifsDownloader.Helpers
 {
     public static class RedditPostParser
     {
-        public static List<RedditPost> ExtractImagePosts(string json)
+        public static List<RedditPost> ExtractImagePosts(JsonElement dataNode)
         {
             var results = new List<RedditPost>();
-            using var doc = JsonDocument.Parse(json);
 
-            if (!doc.RootElement.TryGetProperty("data", out var dataNode) ||
-                !dataNode.TryGetProperty("children", out var children))
+            if (!dataNode.TryGetProperty("children", out var children))
                 return results;
 
             foreach (var child in children.EnumerateArray())
             {
-                var data = child.GetProperty("data");
-                string title = data.TryGetProperty("title", out var titleProp)
+                if (!child.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object)
+                    continue;
+
+                string title = data.TryGetProperty("title", out var titleProp) && titleProp.ValueKind == JsonValueKind.String
                     ? titleProp.GetString() ?? ""
                     : "";
 
-                // 1. 单图链接
-                if (data.TryGetProperty("url_overridden_by_dest", out var urlProp))
+                // 1️⃣ 从 url_overridden_by_dest 获取主链接
+                string? url = null;
+                if (data.TryGetProperty("url_overridden_by_dest", out var urlProp) &&
+                    urlProp.ValueKind == JsonValueKind.String)
                 {
-                    var url = urlProp.GetString();
-                    if (IsImageUrl(url))
-                        results.Add(new RedditPost { Title = title, Url = Normalize(url), IsImage = true });
+                    url = Normalize(urlProp.GetString());
                 }
 
-                // 2. preview.images
-                if (data.TryGetProperty("preview", out var preview) &&
-                    preview.TryGetProperty("images", out var images))
+                // 2️⃣ 如果 URL 是 preview 或 external-preview，尝试转为 i.redd.it
+                if (!string.IsNullOrEmpty(url))
                 {
-                    foreach (var img in images.EnumerateArray())
+                    if (url.Contains("preview.redd.it", StringComparison.OrdinalIgnoreCase) ||
+                        url.Contains("external-preview.redd.it", StringComparison.OrdinalIgnoreCase))
                     {
-                        var src = img.GetProperty("source").GetProperty("url").GetString();
-                        results.Add(new RedditPost { Title = title, Url = Normalize(src), IsImage = true });
+                        // 例如 https://preview.redd.it/abcd1234xyz.png?... → https://i.redd.it/abcd1234xyz.jpg
+                        var match = System.Text.RegularExpressions.Regex.Match(url, @"redd\.it/([A-Za-z0-9]+)");
+                        if (match.Success)
+                            url = $"https://i.redd.it/{match.Groups[1].Value}.jpg";
+                        else
+                            url = null; // 无法转换，直接丢弃
                     }
                 }
 
-                // 3. media_metadata（多图相册）
-                if (data.TryGetProperty("media_metadata", out var mediaMeta))
+                // 3️⃣ 相册 media_metadata 中的图片
+                if (data.TryGetProperty("media_metadata", out var mediaMeta) &&
+                    mediaMeta.ValueKind == JsonValueKind.Object)
                 {
                     foreach (var kv in mediaMeta.EnumerateObject())
                     {
                         if (kv.Value.TryGetProperty("s", out var sObj) &&
-                            sObj.TryGetProperty("u", out var urlNode))
+                            sObj.ValueKind == JsonValueKind.Object &&
+                            sObj.TryGetProperty("u", out var uNode) &&
+                            uNode.ValueKind == JsonValueKind.String)
                         {
-                            results.Add(new RedditPost
+                            var u = Normalize(uNode.GetString());
+                            if (u.Contains("preview.redd.it", StringComparison.OrdinalIgnoreCase))
                             {
-                                Title = title,
-                                Url = Normalize(urlNode.GetString()),
-                                IsImage = true
-                            });
+                                var match = System.Text.RegularExpressions.Regex.Match(u, @"redd\.it/([A-Za-z0-9]+)");
+                                if (match.Success)
+                                    u = $"https://i.redd.it/{match.Groups[1].Value}.jpg";
+                                else
+                                    continue;
+                            }
+
+                            if (IsImageUrl(u))
+                                results.Add(new RedditPost { Title = title, Url = u, IsImage = true });
                         }
                     }
                 }
+                else if (IsImageUrl(url))
+                {
+                    results.Add(new RedditPost { Title = title, Url = url!, IsImage = true });
+                }
             }
 
-            // 去重（按 URL）
-            return results.GroupBy(r => r.Url)
-                          .Select(g => g.First())
-                          .ToList();
+            // 4️⃣ 去重，只保留 i.redd.it 域名
+            return results
+                .Where(r => !string.IsNullOrWhiteSpace(r.Url)
+                         && r.Url.Contains("i.redd.it", StringComparison.OrdinalIgnoreCase))
+                .GroupBy(r => r.Url)
+                .Select(g => g.First())
+                .ToList();
         }
 
         private static bool IsImageUrl(string? url) =>
-             !string.IsNullOrEmpty(url) &&
-             (url.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
-             || url.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+            !string.IsNullOrEmpty(url) &&
+            url.Contains("i.redd.it", StringComparison.OrdinalIgnoreCase) &&
+            (url.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
              || url.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase)
-             || url.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)
-             || url.Contains("preview.redd.it"));
+             || url.EndsWith(".png", StringComparison.OrdinalIgnoreCase));
+
 
         private static string Normalize(string? url)
         {
@@ -85,11 +100,12 @@ namespace RedgifsDownloader.Helpers
 
             url = url.Replace("&amp;", "&");
 
-            if (url.Contains("external-preview.redd.it"))
+            // 忽略 Reddit 外链 / GIF / 视频封面
+            if (url.Contains("gifv", StringComparison.OrdinalIgnoreCase) ||
+                url.EndsWith(".gif", StringComparison.OrdinalIgnoreCase) ||
+                url.Contains("external-preview.redd.it", StringComparison.OrdinalIgnoreCase) ||
+                url.Contains("redditmedia.com", StringComparison.OrdinalIgnoreCase))
                 return "";
-
-            if (url.Contains("preview.redd.it"))
-                url = url.Replace("preview.redd.it", "i.redd.it");
 
             return url;
         }

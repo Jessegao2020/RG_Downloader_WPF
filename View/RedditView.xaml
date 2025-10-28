@@ -10,5 +10,7 @@
         <Button Content="Login" Command="{Binding LoginCommand}"/>
         <TextBox Text="{Binding UsernameInput, UpdateSourceTrigger=PropertyChanged}"/>
         <Button Content="Get Submitted" Command="{Binding GetSubmittedCommand}"/>
+        <TextBlock Text="{Binding SubmittedJson}"
+                   TextWrapping="Wrap"/>
     </StackPanel>
 </UserControl>
