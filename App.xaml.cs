@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Services;
+using RedgifsDownloader.Services.Reddit;
 using RedgifsDownloader.ViewModel;
 using System.Windows;
 
@@ -19,6 +20,7 @@ namespace RedgifsDownloader
             services.AddSingleton<MainViewModel>(); 
             services.AddSingleton<DownloadsViewModel>();
             services.AddSingleton<SettingsViewModel>();
+            services.AddSingleton<RedditViewModel>();
 
             // 中间层
             services.AddSingleton<ICrawlService, CrawlService>();
@@ -28,6 +30,11 @@ namespace RedgifsDownloader
             services.AddSingleton<VideoFileService>();
             services.AddSingleton<DownloadWorker>();
             services.AddSingleton<ISettingsService, PropertySettingService>();
+            services.AddSingleton<IRedditApiService, RedditApiService>();
+            services.AddSingleton<IRedditAuthService, RedditAuthService>();
+            services.AddSingleton<RedditApiService>();
+
+            
 
             //生成容器
             ServiceProvider = services.BuildServiceProvider();

@@ -24,7 +24,7 @@ namespace RedgifsDownloader.ViewModel
         {
             _provider = provider;
             NavigateCommand = new RelayCommand(param => Navigate(param?.ToString()));
-            Navigate("Download"); // 默认打开主页
+            Navigate("Redgifs"); // 默认打开主页
         }
 
         private void Navigate(string? page)
@@ -32,7 +32,8 @@ namespace RedgifsDownloader.ViewModel
             CurrentView = page switch
             {
                 "Settings" => _provider.GetRequiredService<SettingsViewModel>(),
-                "Download" => _provider.GetRequiredService<DownloadsViewModel>(),
+                "Redgifs" => _provider.GetRequiredService<DownloadsViewModel>(),
+                "Reddit" => _provider.GetRequiredService<RedditViewModel>(),
                 _ => CurrentView
             };
         }

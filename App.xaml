@@ -12,5 +12,8 @@
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
             <views:SettingsView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RedditViewModel}">
+            <views:RedditView/>
+        </DataTemplate>
     </Application.Resources>
 </Application>
