@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using RedgifsDownloader.Helpers;
@@ -40,14 +41,24 @@ namespace RedgifsDownloader.Services.Reddit
                 string json = await response.Content.ReadAsStringAsync();
 
                 using var doc = JsonDocument.Parse(json);
+
+
+                //输出reddit 返回的json到output
+                string formattedJson = JsonSerializer.Serialize(doc.RootElement, new JsonSerializerOptions
+                {
+                    WriteIndented = true // ✅ 关键点
+                });
+
+                string filePath = Path.Combine(AppContext.BaseDirectory, $"Downloads\\reddit_page_{page}.json");
+                await File.WriteAllTextAsync(filePath, formattedJson);
+                // End
+
                 var data = doc.RootElement.GetProperty("data");
 
                 var pagePosts = RedditPostParser.ExtractImagePosts(data);
 
                 foreach (var post in pagePosts)
                     yield return post;  //理解返回发现的图片
-
-
 
                 // 取分页游标
 

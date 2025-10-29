@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using RedgifsDownloader.Interfaces;
+using RedgifsDownloader.Helpers;
 
 namespace RedgifsDownloader.Services.Reddit
 {
@@ -15,7 +16,7 @@ namespace RedgifsDownloader.Services.Reddit
         public RedditDownloadCoordinator(IRedditApiService api, RedditImageDownloadService downloader)
         {
             _api = api;
-
+            
             // ✅ 统一 HttpClient：带 Cookie、User-Agent、长连接复用
             _cookieContainer = new CookieContainer();
             _cookieContainer.Add(new Uri("https://i.redd.it"), new Cookie("over18", "1"));
@@ -43,7 +44,7 @@ namespace RedgifsDownloader.Services.Reddit
                 if (string.IsNullOrEmpty(post.Url))
                     continue;
 
-                string fileName = Path.GetFileName(new Uri(post.Url).AbsolutePath);
+                string fileName = RedditFileService.MakeSafeFileName(post);
                 string filePath = Path.Combine(baseDir, fileName);
 
                 // ✅ 已存在则跳过
