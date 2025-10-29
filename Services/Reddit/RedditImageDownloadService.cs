@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using RedgifsDownloader.Interfaces;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 
@@ -6,26 +7,28 @@ namespace RedgifsDownloader.Services.Reddit
 {
     public class RedditImageDownloadService
     {
-        private readonly HttpClient _http = new();
+        private readonly HttpClient _http;
 
-        public async Task DownloadImageAsync(IEnumerable<string> urls, string baseDir)
+        private readonly ILogService _logger;
+
+        public RedditImageDownloadService(HttpClient client, ILogService logger)
         {
-            Directory.CreateDirectory(baseDir);
+            _http = client;
+            _logger = logger;
+        }
 
-            foreach (string url in urls)
+        public async Task<bool> DownloadAsync(string url, string path)
+        {
+            try
             {
-                try
-                {
-                    string fileName = Path.GetFileName(new Uri(url).LocalPath);
-                    string path = Path.Combine(baseDir, fileName);
-
-                    if (File.Exists(path))
-                        continue;
-
-                    var bytes = await _http.GetByteArrayAsync(url);
-                    await File.WriteAllBytesAsync(path, bytes);
-                }
-                catch (Exception ex) { Debug.WriteLine($"[DownloadError] {url} => {ex.Message}"); } 
+                var bytes = await _http.GetByteArrayAsync(url);
+                await File.WriteAllBytesAsync(path, bytes);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Download Error] {url}: {ex.Message}");
+                return false;
             }
         }
     }

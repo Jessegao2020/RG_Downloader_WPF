@@ -1,10 +1,20 @@
-﻿using System.Text.Json;
-using RedgifsDownloader.Model.Reddit;
+﻿using RedgifsDownloader.Model.Reddit;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace RedgifsDownloader.Helpers
 {
     public static class RedditPostParser
     {
+        private static readonly Regex IdExtRegex =
+            new(@"redd\.it/([A-Za-z0-9]+)\.(jpg|jpeg|png|gif|webp)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly Regex IdOnlyRegex =
+            new(@"redd\.it/([A-Za-z0-9]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly Regex FormatParamRegex =
+            new(@"format=(png|jpg|jpeg|gif|webp)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         public static List<RedditPost> ExtractImagePosts(JsonElement dataNode)
         {
             var results = new List<RedditPost>();
@@ -27,24 +37,10 @@ namespace RedgifsDownloader.Helpers
                     urlProp.ValueKind == JsonValueKind.String)
                 {
                     url = Normalize(urlProp.GetString());
+                    url = ConvertPreviewToDirect(url);
                 }
 
-                // 2️⃣ 如果 URL 是 preview 或 external-preview，尝试转为 i.redd.it
-                if (!string.IsNullOrEmpty(url))
-                {
-                    if (url.Contains("preview.redd.it", StringComparison.OrdinalIgnoreCase) ||
-                        url.Contains("external-preview.redd.it", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // 例如 https://preview.redd.it/abcd1234xyz.png?... → https://i.redd.it/abcd1234xyz.jpg
-                        var match = System.Text.RegularExpressions.Regex.Match(url, @"redd\.it/([A-Za-z0-9]+)");
-                        if (match.Success)
-                            url = $"https://i.redd.it/{match.Groups[1].Value}.jpg";
-                        else
-                            url = null; // 无法转换，直接丢弃
-                    }
-                }
-
-                // 3️⃣ 相册 media_metadata 中的图片
+                // 2️⃣ 相册 media_metadata 中的图片
                 if (data.TryGetProperty("media_metadata", out var mediaMeta) &&
                     mediaMeta.ValueKind == JsonValueKind.Object)
                 {
@@ -56,14 +52,7 @@ namespace RedgifsDownloader.Helpers
                             uNode.ValueKind == JsonValueKind.String)
                         {
                             var u = Normalize(uNode.GetString());
-                            if (u.Contains("preview.redd.it", StringComparison.OrdinalIgnoreCase))
-                            {
-                                var match = System.Text.RegularExpressions.Regex.Match(u, @"redd\.it/([A-Za-z0-9]+)");
-                                if (match.Success)
-                                    u = $"https://i.redd.it/{match.Groups[1].Value}.jpg";
-                                else
-                                    continue;
-                            }
+                            u = ConvertPreviewToDirect(u);
 
                             if (IsImageUrl(u))
                                 results.Add(new RedditPost { Title = title, Url = u, IsImage = true });
@@ -76,7 +65,7 @@ namespace RedgifsDownloader.Helpers
                 }
             }
 
-            // 4️⃣ 去重，只保留 i.redd.it 域名
+            // 3️⃣ 去重，只保留 i.redd.it 域名
             return results
                 .Where(r => !string.IsNullOrWhiteSpace(r.Url)
                          && r.Url.Contains("i.redd.it", StringComparison.OrdinalIgnoreCase))
@@ -85,13 +74,48 @@ namespace RedgifsDownloader.Helpers
                 .ToList();
         }
 
+        /// <summary>
+        /// 将 preview.redd.it/external-preview.redd.it 链接转换为 i.redd.it 原图直链
+        /// </summary>
+        private static string? ConvertPreviewToDirect(string? url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return null;
+
+            // 已经是直链就不处理
+            if (url.Contains("i.redd.it", StringComparison.OrdinalIgnoreCase))
+                return url;
+
+            if (url.Contains("preview.redd.it", StringComparison.OrdinalIgnoreCase) ||
+                url.Contains("external-preview.redd.it", StringComparison.OrdinalIgnoreCase))
+            {
+                // 先尝试带扩展名匹配
+                var m1 = IdExtRegex.Match(url);
+                if (m1.Success)
+                    return $"https://i.redd.it/{m1.Groups[1].Value}.{m1.Groups[2].Value}";
+
+                // 再看是否有 format 参数
+                var idMatch = IdOnlyRegex.Match(url);
+                if (idMatch.Success)
+                {
+                    string id = idMatch.Groups[1].Value;
+                    var formatMatch = FormatParamRegex.Match(url);
+                    string ext = formatMatch.Success ? formatMatch.Groups[1].Value : "jpg";
+                    return $"https://i.redd.it/{id}.{ext}";
+                }
+            }
+
+            return url;
+        }
+
         private static bool IsImageUrl(string? url) =>
             !string.IsNullOrEmpty(url) &&
             url.Contains("i.redd.it", StringComparison.OrdinalIgnoreCase) &&
             (url.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
              || url.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase)
-             || url.EndsWith(".png", StringComparison.OrdinalIgnoreCase));
-
+             || url.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+             || url.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)
+             || url.EndsWith(".webp", StringComparison.OrdinalIgnoreCase));
 
         private static string Normalize(string? url)
         {
@@ -100,10 +124,9 @@ namespace RedgifsDownloader.Helpers
 
             url = url.Replace("&amp;", "&");
 
-            // 忽略 Reddit 外链 / GIF / 视频封面
+            // 忽略 GIFV、外部预览和视频封面
             if (url.Contains("gifv", StringComparison.OrdinalIgnoreCase) ||
-                url.EndsWith(".gif", StringComparison.OrdinalIgnoreCase) ||
-                url.Contains("external-preview.redd.it", StringComparison.OrdinalIgnoreCase) ||
+                url.EndsWith(".gifv", StringComparison.OrdinalIgnoreCase) ||
                 url.Contains("redditmedia.com", StringComparison.OrdinalIgnoreCase))
                 return "";
 

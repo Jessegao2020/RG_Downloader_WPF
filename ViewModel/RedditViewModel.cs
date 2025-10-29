@@ -56,12 +56,12 @@ namespace RedgifsDownloader.ViewModel
         }
 
 
-        public RedditViewModel(IRedditApiService api, IRedditAuthService auth, RedditDownloadCoordinator coordinator, ILogService logger)
+        public RedditViewModel(IRedditApiService api, IRedditAuthService auth, RedditDownloadCoordinator coordinator,RedditImageDownloadService downloader, ILogService logger)
         {
             _auth = auth;
             _api = api;
             _logger = logger;
-            _downloader = new RedditImageDownloadService();
+            _downloader = downloader;
             _coordinator = coordinator;
 
             LoginCommand = new RelayCommand(async _ => await TryLogin());

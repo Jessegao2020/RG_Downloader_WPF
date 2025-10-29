@@ -37,7 +37,9 @@ namespace RedgifsDownloader.Services.Reddit
 
                 var response = await _http.GetAsync(url);
                 response.EnsureSuccessStatusCode();
-                string json = await response.Content.ReadAsStringAsync();
+                string json = await response.Content.ReadAsStringAsync(); Debug.WriteLine(JsonSerializer.Serialize(
+    JsonDocument.Parse(json).RootElement,
+    new JsonSerializerOptions { WriteIndented = true }));
 
                 using var doc = JsonDocument.Parse(json);
                 var data = doc.RootElement.GetProperty("data");
