@@ -27,6 +27,6 @@ namespace RedgifsDownloader.Services.Reddit
                 }
                 catch (Exception ex) { Debug.WriteLine($"[DownloadError] {url} => {ex.Message}"); } 
             }
-        }
+        }   
     }
 }
