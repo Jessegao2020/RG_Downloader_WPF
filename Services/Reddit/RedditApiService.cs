@@ -11,10 +11,12 @@ namespace RedgifsDownloader.Services.Reddit
     {
         private readonly IRedditAuthService _auth;
         private readonly HttpClient _http = new();
+        private readonly ILogService _logger;
 
-        public RedditApiService(IRedditAuthService auth)
+        public RedditApiService(IRedditAuthService auth, ILogService logger)
         {
             _auth = auth;
+            _logger = logger;
         }
 
         public async IAsyncEnumerable<RedditPost> StreamUserImagePostsAsync(string username)
@@ -35,11 +37,24 @@ namespace RedgifsDownloader.Services.Reddit
                 if (!string.IsNullOrEmpty(after))
                     url += $"&after={after}";
 
-                var response = await _http.GetAsync(url);
-                response.EnsureSuccessStatusCode();
-                string json = await response.Content.ReadAsStringAsync(); Debug.WriteLine(JsonSerializer.Serialize(
-    JsonDocument.Parse(json).RootElement,
-    new JsonSerializerOptions { WriteIndented = true }));
+                string? json = null;
+                try
+                {
+                    var response = await _http.GetAsync(url);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var errorbody = await response.Content.ReadAsStringAsync();
+                        _logger.ShowMessage($"[Reddit API]: {response.StatusCode}");
+                        yield break;
+                    }
+
+                    json = await response.Content.ReadAsStringAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ShowMessage($"网络异常: {ex.Message}");
+                }
 
                 using var doc = JsonDocument.Parse(json);
                 var data = doc.RootElement.GetProperty("data");
@@ -48,8 +63,6 @@ namespace RedgifsDownloader.Services.Reddit
 
                 foreach (var post in pagePosts)
                     yield return post;  //理解返回发现的图片
-
-
 
                 // 取分页游标
 

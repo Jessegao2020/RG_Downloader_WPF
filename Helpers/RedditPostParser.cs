@@ -55,13 +55,14 @@ namespace RedgifsDownloader.Helpers
                             u = ConvertPreviewToDirect(u);
 
                             if (IsImageUrl(u))
-                                results.Add(new RedditPost { Title = title, Url = u, IsImage = true });
+                                results.Add(new RedditPost { Title = title, Id = kv.Name, Url = u, IsImage = true });
                         }
                     }
                 }
                 else if (IsImageUrl(url))
                 {
-                    results.Add(new RedditPost { Title = title, Url = url!, IsImage = true });
+                    string id = ExtractIdFromUrl(url);
+                    results.Add(new RedditPost { Title = title, Id = id, Url = url!, IsImage = true });
                 }
             }
 
@@ -131,6 +132,13 @@ namespace RedgifsDownloader.Helpers
                 return "";
 
             return url;
+        }
+
+        private static string ExtractIdFromUrl(string url)
+        {
+            // 匹配 i.redd.it/xxxxx.jpg 中的 xxxxx
+            var match = Regex.Match(url, @"redd\.it/([A-Za-z0-9]+)", RegexOptions.IgnoreCase);
+            return match.Success ? match.Groups[1].Value : "unknown";
         }
     }
 }

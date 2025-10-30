@@ -1,8 +1,7 @@
-﻿using System.Diagnostics;
+﻿using RedgifsDownloader.Interfaces;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using RedgifsDownloader.Interfaces;
 
 namespace RedgifsDownloader.Services.Reddit
 {
@@ -19,11 +18,14 @@ namespace RedgifsDownloader.Services.Reddit
             _downloader = downloader;
         }
 
-        public async Task<(int downloaded, int skipped)> DownloadAllImagesAsync(string username, string baseDir, int concurrency = 8)
+        public async Task<(int downloaded, int skipped)> DownloadAllImagesAsync(string username,
+                                                                                string baseDir,
+                                                                                int concurrency = 8,
+                                                                                Action<string>? OnStatus = null,
+                                                                                Action<int>? OnDownloadedCountChanged = null)
         {
-            Directory.CreateDirectory(baseDir);
-
             var posts = _api.StreamUserImagePostsAsync(username);
+
             int downloaded = 0, skipped = 0;
             using var semaphore = new SemaphoreSlim(concurrency);
 
@@ -33,7 +35,8 @@ namespace RedgifsDownloader.Services.Reddit
             {
                 if (string.IsNullOrEmpty(post.Url)) continue;
 
-                string path = Path.Combine(baseDir, Path.GetFileName(post.Url));
+                string fileName = RedditFileService.MakeSafeFileName(post);
+                string path = Path.Combine(baseDir, fileName);
                 if (File.Exists(path)) { skipped++; continue; }
 
                 await semaphore.WaitAsync();
@@ -42,7 +45,20 @@ namespace RedgifsDownloader.Services.Reddit
                     try
                     {
                         bool success = await _downloader.DownloadAsync(post.Url, path);
-                        if (success) Interlocked.Increment(ref downloaded);
+                        if (success)
+                        {
+                            int newCount = Interlocked.Increment(ref downloaded);
+                            OnStatus?.Invoke($"[Downloaded]: {fileName}.");
+                            OnDownloadedCountChanged?.Invoke(downloaded);
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        OnStatus?.Invoke($"[Http Error]: {fileName} => {ex.StatusCode}.");
+                    }
+                    catch (Exception ex)
+                    {
+                        OnStatus?.Invoke($"[Error]: {fileName} => {ex.Message}.");
                     }
                     finally
                     {
