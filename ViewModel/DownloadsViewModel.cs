@@ -28,9 +28,6 @@ namespace RedgifsDownloader.ViewModel
         public ObservableCollection<VideoItem> Videos { get; } = new();
         public ICollectionView ActiveVideosView { get; }
         public ICollectionView FailedVideosView { get; }
-        public string CrawlBtnText => IsCrawling ? "Crawling.." : "Crawl";
-        public string DownloadBtnText => IsDownloading ? "下载中" : "下载";
-        public int VideosCount => Videos.Count;
         public bool IsCrawling
         {
             get => _isCrawling;
@@ -57,16 +54,9 @@ namespace RedgifsDownloader.ViewModel
                 ((RelayCommand)RetryAllCommand).RaiseCanExecuteChanged();
             }
         }
-        public string Username
-        {
-            get => _username;
-            set
-            {
-                _username = value;
-                OnPropertyChanged();
-                (CrawlCommand as RelayCommand)?.RaiseCanExecuteChanged();
-            }
-        }
+        private static bool IsFailed(VideoItem v)
+            => v.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled;
+        public int VideosCount => Videos.Count;
         public int CompletedCount
         {
             get => _completedCount;
@@ -82,18 +72,16 @@ namespace RedgifsDownloader.ViewModel
                 (RetryAllCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
         }
-        public ObservableCollection<int> MaxConcurrencyOptions { get; } = new(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
-        public int MaxConcurrency
+        public string CrawlBtnText => IsCrawling ? "Crawling.." : "Crawl";
+        public string DownloadBtnText => IsDownloading ? "下载中" : "下载";
+        public string Username
         {
-            get => _settingsService.MaxDownloadCount;
+            get => _username;
             set
             {
-                if (_settingsService.MaxDownloadCount != value)
-                {
-                    _settingsService.MaxDownloadCount = value;
-                    _settingsService.Save();
-                    OnPropertyChanged();
-                }
+                _username = value;
+                OnPropertyChanged();
+                (CrawlCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
         }
 
@@ -101,7 +89,6 @@ namespace RedgifsDownloader.ViewModel
         public ICommand DownloadCommand { get; }
         public ICommand StopCommand { get; }
         public ICommand RetryAllCommand { get; }
-
         #endregion
 
         public DownloadsViewModel(DownloadCoordinator coordinator, ICrawlService crawler, ISettingsService settingsService)
@@ -127,8 +114,6 @@ namespace RedgifsDownloader.ViewModel
             // 订阅进度刷新事件
             _coordinator.StatusUpdated += RefreshViews;
 
-            MaxConcurrency = Properties.Settings.Default.MaxDownloadCount;
-
             #region Commands
             CrawlCommand = new RelayCommand(async _ => await StartCrawlAsync(), _ => !IsCrawling && !IsDownloading && !string.IsNullOrWhiteSpace(Username));
 
@@ -146,8 +131,6 @@ namespace RedgifsDownloader.ViewModel
                 (DownloadCommand as RelayCommand)?.RaiseCanExecuteChanged();
             };
         }
-        private static bool IsFailed(VideoItem v)
-            => v.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled;
 
         private async Task StartCrawlAsync()
         {
@@ -184,7 +167,7 @@ namespace RedgifsDownloader.ViewModel
                 return;
             }
 
-            await StartDownloadAsync(pendingVideos, MaxConcurrency, strictCheck: false);
+            await StartDownloadAsync(pendingVideos, _settingsService.MaxDownloadCount, strictCheck: false);
         }
 
         public async Task StartDownloadAsync(IEnumerable<VideoItem> videos, int concurrency, bool strictCheck = false)
@@ -222,7 +205,7 @@ namespace RedgifsDownloader.ViewModel
                                 or VideoStatus.Canceled)
                 .ToList();
 
-            await StartDownloadAsync(failedVideos, MaxConcurrency, strictCheck: true);
+            await StartDownloadAsync(failedVideos, _settingsService.MaxDownloadCount, strictCheck: true);
         }
 
         private void CancelDownload() => _cts?.Cancel();
