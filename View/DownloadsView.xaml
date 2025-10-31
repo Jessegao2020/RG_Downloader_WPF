@@ -53,14 +53,29 @@
             MinHeight="120"
             Margin="0,0,0,5"
             HorizontalAlignment="Stretch"
+            GridViewColumnHeader.Click="GridViewColumnHeader_Click"
             ItemsSource="{Binding ActiveVideosView}"
-            MouseDoubleClick="ListViewResults_MouseDoubleClick">
+            MouseDoubleClick="ListViewResults_MouseDoubleClick"
+            SelectedItem="{Binding SelectedVideos, Mode=TwoWay}"
+            SelectionMode="Extended">
             <ListView.View>
                 <GridView>
+                    <GridViewColumn Width="25">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     <GridViewColumn
                         Width="210"
                         DisplayMemberBinding="{Binding Id}"
                         Header="Title" />
+                    <GridViewColumn Width="70" DisplayMemberBinding="{Binding DisplayCreateDate}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Content="日期" Tag="SortCreateDate" />
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
                     <GridViewColumn
                         Width="60"
                         DisplayMemberBinding="{Binding DisplayStatus}"

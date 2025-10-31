@@ -17,6 +17,11 @@ namespace RedgifsDownloader.ViewModel
         private readonly ICrawlService _crawler;
         private readonly DownloadCoordinator _coordinator;
         private readonly ISettingsService _settingsService;
+        private readonly ILogService _logger;
+
+        public ObservableCollection<VideoViewModel> Videos { get; } = new();
+        public ICollectionView ActiveVideosView { get; }
+        public ICollectionView FailedVideosView { get; }
 
         private CancellationTokenSource? _cts;
         private bool _isCrawling;
@@ -25,9 +30,16 @@ namespace RedgifsDownloader.ViewModel
         private int _failedCount;
         private string _username;
 
-        public ObservableCollection<VideoItem> Videos { get; } = new();
-        public ICollectionView ActiveVideosView { get; }
-        public ICollectionView FailedVideosView { get; }
+        public string Username
+        {
+            get => _username;
+            set
+            {
+                _username = value;
+                OnPropertyChanged();
+                (CrawlCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
+        }
         public bool IsCrawling
         {
             get => _isCrawling;
@@ -54,9 +66,6 @@ namespace RedgifsDownloader.ViewModel
                 ((RelayCommand)RetryAllCommand).RaiseCanExecuteChanged();
             }
         }
-        private static bool IsFailed(VideoItem v)
-            => v.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled;
-        public int VideosCount => Videos.Count;
         public int CompletedCount
         {
             get => _completedCount;
@@ -72,18 +81,12 @@ namespace RedgifsDownloader.ViewModel
                 (RetryAllCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
         }
+
+        private static bool IsFailed(VideoViewModel v)
+            => v.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled;
+        public int VideosCount => Videos.Count;
         public string CrawlBtnText => IsCrawling ? "Crawling.." : "Crawl";
         public string DownloadBtnText => IsDownloading ? "下载中" : "下载";
-        public string Username
-        {
-            get => _username;
-            set
-            {
-                _username = value;
-                OnPropertyChanged();
-                (CrawlCommand as RelayCommand)?.RaiseCanExecuteChanged();
-            }
-        }
 
         public ICommand CrawlCommand { get; }
         public ICommand DownloadCommand { get; }
@@ -91,23 +94,24 @@ namespace RedgifsDownloader.ViewModel
         public ICommand RetryAllCommand { get; }
         #endregion
 
-        public DownloadsViewModel(DownloadCoordinator coordinator, ICrawlService crawler, ISettingsService settingsService)
+        public DownloadsViewModel(DownloadCoordinator coordinator, ICrawlService crawler, ISettingsService settingsService, ILogService logger)
         {
             _crawler = crawler;
             _coordinator = coordinator;
             _settingsService = settingsService;
+            _logger = logger;
 
             ActiveVideosView = CollectionViewSource.GetDefaultView(Videos);
             ActiveVideosView.Filter = o =>
             {
-                var v = (VideoItem)o;
+                var v = (VideoViewModel)o;
                 return v.Status is not (VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled);
             };
 
             FailedVideosView = new CollectionViewSource { Source = Videos }.View;
             FailedVideosView.Filter = o =>
             {
-                var v = (VideoItem)o;
+                var v = (VideoViewModel)o;
                 return v.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled;
             };
 
@@ -138,34 +142,50 @@ namespace RedgifsDownloader.ViewModel
             Videos.Clear();
             try
             {
-                var list = await _crawler.CrawlAsync(Username, msg => MessageBox.Show(msg, "爬虫错误", MessageBoxButton.OK, MessageBoxImage.Error));
-
-                if (list.Any())
+                await Task.Run(async () =>
                 {
-                    foreach (var video in list)
-                        Videos.Add(video);
-
-                    MessageBox.Show($"共爬取到 {Videos.Count} 个视频。");
-                }
+                    await foreach (var video in _crawler.CrawlAsync(Username, msg =>
+                    {
+                        Application.Current.Dispatcher.InvokeAsync(() =>
+                            MessageBox.Show(msg, "爬虫错误", MessageBoxButton.OK, MessageBoxImage.Error));
+                    }))
+                    {
+                        // 注意：不能在后台线程直接改 UI
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            Videos.Add(new VideoViewModel(video));
+                            OnPropertyChanged(nameof(VideosCount));
+                        });
+                    }
+                });
             }
-            catch (Exception ex) { MessageBox.Show($"爬虫异常: {ex.Message}"); }
-            finally { IsCrawling = false; }
+            catch (Exception ex)
+            {
+                _logger.ShowMessage($"爬虫异常: {ex.Message}");
+            }
+            finally
+            {
+                IsCrawling = false;
+                _logger.ShowMessage($"任务结束，共爬取{Videos.Count}个视频");
+            }
         }
 
         private async Task ExecuteDownloadAsync()
         {
-            var pendingVideos = Videos.Where(video => video.Status is not
+            var pendingViewModels = Videos.Where(vm => vm.Status is not
                                             (VideoStatus.NetworkError
                                             or VideoStatus.WriteError
                                             or VideoStatus.UnknownError
                                             or VideoStatus.Canceled))
                 .ToList();
 
-            if (!pendingVideos.Any())
+            if (!pendingViewModels.Any())
             {
-                MessageBox.Show("没有可下载视频。");
+                _logger.ShowMessage("没有可下载视频。");
                 return;
             }
+
+            var pendingVideos = pendingViewModels.Select(vm => vm.Item).ToList();
 
             await StartDownloadAsync(pendingVideos, _settingsService.MaxDownloadCount, strictCheck: false);
         }
@@ -181,7 +201,7 @@ namespace RedgifsDownloader.ViewModel
                 CompletedCount = summary.Completed;
                 FailedCount = summary.Failed;
 
-                MessageBox.Show($"任务结束。\n成功: {summary.Completed}，失败: {summary.Failed}。");
+                _logger.ShowMessage($"任务结束。\n成功: {summary.Completed}，失败: {summary.Failed}。");
             }
             catch (OperationCanceledException) { }
             finally
@@ -197,13 +217,15 @@ namespace RedgifsDownloader.ViewModel
 
         private async Task RetryAllAsync()
         {
-            var failedVideos = Videos.Where(video => video.Status is
+            var failedViewModels = Videos.Where(vm => vm.Status is
                                 VideoStatus.Failed
                                 or VideoStatus.NetworkError
                                 or VideoStatus.UnknownError
                                 or VideoStatus.WriteError
                                 or VideoStatus.Canceled)
                 .ToList();
+
+            var failedVideos = failedViewModels.Select(vm => vm.Item).ToList();
 
             await StartDownloadAsync(failedVideos, _settingsService.MaxDownloadCount, strictCheck: true);
         }

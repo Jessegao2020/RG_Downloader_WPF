@@ -7,7 +7,7 @@ namespace RedgifsDownloader.Services
 {
     public class CrawlService : ICrawlService
     {
-        public async Task<List<VideoItem>> CrawlAsync (string userName, Action<string>? onError = null)
+        public async IAsyncEnumerable<VideoItem> CrawlAsync(string userName, Action<string>? onError = null)
         {
             string spiderPath = System.IO.Path.Combine(AppContext.BaseDirectory, "videoSpider");
 
@@ -25,39 +25,39 @@ namespace RedgifsDownloader.Services
                 }
             };
 
-            var results = new List<VideoItem>();
+            process.Start();
 
-            process.OutputDataReceived += (_, e) =>
+            _ = Task.Run(async () =>
             {
-                if (string.IsNullOrEmpty(e.Data)) return;
+                while (!process.StandardError.EndOfStream)
+                {
+                    var err = await process.StandardError.ReadLineAsync();
+                    if (!string.IsNullOrWhiteSpace(err) && err.StartsWith("ERROR_MSG:"))
+                        onError?.Invoke(err.Substring("ERROR_MSG:".Length).Trim());
+                }
+            });
 
+            while (!process.StandardOutput.EndOfStream)
+            {
+                var line = await process.StandardOutput.ReadLineAsync();
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                VideoItem? parsed = null;
                 try
                 {
-                    var video = JsonSerializer.Deserialize<VideoItem>(e.Data);
-                    if (video != null)
-                    {
-                        video.Status = VideoStatus.Pending;
-                        lock(results) results.Add(video);
-                    }
+                    parsed = JsonSerializer.Deserialize<VideoItem>(line);
+                    if (parsed != null) parsed.Status = VideoStatus.Pending;
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"JSON parse error: {ex.Message}: {e.Data}");
+                    Debug.WriteLine($"JSON parse error: {ex.Message}: {line}");
                 }
-            };
 
-            process.ErrorDataReceived += (_, e) =>
-            {
-                if (!string.IsNullOrWhiteSpace(e.Data) && e.Data.StartsWith("ERROR_MSG:"))
-                    onError?.Invoke(e.Data.Substring("ERROR_MSG:".Length).Trim());
-            };
-
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+                if (parsed != null)   // <- yield 在 try/catch 外
+                    yield return parsed;
+            }
 
             await process.WaitForExitAsync();
-            return results;
         }
     }
 }

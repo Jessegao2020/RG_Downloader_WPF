@@ -80,6 +80,7 @@ class VideosSpider(scrapy.Spider):
                 "Username": userName,
                 "Id": gif.get("id"),
                 "Url": url,
+                "CreateDateRaw": gif.get("createDate"),
                 "Token": self.token
             }
             print(json.dumps(item, ensure_ascii=False))
