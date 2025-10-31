@@ -56,11 +56,18 @@
             GridViewColumnHeader.Click="GridViewColumnHeader_Click"
             ItemsSource="{Binding ActiveVideosView}"
             MouseDoubleClick="ListViewResults_MouseDoubleClick"
-            SelectedItem="{Binding SelectedVideos, Mode=TwoWay}"
             SelectionMode="Extended">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Width="25">
+                    <GridViewColumn Width="30">
+                        <GridViewColumn.Header>
+                            <CheckBox
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Command="{Binding SelectAllCommand}"
+                                CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
+                                IsChecked="{Binding IsAllSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </GridViewColumn.Header>
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" />
@@ -68,16 +75,16 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
                     <GridViewColumn
-                        Width="210"
+                        Width="130"
                         DisplayMemberBinding="{Binding Id}"
                         Header="Title" />
-                    <GridViewColumn Width="70" DisplayMemberBinding="{Binding DisplayCreateDate}">
+                    <GridViewColumn Width="65" DisplayMemberBinding="{Binding DisplayCreateDate}">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Content="日期" Tag="SortCreateDate" />
                         </GridViewColumn.Header>
                     </GridViewColumn>
                     <GridViewColumn
-                        Width="60"
+                        Width="50"
                         DisplayMemberBinding="{Binding DisplayStatus}"
                         Header="状态" />
                 </GridView>

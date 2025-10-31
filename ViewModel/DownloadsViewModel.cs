@@ -29,6 +29,7 @@ namespace RedgifsDownloader.ViewModel
         private int _completedCount;
         private int _failedCount;
         private string _username;
+        private bool _isAllSelected;
 
         public string Username
         {
@@ -66,6 +67,18 @@ namespace RedgifsDownloader.ViewModel
                 ((RelayCommand)RetryAllCommand).RaiseCanExecuteChanged();
             }
         }
+        public bool IsAllSelected
+        {
+            get => _isAllSelected;
+            set
+            {
+                if (_isAllSelected == value) return;
+                _isAllSelected = value;
+                OnPropertyChanged();
+
+                SelectAllCommand.Execute(value);
+            }
+        }
         public int CompletedCount
         {
             get => _completedCount;
@@ -92,6 +105,7 @@ namespace RedgifsDownloader.ViewModel
         public ICommand DownloadCommand { get; }
         public ICommand StopCommand { get; }
         public ICommand RetryAllCommand { get; }
+        public ICommand SelectAllCommand { get; }
         #endregion
 
         public DownloadsViewModel(DownloadCoordinator coordinator, ICrawlService crawler, ISettingsService settingsService, ILogService logger)
@@ -120,12 +134,15 @@ namespace RedgifsDownloader.ViewModel
 
             #region Commands
             CrawlCommand = new RelayCommand(async _ => await StartCrawlAsync(), _ => !IsCrawling && !IsDownloading && !string.IsNullOrWhiteSpace(Username));
-
             DownloadCommand = new RelayCommand(async _ => await ExecuteDownloadAsync(), _ => !IsDownloading && Videos.Any());
-
             StopCommand = new RelayCommand(_ => CancelDownload(), _ => IsDownloading);
-
             RetryAllCommand = new RelayCommand(async _ => await RetryAllAsync(), _ => FailedCount > 0 && !IsDownloading);
+            SelectAllCommand = new RelayCommand(param =>
+            {
+                bool select = param is bool b && b;
+                foreach (var v in Videos)
+                    v.IsSelected = select;
+            });
 
             #endregion
 
@@ -134,6 +151,14 @@ namespace RedgifsDownloader.ViewModel
                 OnPropertyChanged(nameof(VideosCount));
                 (DownloadCommand as RelayCommand)?.RaiseCanExecuteChanged();
             };
+
+            // 联动刷新 IsAllSelected
+            foreach (var v in Videos)
+                v.PropertyChanged += (_, e) =>
+                {
+                    if (e.PropertyName == nameof(VideoViewModel.IsSelected))
+                        UpdateIsAllSelected();
+                };
         }
 
         private async Task StartCrawlAsync()
@@ -172,22 +197,18 @@ namespace RedgifsDownloader.ViewModel
 
         private async Task ExecuteDownloadAsync()
         {
-            var pendingViewModels = Videos.Where(vm => vm.Status is not
-                                            (VideoStatus.NetworkError
-                                            or VideoStatus.WriteError
-                                            or VideoStatus.UnknownError
-                                            or VideoStatus.Canceled))
-                .ToList();
+            var selectedVideos = Videos
+        .Where(vm => vm.IsSelected)
+        .Select(vm => vm.Item)
+        .ToList();
 
-            if (!pendingViewModels.Any())
+            if (!selectedVideos.Any())
             {
-                _logger.ShowMessage("没有可下载视频。");
+                _logger.ShowMessage("请选择要下载的视频。");
                 return;
             }
 
-            var pendingVideos = pendingViewModels.Select(vm => vm.Item).ToList();
-
-            await StartDownloadAsync(pendingVideos, _settingsService.MaxDownloadCount, strictCheck: false);
+            await StartDownloadAsync(selectedVideos, _settingsService.MaxDownloadCount, strictCheck: false);
         }
 
         public async Task StartDownloadAsync(IEnumerable<VideoItem> videos, int concurrency, bool strictCheck = false)
@@ -242,6 +263,22 @@ namespace RedgifsDownloader.ViewModel
                 CompletedCount = Videos.Count(video => video.Status is VideoStatus.Completed or VideoStatus.Exists);
                 FailedCount = Videos.Count(v => IsFailed(v));
             });
+        }
+
+        private void VideoSelectionChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(VideoViewModel.IsSelected))
+            {
+                // 检查是否所有都选中
+                if (Videos.Count > 0)
+                    IsAllSelected = Videos.All(v => v.IsSelected);
+            }
+        }
+
+        private void UpdateIsAllSelected()
+        {
+            if (Videos.Count == 0) return;
+            IsAllSelected = Videos.All(v => v.IsSelected);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

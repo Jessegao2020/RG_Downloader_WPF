@@ -24,6 +24,19 @@ namespace RedgifsDownloader.ViewModel
         public string Username => Item.Username ?? "";
         public string Url => Item.Url ?? "";
 
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (_isSelected != value)
+                {
+                    _isSelected = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public VideoStatus Status => Item.Status;
         public double? Progress => Item.Progress;
         public long? CreateDateRaw
