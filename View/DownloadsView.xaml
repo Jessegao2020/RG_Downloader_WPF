@@ -57,6 +57,11 @@
             ItemsSource="{Binding ActiveVideosView}"
             MouseDoubleClick="ListViewResults_MouseDoubleClick"
             SelectionMode="Extended">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                </Style>
+            </ListView.ItemContainerStyle>
             <ListView.View>
                 <GridView>
                     <GridViewColumn Width="30">
@@ -90,7 +95,6 @@
                 </GridView>
             </ListView.View>
         </ListView>
-
         <Grid
             Grid.Row="2"
             Height="20"

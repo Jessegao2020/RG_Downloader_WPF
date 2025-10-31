@@ -9,7 +9,6 @@ using System.Windows.Input;
 
 namespace RedgifsDownloader.ViewModel
 {
-
     public class RedditViewModel : INotifyPropertyChanged
     {
         private readonly IRedditAuthService _auth;

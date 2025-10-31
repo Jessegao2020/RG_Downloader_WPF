@@ -75,8 +75,6 @@ namespace RedgifsDownloader.ViewModel
                 if (_isAllSelected == value) return;
                 _isAllSelected = value;
                 OnPropertyChanged();
-
-                SelectAllCommand.Execute(value);
             }
         }
         public int CompletedCount
@@ -95,7 +93,7 @@ namespace RedgifsDownloader.ViewModel
             }
         }
 
-        private static bool IsFailed(VideoViewModel v)
+        private bool IsFailed(VideoViewModel v)
             => v.Status is VideoStatus.WriteError or VideoStatus.NetworkError or VideoStatus.UnknownError or VideoStatus.Canceled;
         public int VideosCount => Videos.Count;
         public string CrawlBtnText => IsCrawling ? "Crawling.." : "Crawl";
@@ -142,6 +140,7 @@ namespace RedgifsDownloader.ViewModel
                 bool select = param is bool b && b;
                 foreach (var v in Videos)
                     v.IsSelected = select;
+                IsAllSelected = select;
             });
 
             #endregion
@@ -255,7 +254,7 @@ namespace RedgifsDownloader.ViewModel
 
         private void RefreshViews()
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.BeginInvoke(() =>
             {
                 ActiveVideosView.Refresh();
                 FailedVideosView.Refresh();
@@ -263,16 +262,6 @@ namespace RedgifsDownloader.ViewModel
                 CompletedCount = Videos.Count(video => video.Status is VideoStatus.Completed or VideoStatus.Exists);
                 FailedCount = Videos.Count(v => IsFailed(v));
             });
-        }
-
-        private void VideoSelectionChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(VideoViewModel.IsSelected))
-            {
-                // 检查是否所有都选中
-                if (Videos.Count > 0)
-                    IsAllSelected = Videos.All(v => v.IsSelected);
-            }
         }
 
         private void UpdateIsAllSelected()
