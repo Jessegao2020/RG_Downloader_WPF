@@ -15,19 +15,44 @@ namespace RedgifsDownloader.Services
             if (ct.IsCancellationRequested || string.IsNullOrEmpty(url))
                 return new DownloadResult(VideoStatus.Canceled, 0);
 
+            string tempPath = filePath + ".tmp";
+
             try
             {
-                using var response = await SendRequestAsync(url, authToken, ct);  // 发送Http请求
-                response.EnsureSuccessStatusCode();     // 确保服务器返回码为200正常，否则抛异常
+                using var response = await SendRequestAsync(url, authToken, ct);
+                response.EnsureSuccessStatusCode();
 
-                long totalBytes = response.Content.Headers.ContentLength ?? -1L;    // 读取文件总大小，如无返回-1
-                using var stream = await response.Content.ReadAsStreamAsync(ct);    // 接收文件流
+                long totalBytes = response.Content.Headers.ContentLength ?? -1L;
+                using var stream = await response.Content.ReadAsStreamAsync(ct);
 
-                return new DownloadResult(await SaveToFileAsync(stream, filePath, totalBytes, onProgress, ct), totalBytes); 
+                // 写入临时文件
+                var status = await SaveToFileAsync(stream, tempPath, totalBytes, onProgress, ct);
+
+                if (status == VideoStatus.Completed)
+                {
+                    // 原子替换
+                    if (File.Exists(filePath))
+                        File.Delete(filePath);
+
+                    File.Move(tempPath, filePath);
+                }
+                else
+                {
+                    // 下载中断或失败则删除临时文件
+                    if (File.Exists(tempPath))
+                        File.Delete(tempPath);
+                }
+
+                return new DownloadResult(status, totalBytes);
             }
-            catch (HttpRequestException) { return new DownloadResult(VideoStatus.NetworkError, 0); }
+            catch (HttpRequestException)
+            {
+                CleanupTemp(tempPath);
+                return new DownloadResult(VideoStatus.NetworkError, 0);
+            }
             catch (Exception ex)
             {
+                CleanupTemp(tempPath);
                 Debug.WriteLine(ex.Message);
                 return new DownloadResult(VideoStatus.UnknownError, 0);
             }
@@ -74,6 +99,16 @@ namespace RedgifsDownloader.Services
             catch (OperationCanceledException) { return VideoStatus.Canceled; }
             catch (IOException) { return VideoStatus.WriteError; }
             finally { ArrayPool<byte>.Shared.Return(buffer); }
+        }
+
+        private void CleanupTemp(string tempPath)
+        {
+            try
+            {
+                if (File.Exists(tempPath))
+                    File.Delete(tempPath);
+            }
+            catch { }
         }
 
         public record DownloadResult(VideoStatus Status, long TotalBytes);
