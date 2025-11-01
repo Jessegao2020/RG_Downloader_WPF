@@ -1,9 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
 using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Services;
+using RedgifsDownloader.Services.DupeCleaner;
 using RedgifsDownloader.Services.Reddit;
 using RedgifsDownloader.ViewModel;
-using System.Windows;
 
 namespace RedgifsDownloader
 {
@@ -21,6 +22,7 @@ namespace RedgifsDownloader
             services.AddSingleton<DownloadsViewModel>();
             services.AddSingleton<SettingsViewModel>();
             services.AddSingleton<RedditViewModel>();
+            services.AddSingleton<DupePicsCleanerViewModel>();
 
             // 中间层
             services.AddSingleton<ICrawlService, CrawlService>();
@@ -35,6 +37,7 @@ namespace RedgifsDownloader
             services.AddSingleton<IRedditAuthService, RedditAuthService>();
             services.AddSingleton<ILogService, LogService>();
             services.AddSingleton<RedditApiService>();
+            services.AddSingleton<DupeCleanerService>();
             services.AddHttpClient<RedditImageDownloadService>(client =>
             {
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("RedgifsDownloader/1.0 (by u/test_user)");

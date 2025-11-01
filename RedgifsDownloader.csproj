@@ -25,6 +25,9 @@
 	  <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
 	  <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
 	</ItemGroup>
+  <ItemGroup>
+    <None Remove="Downloads\**\*.*" />
+  </ItemGroup>
 
 	<ItemGroup>
 		<Compile Update="Properties\Settings.Designer.cs">

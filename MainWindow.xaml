@@ -23,6 +23,7 @@
             <MenuItem Header="文件" Command="{Binding NavigateCommand}">
                 <MenuItem Header="RedGifs" Command="{Binding NavigateCommand}" CommandParameter="Redgifs"/>
                 <MenuItem Header="Reddit" Command="{Binding NavigateCommand}" CommandParameter="Reddit"/>
+                <MenuItem Header="Dupe Cleaner" Command="{Binding NavigateCommand}" CommandParameter="Cleaner"/>
                 <MenuItem Header="设置" Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
             </MenuItem>
         </Menu>
