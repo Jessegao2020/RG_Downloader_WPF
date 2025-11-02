@@ -18,7 +18,7 @@ namespace RedgifsDownloader.Services
             string userName = string.IsNullOrWhiteSpace(video.Username) ? "Unknown" : video.Username.Trim();
             string saveDir = System.IO.Path.Combine(baseDir, userName);
             Directory.CreateDirectory(saveDir);
-            return System.IO.Path.Combine(saveDir, video.Id + ".mp4");
+            return System.IO.Path.Combine(saveDir, System.IO.Path.GetFileName(new Uri(video.Url).AbsolutePath));
         }
 
         public bool Exists(VideoItem video, string baseDir, bool strictCheck = false)
