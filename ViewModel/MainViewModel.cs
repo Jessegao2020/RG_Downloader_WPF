@@ -35,6 +35,7 @@ namespace RedgifsDownloader.ViewModel
                 "Redgifs" => _provider.GetRequiredService<DownloadsViewModel>(),
                 "Reddit" => _provider.GetRequiredService<RedditViewModel>(),
                 "Cleaner" => _provider.GetRequiredService<DupePicsCleanerViewModel>(),
+                "ImageSim" => _provider.GetRequiredService<ImageSimilarityViewModel>(),
                 _ => CurrentView
             };
         }

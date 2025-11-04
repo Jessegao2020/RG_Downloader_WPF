@@ -19,5 +19,8 @@
         <DataTemplate DataType="{x:Type vm:DupePicsCleanerViewModel}">
             <views:DupePicsCleanerView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ImageSimilarityViewModel}">
+            <views:ImageSimilarityView />
+        </DataTemplate>
     </Application.Resources>
 </Application>

@@ -31,6 +31,10 @@
                     Header="Reddit" />
                 <MenuItem
                     Command="{Binding NavigateCommand}"
+                    CommandParameter="ImageSim"
+                    Header="ImageSim" />
+                <MenuItem
+                    Command="{Binding NavigateCommand}"
                     CommandParameter="Cleaner"
                     Header="Dupe Cleaner" />
             </MenuItem>

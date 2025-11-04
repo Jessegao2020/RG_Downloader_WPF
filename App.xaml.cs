@@ -22,6 +22,7 @@ namespace RedgifsDownloader
             services.AddSingleton<DownloadsViewModel>();
             services.AddSingleton<SettingsViewModel>();
             services.AddSingleton<RedditViewModel>();
+            services.AddSingleton<ImageSimilarityViewModel>();
             services.AddSingleton<DupePicsCleanerViewModel>();
 
             // 中间层
