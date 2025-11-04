@@ -39,13 +39,12 @@ namespace RedgifsDownloader
             services.AddSingleton<ILogService, LogService>();
             services.AddSingleton<RedditApiService>();
             services.AddSingleton<DupeCleanerService>();
+            services.AddSingleton<RenameService>();
             services.AddHttpClient<RedditImageDownloadService>(client =>
             {
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("RedgifsDownloader/1.0 (by u/test_user)");
                 client.DefaultRequestHeaders.Add("Cookie", "over18=1");
             });
-
-
 
             //生成容器
             ServiceProvider = services.BuildServiceProvider();

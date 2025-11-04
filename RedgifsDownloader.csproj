@@ -21,6 +21,7 @@
 		<Content Include="Resources\icon.ico" />
 	</ItemGroup>
 	<ItemGroup>
+	  <PackageReference Include="Extended.Wpf.Toolkit" Version="5.0.0" />
 	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
 	  <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
 	  <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
@@ -42,6 +43,10 @@
 			<Generator>SettingsSingleFileGenerator</Generator>
 			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
 		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="phash\" />
 	</ItemGroup>
 
 </Project>
