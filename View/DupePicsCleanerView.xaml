@@ -46,7 +46,7 @@
             Margin="5,10,0,0"
             HorizontalAlignment="Left"
             Command="{Binding DeleteCommand}"
-            Content="执行删除"
+            Content="删除所有重复"
             IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
         <Button
             Grid.Row="1"
