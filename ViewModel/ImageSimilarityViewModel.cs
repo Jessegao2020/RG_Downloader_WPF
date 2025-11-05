@@ -87,7 +87,6 @@ namespace RedgifsDownloader.ViewModel
             int dupCount = 0;
             foreach (var g in groups.Values) { dupCount += g.Count; }
             Logger += $"检测到 {groups.Count} 组相似图片，共 {dupCount} 张。\n";
-            Logger += $"{sw.Elapsed.TotalSeconds:F2}秒。";
 
             Logger += "正在移动重复文件到 dupe 文件夹...\n";
             await Task.Run(() => FileMoveService.MoveToDupeFolder(FolderPath, groups));
