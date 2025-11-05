@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
 
 namespace RedgifsDownloader.ViewModel
@@ -81,15 +82,14 @@ namespace RedgifsDownloader.ViewModel
                 ProgressValue = (double)p.done / p.total * 100;
             });
 
-            var hashes = await Task.Run(() => ImageHashService.GetImageHashes(FolderPath, progress));
-            Logger += $"共检测到 {hashes.Count} 张图片。\n";
+            var hashes = await Task.Run(() => ImageHashService.GetImageHashes(FolderPath, progress, msg => Logger+=msg + "\n"));
 
             var groups = await Task.Run(() => ImageHashService.GroupSimilarImages(hashes, Threshold));
             int dupCount = 0;
-            foreach (var g in groups.Values)
-                dupCount += g.Count;
-
+            foreach (var g in groups.Values) { dupCount += g.Count; }
             Logger += $"检测到 {groups.Count} 组相似图片，共 {dupCount} 张。\n";
+
+            Logger += "正在移动重复文件到 dupe 文件夹...\n";
             await Task.Run(() => FileMoveService.MoveToDupeFolder(FolderPath, groups));
 
             sw.Stop();

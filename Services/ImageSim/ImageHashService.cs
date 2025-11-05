@@ -11,17 +11,22 @@ namespace RedgifsDownloader.Services.ImageSim
 {
     public class ImageHashService
     {
-        private const int N = 32; // DCT matrix size
-        private const int K = 8;  // Low-frequency block
+        private const int N = 32;
+        private const int K = 8;
         private static readonly float[,] Cos = BuildCos(N);
         private static readonly float[] Alpha = BuildAlpha(N);
 
-        public static ulong ComputeHash(string path)
+        public static (ulong normal, ulong flipped, (double loadMs, double resizeMs, double dctMs)) ComputeHash(string path)
         {
+            var sw = Stopwatch.StartNew();
             using var img = SixLabors.ImageSharp.Image.Load<Rgba32>(path);
-            img.Mutate(x => x.Resize(N, N).Grayscale());
+            double loadMs = sw.Elapsed.TotalMilliseconds;
 
-            // Extract grayscale bytes
+            sw.Restart();
+            img.Mutate(x => x.Resize(N, N).Grayscale());
+            double resizeMs = sw.Elapsed.TotalMilliseconds;
+
+            // 转灰度矩阵
             var gray = new byte[N * N];
             img.ProcessPixelRows(accessor =>
             {
@@ -36,15 +41,23 @@ namespace RedgifsDownloader.Services.ImageSim
                 }
             });
 
-            // Convert to float for DCT
+            sw.Restart();
+            ulong normal = ComputeHashFromGray(gray);
+            ulong flipped = ComputeHashFromGray(FlipGray(gray, N));
+            double dctMs = sw.Elapsed.TotalMilliseconds;
+
+            return (normal, flipped, (loadMs, resizeMs, dctMs));
+        }
+
+        private static ulong ComputeHashFromGray(byte[] gray)
+        {
             float[] input = new float[N * N];
             for (int i = 0; i < gray.Length; i++) input[i] = gray[i];
 
-            // Perform 2D DCT (separable)
             float[] temp = new float[N * N];
             float[] dct = new float[N * N];
 
-            // DCT rows
+            // DCT 行
             for (int y = 0; y < N; y++)
             {
                 int yBase = y * N;
@@ -57,7 +70,7 @@ namespace RedgifsDownloader.Services.ImageSim
                 }
             }
 
-            // DCT columns
+            // DCT 列
             for (int u = 0; u < N; u++)
             {
                 for (int v = 0; v < N; v++)
@@ -69,7 +82,6 @@ namespace RedgifsDownloader.Services.ImageSim
                 }
             }
 
-            // Extract 8x8 low-frequency AC coefficients (skip DC term)
             Span<float> ac = stackalloc float[K * K];
             int k = 0;
             for (int v = 1; v <= K; v++)
@@ -83,34 +95,43 @@ namespace RedgifsDownloader.Services.ImageSim
             ulong hash = 0UL;
             for (int i = 0; i < ac.Length; i++)
                 if (ac[i] > median) hash |= 1UL << i;
-
             return hash;
         }
 
         public static double Compare(ulong a, ulong b)
         {
-            // Hamming similarity (0~1)
             int diff = BitOperations.PopCount(a ^ b);
             return 1.0 - diff / 64.0;
         }
 
-        public static Dictionary<string, ulong> GetImageHashes(string folder, IProgress<(int done, int total)>? progress = null)
+        public static Dictionary<string, (ulong normal, ulong flipped)> GetImageHashes(
+            string folder, IProgress<(int done, int total)>? progress = null, Action<string>? log = null)
         {
-            var dict = new ConcurrentDictionary<string, ulong>(StringComparer.OrdinalIgnoreCase);
+            var dict = new ConcurrentDictionary<string, (ulong, ulong)>(StringComparer.OrdinalIgnoreCase);
             var exts = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".bmp", ".webp", ".heic" };
 
             var files = Directory.EnumerateFiles(folder, "*.*", SearchOption.TopDirectoryOnly)
                                  .Where(f => exts.Contains(Path.GetExtension(f)))
                                  .ToList();
 
-            int total = files.Count;
-            int done = 0;
+            int total = files.Count, done = 0;
+            log?.Invoke($"正在加载与计算哈希，共 {total} 张图片...");
+            double totalLoad = 0, totalResize = 0, totalDct = 0;
+            var locker = new object();
 
             Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 2) }, file =>
             {
                 try
                 {
-                    dict[file] = ComputeHash(file);
+                    var (normal, flipped, times) = ComputeHash(file);
+                    dict[file] = (normal, flipped);
+
+                    lock (locker)
+                    {
+                        totalLoad += times.loadMs;
+                        totalResize += times.resizeMs;
+                        totalDct += times.dctMs;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -128,18 +149,18 @@ namespace RedgifsDownloader.Services.ImageSim
         }
 
         public static Dictionary<int, List<string>> GroupSimilarImages(
-            Dictionary<string, ulong> hashes, double threshold)
+            Dictionary<string, (ulong normal, ulong flipped)> hashes, double threshold)
         {
             var simGroups = new Dictionary<int, List<string>>();
             int groupId = 0;
-            var remaining = new Dictionary<string, ulong>(hashes);
+            var remaining = new Dictionary<string, (ulong, ulong)>(hashes);
 
             while (remaining.Count > 0)
             {
                 var e = remaining.GetEnumerator();
                 e.MoveNext();
                 var baseImg = e.Current.Key;
-                var baseHash = e.Current.Value;
+                var (baseHash, baseFlip) = e.Current.Value;
                 remaining.Remove(baseImg);
 
                 var group = new List<string> { baseImg };
@@ -147,7 +168,8 @@ namespace RedgifsDownloader.Services.ImageSim
 
                 foreach (var kv in remaining)
                 {
-                    double sim = Compare(baseHash, kv.Value);
+                    var (h, hFlip) = kv.Value;
+                    double sim = Math.Max(Compare(baseHash, h), Compare(baseHash, hFlip));
                     if (sim >= threshold)
                     {
                         group.Add(kv.Key);
@@ -159,13 +181,23 @@ namespace RedgifsDownloader.Services.ImageSim
                     remaining.Remove(r);
 
                 if (group.Count > 1)
-                {
-                    groupId++;
-                    simGroups[groupId] = group;
-                }
+                    simGroups[++groupId] = group;
             }
 
             return simGroups;
+        }
+
+        // --- Helpers ---
+        private static byte[] FlipGray(byte[] src, int side)
+        {
+            var dst = new byte[src.Length];
+            for (int y = 0; y < side; y++)
+            {
+                int baseIdx = y * side;
+                for (int x = 0; x < side; x++)
+                    dst[baseIdx + x] = src[baseIdx + (side - 1 - x)];
+            }
+            return dst;
         }
 
         private static float[,] BuildCos(int n)
