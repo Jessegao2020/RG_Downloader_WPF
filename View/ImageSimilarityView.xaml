@@ -14,6 +14,7 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -75,8 +76,18 @@
             HorizontalAlignment="Right"
             Command="{Binding GoToFolderCommand}"
             Content="前往文件夹" />
-        <GroupBox
+        <ProgressBar
             Grid.Row="3"
+            Grid.ColumnSpan="3"
+            Height="4"
+            Margin="10,10,10,0"
+            BorderThickness="0"
+            Foreground="#4A90E2"
+            Maximum="100"
+            Minimum="0"
+            Value="{Binding ProgressValue}" />
+        <GroupBox
+            Grid.Row="4"
             Grid.ColumnSpan="3"
             Margin="0,10,0,0"
             Header="日志">

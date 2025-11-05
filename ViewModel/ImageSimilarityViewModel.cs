@@ -10,7 +10,7 @@ using System.Windows.Input;
 
 namespace RedgifsDownloader.ViewModel
 {
-	public class ImageSimilarityViewModel : INotifyPropertyChanged
+    public class ImageSimilarityViewModel : INotifyPropertyChanged
     {
         private readonly ILogService _logService;
 
@@ -20,6 +20,7 @@ namespace RedgifsDownloader.ViewModel
 
         private string _folderPath = "";
         private double _threshold = 0.98;
+        private double _progressValue;
         private string _logger = "";
 
         public string FolderPath
@@ -31,6 +32,11 @@ namespace RedgifsDownloader.ViewModel
         {
             get { return _threshold; }
             set { _threshold = Math.Round(value, 2); OnPropertyChanged(); }
+        }
+        public double ProgressValue
+        {
+            get { return _progressValue; }
+            set { _progressValue = value; OnPropertyChanged(); }
         }
         public string Logger
         {
@@ -70,7 +76,12 @@ namespace RedgifsDownloader.ViewModel
             Logger += $"开始检测目录: {FolderPath}\n";
             var sw = Stopwatch.StartNew();
 
-            var hashes = await Task.Run(() => ImageHashService.GetImageHashes(FolderPath));
+            Progress<(int done, int total)> progress = new(p =>
+            {
+                ProgressValue = (double)p.done / p.total * 100;
+            });
+
+            var hashes = await Task.Run(() => ImageHashService.GetImageHashes(FolderPath, progress));
             Logger += $"共检测到 {hashes.Count} 张图片。\n";
 
             var groups = await Task.Run(() => ImageHashService.GroupSimilarImages(hashes, Threshold));

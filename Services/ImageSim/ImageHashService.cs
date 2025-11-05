@@ -56,7 +56,7 @@ namespace RedgifsDownloader.Services.ImageSim
             return 1.0 - diff / 64.0;
         }
 
-        public static Dictionary<string, ulong> GetImageHashes(string folder)
+        public static Dictionary<string, ulong> GetImageHashes(string folder, IProgress<(int done, int total)>? progress = null)
         {
             var dict = new ConcurrentDictionary<string, ulong>(StringComparer.OrdinalIgnoreCase);
             var exts = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".bmp", ".webp", ".heic" };
@@ -65,8 +65,11 @@ namespace RedgifsDownloader.Services.ImageSim
                                  .Where(f => exts.Contains(Path.GetExtension(f)))
                                  .ToList();
 
+            int total = files.Count;
+            int done = 0;
+
             // 并行计算哈希
-            Parallel.ForEach(files, new ParallelOptions{MaxDegreeOfParallelism = Environment.ProcessorCount},
+            Parallel.ForEach(files, new ParallelOptions{ MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 2) },
             file =>
             {
                 try
@@ -76,6 +79,12 @@ namespace RedgifsDownloader.Services.ImageSim
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"[WARN] 无法处理文件 {file}: {ex.Message}");
+                }
+                finally
+                {
+                    int current = Interlocked.Increment(ref done);
+                    if (current % 5 == 0 || current == total)
+                        progress?.Report((current, total));
                 }
             });
 
