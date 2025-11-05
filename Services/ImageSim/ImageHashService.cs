@@ -1,4 +1,8 @@
-﻿using System.Diagnostics;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 
@@ -8,34 +12,34 @@ namespace RedgifsDownloader.Services.ImageSim
     {
         public static ulong ComputeHash(string path)
         {
-            using var bmp = new Bitmap(path);
-            using var small = new Bitmap(8, 8);
-            using (var g = Graphics.FromImage(small))
-            {
-                g.DrawImage(bmp, 0, 0, 8, 8);
-            }
+            using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(path);
+            image.Mutate(x => x.Resize(8, 8).Grayscale());
 
-            // 转灰度并求平均
             var gray = new byte[64];
             double sum = 0;
-            int idx = 0;
-            for (int y = 0; y < 8; y++)
-            {
-                for (int x = 0; x < 8; x++)
-                {
-                    var pixel = small.GetPixel(x, y);
-                    byte val = (byte)(pixel.R * 0.299 + pixel.G * 0.587 + pixel.B * 0.114);
-                    gray[idx++] = val;
-                    sum += val;
-                }
-            }
+            int i = 0;
 
-            double avg = sum / 64;
-            ulong hash = 0;
-            for (int i = 0; i < 64; i++)
+            image.ProcessPixelRows(accessor =>
             {
-                if (gray[i] >= avg)
-                    hash |= 1UL << i;
+                for (int y = 0; y < 8; y++)
+                {
+                    var row = accessor.GetRowSpan(y);
+                    for (int x = 0; x < 8; x++)
+                    {
+                        var p = row[x];
+                        byte v = (byte)(p.R * 0.299 + p.G * 0.587 + p.B * 0.114);
+                        gray[i++] = v;
+                        sum += v;
+                    }
+                }
+            });
+
+            double avg = sum / 64.0;
+            ulong hash = 0UL;
+            for (int j = 0; j < 64; j++)
+            {
+                if (gray[j] >= avg)
+                    hash |= 1UL << j;
             }
             return hash;
         }
@@ -54,14 +58,17 @@ namespace RedgifsDownloader.Services.ImageSim
 
         public static Dictionary<string, ulong> GetImageHashes(string folder)
         {
-            var dict = new Dictionary<string, ulong>(StringComparer.OrdinalIgnoreCase);
-            var exts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            { ".jpg", ".jpeg", ".png", ".bmp", ".webp", ".heic" };
+            var dict = new ConcurrentDictionary<string, ulong>(StringComparer.OrdinalIgnoreCase);
+            var exts = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".bmp", ".webp", ".heic" };
 
-            foreach (var file in Directory.EnumerateFiles(folder, "*.*", SearchOption.TopDirectoryOnly))
+            var files = Directory.EnumerateFiles(folder, "*.*", SearchOption.TopDirectoryOnly)
+                                 .Where(f => exts.Contains(Path.GetExtension(f)))
+                                 .ToList();
+
+            // 并行计算哈希
+            Parallel.ForEach(files, new ParallelOptions{MaxDegreeOfParallelism = Environment.ProcessorCount},
+            file =>
             {
-                if (!exts.Contains(Path.GetExtension(file)))
-                    continue;
                 try
                 {
                     dict[file] = ComputeHash(file);
@@ -70,8 +77,9 @@ namespace RedgifsDownloader.Services.ImageSim
                 {
                     Debug.WriteLine($"[WARN] 无法处理文件 {file}: {ex.Message}");
                 }
-            }
-            return dict;
+            });
+
+            return dict.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
         }
 
         public static Dictionary<int, List<string>> GroupSimilarImages(
