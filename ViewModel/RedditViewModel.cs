@@ -133,7 +133,7 @@ namespace RedgifsDownloader.ViewModel
         {
             try
             {
-                string baseDir = Path.Combine(AppContext.BaseDirectory, "Downloads");
+                string baseDir = Path.Combine(AppContext.BaseDirectory, "Downloads", UsernameInput);
                 SubmittedJson = "正在检查并下载中...";
                 DownloadCount = 0;
 
