@@ -3,6 +3,7 @@ using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Services;
 using RedgifsDownloader.Services.DupeCleaner;
 using RedgifsDownloader.Services.Reddit;
+using RedgifsDownloader.Services.RedGifs;
 using RedgifsDownloader.ViewModel;
 using System.IO;
 using System.Text;
@@ -13,7 +14,6 @@ namespace RedgifsDownloader
     public partial class App : Application
     {
         private static readonly string LogDir = Path.Combine(AppContext.BaseDirectory, "logs");
-        private static readonly string LogFile = Path.Combine(LogDir, $"crash_{DateTime.Now:yyyyMMdd_HHmmss}.txt");
 
         public static IServiceProvider ServiceProvider { get; private set; }
 
@@ -64,9 +64,9 @@ namespace RedgifsDownloader
             services.AddSingleton<IRedditApiService, RedditApiService>();
             services.AddSingleton<IRedditAuthService, RedditAuthService>();
             services.AddSingleton<ILogService, LogService>();
-            services.AddSingleton<RedditApiService>();
             services.AddSingleton<DupeCleanerService>();
             services.AddSingleton<RenameService>();
+            services.AddSingleton<RedgifsAuthService>();
             services.AddHttpClient<RedditImageDownloadService>(client =>
             {
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("RedgifsDownloader/1.0 (by u/test_user)");

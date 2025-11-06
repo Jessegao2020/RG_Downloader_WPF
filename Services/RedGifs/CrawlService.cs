@@ -1,9 +1,9 @@
-﻿using System.Diagnostics;
-using System.Text.Json;
-using RedgifsDownloader.Interfaces;
+﻿using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Model;
+using System.Diagnostics;
+using System.Text.Json;
 
-namespace RedgifsDownloader.Services
+namespace RedgifsDownloader.Services.RedGifs
 {
     public class CrawlService : ICrawlService
     {

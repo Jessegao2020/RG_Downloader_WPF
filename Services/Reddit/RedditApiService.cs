@@ -1,9 +1,11 @@
 ﻿using RedgifsDownloader.Helpers;
 using RedgifsDownloader.Interfaces;
+using RedgifsDownloader.Model;
 using RedgifsDownloader.Model.Reddit;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace RedgifsDownloader.Services.Reddit
@@ -20,11 +22,11 @@ namespace RedgifsDownloader.Services.Reddit
             _logger = logger;
         }
 
-        public async IAsyncEnumerable<RedditPost> StreamUserImagePostsAsync(string username)
+        public async IAsyncEnumerable<JsonElement> StreamUserPostsAsync(string username)
         {
             string token = await _auth.GetAccessTokenAsync();
             _http.DefaultRequestHeaders.Clear();
-            _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", token);
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             _http.DefaultRequestHeaders.UserAgent.ParseAdd("Redgifsdownloader/1.0 (by u/test_user)");
             _http.DefaultRequestHeaders.Add("Cookie", "over18=1;");
 
@@ -38,53 +40,42 @@ namespace RedgifsDownloader.Services.Reddit
                 if (!string.IsNullOrEmpty(after))
                     url += $"&after={after}";
 
-                string? json = null;
-                try
-                {
-                    var response = await _http.GetAsync(url);
+                using var response = await _http.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                    yield break;
 
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        var errorbody = await response.Content.ReadAsStringAsync();
-                        _logger.ShowMessage($"[Reddit API]: {response.StatusCode}");
-                        yield break;
-                    }
-
-                    json = await response.Content.ReadAsStringAsync();
-                }
-                catch (Exception ex)
-                {
-                    _logger.ShowMessage($"网络异常: {ex.Message}");
-                }
-
+                string json = await response.Content.ReadAsStringAsync();
                 using var doc = JsonDocument.Parse(json);
                 var data = doc.RootElement.GetProperty("data");
 
-                var pagePosts = RedditPostParser.ExtractImagePosts(data);
-
-                foreach (var post in pagePosts)
-                    yield return post;
-
-                // ✅ 保存原始 JSON
-                string saveDir = Path.Combine(AppContext.BaseDirectory, "debug_json");
-                Directory.CreateDirectory(saveDir);
-                string savePath = Path.Combine(saveDir, $"page_{page:000}.json");
-                await File.WriteAllTextAsync(savePath, json);
-                Debug.WriteLine($"[RedditApi] 已保存原始 JSON: {savePath}");
-
-                // 取分页游标
+                yield return data;
 
                 if (data.TryGetProperty("after", out var afterElem) && afterElem.ValueKind == JsonValueKind.String)
                     after = afterElem.GetString();
-
                 else
                     after = null;
 
-                Debug.WriteLine($"[RedditApi] 第 {page} 页，累计 {pagePosts.Count} 张图片。");
-
-                await Task.Delay(1000); // 避免429限流
+                await Task.Delay(1000);
             }
             while (after != null);
+        }
+
+        public async IAsyncEnumerable<RedditPost> StreamUserImagePostsAsync(string username)
+        {
+            await foreach (var data in StreamUserPostsAsync(username))
+            {
+                foreach (var post in RedditPostParser.ExtractImagePosts(data))
+                    yield return post;
+            }
+        }
+
+        public async IAsyncEnumerable<VideoItem> StreamUserRedgifsPostsAsync(string username)
+        {
+            await foreach (var data in StreamUserPostsAsync(username))
+            {
+                foreach (var video in RedditPostParser.ExtractRedgifsPosts(data))
+                    yield return video;
+            }
         }
     }
 }

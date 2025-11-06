@@ -1,7 +1,7 @@
 ﻿using RedgifsDownloader.Helpers;
 using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Model;
-using RedgifsDownloader.Services;
+using RedgifsDownloader.Services.RedGifs;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;

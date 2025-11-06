@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 
-namespace RedgifsDownloader.Services
+namespace RedgifsDownloader.Services.RedGifs
 {
     public class DownloadWorker
     {
@@ -21,6 +21,10 @@ namespace RedgifsDownloader.Services
             {
                 using var response = await SendRequestAsync(url, authToken, ct);
                 response.EnsureSuccessStatusCode();
+
+                Debug.WriteLine($"[HTTP] GET {url}");
+                Debug.WriteLine($"[HTTP] Authorization: Bearer {authToken.Substring(0, Math.Min(authToken.Length, 10))}...");
+
 
                 long totalBytes = response.Content.Headers.ContentLength ?? -1L;
                 using var stream = await response.Content.ReadAsStreamAsync(ct);
@@ -65,6 +69,7 @@ namespace RedgifsDownloader.Services
             request.Headers.Add("Referer", "https://www.redgifs.com/");
             request.Headers.Add("Authorization", "Bearer " + token);
             request.Headers.Add("Accept", "application/json, text/plain, */*");
+
             return await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
         }
 

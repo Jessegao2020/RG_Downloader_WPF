@@ -40,17 +40,17 @@
                 <MenuItem
                     Command="{Binding NavigateCommand}"
                     CommandParameter="ImageSim"
-                    Header="ImageSim" >
+                    Header="ImageSim">
                     <MenuItem.Icon>
-                        <Image Source="/Resources/image-sim.ico"/>
+                        <Image Source="/Resources/image-sim.ico" />
                     </MenuItem.Icon>
                 </MenuItem>
                 <MenuItem
                     Command="{Binding NavigateCommand}"
                     CommandParameter="Cleaner"
-                    Header="Dupe Cleaner" >
+                    Header="Dupe Cleaner">
                     <MenuItem.Icon>
-                        <Image Source="/Resources/dupe-clean.ico"/>
+                        <Image Source="/Resources/dupe-clean.ico" />
                     </MenuItem.Icon>
                 </MenuItem>
             </MenuItem>

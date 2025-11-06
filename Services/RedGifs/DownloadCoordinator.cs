@@ -1,7 +1,7 @@
-﻿using System.Diagnostics;
-using RedgifsDownloader.Model;
+﻿using RedgifsDownloader.Model;
+using System.Diagnostics;
 
-namespace RedgifsDownloader.Services
+namespace RedgifsDownloader.Services.RedGifs
 {
     public record DownloadSummary(int Completed, int Failed);
     public class DownloadCoordinator
@@ -29,6 +29,7 @@ namespace RedgifsDownloader.Services
 
                 try
                 {
+                    Debug.WriteLine($"[COORD] Start download: {video.Url}");
                     if (_fileService.Exists(video, baseDir, strictCheck))
                     {
                         video.Status = VideoStatus.Exists;
@@ -57,6 +58,8 @@ namespace RedgifsDownloader.Services
                 {
                     semaphore.Release();
                     StatusUpdated?.Invoke();
+                    Debug.WriteLine($"[COORD] Finished: {video.Url} -> {video.Status}");
+
                 }
             });
 
