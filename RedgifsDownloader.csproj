@@ -11,6 +11,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Remove="Resources\dupe-clean.ico" />
+		<None Remove="Resources\image-sim.ico" />
+		<None Remove="Resources\reddit.ico" />
+		<None Remove="Resources\redgifs.ico" />
 		<None Remove="videos.py" />
 	</ItemGroup>
 	<ItemGroup>
@@ -30,6 +34,20 @@
 	</ItemGroup>
   <ItemGroup>
     <None Remove="Downloads\**\*.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\dupe-clean.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\image-sim.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\reddit.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\redgifs.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 	<ItemGroup>

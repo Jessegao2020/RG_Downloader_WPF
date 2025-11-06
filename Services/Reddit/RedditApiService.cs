@@ -1,9 +1,10 @@
-﻿using System.Diagnostics;
-using System.Net.Http;
-using System.Text.Json;
-using RedgifsDownloader.Helpers;
+﻿using RedgifsDownloader.Helpers;
 using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Model.Reddit;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace RedgifsDownloader.Services.Reddit
 {
@@ -62,7 +63,14 @@ namespace RedgifsDownloader.Services.Reddit
                 var pagePosts = RedditPostParser.ExtractImagePosts(data);
 
                 foreach (var post in pagePosts)
-                    yield return post;  //理解返回发现的图片
+                    yield return post;
+
+                // ✅ 保存原始 JSON
+                string saveDir = Path.Combine(AppContext.BaseDirectory, "debug_json");
+                Directory.CreateDirectory(saveDir);
+                string savePath = Path.Combine(saveDir, $"page_{page:000}.json");
+                await File.WriteAllTextAsync(savePath, json);
+                Debug.WriteLine($"[RedditApi] 已保存原始 JSON: {savePath}");
 
                 // 取分页游标
 
