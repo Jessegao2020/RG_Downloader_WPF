@@ -85,6 +85,7 @@
             Foreground="#4A90E2"
             Maximum="100"
             Minimum="0"
+            IsIndeterminate="{Binding IsBusy}"
             Value="{Binding ProgressValue}" />
         <GroupBox
             Grid.Row="4"
