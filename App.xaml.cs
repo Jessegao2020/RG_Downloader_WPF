@@ -56,12 +56,17 @@ namespace RedgifsDownloader
             services.AddSingleton<ICrawlService, CrawlService>();
             services.AddSingleton<DownloadCoordinator>();
             services.AddSingleton<RedditDownloadCoordinator>();
+            services.AddSingleton<RedditVideoDownloadCoordinator>();
 
             //底层
             services.AddSingleton<VideoFileService>();
             services.AddSingleton<DownloadWorker>();
             services.AddSingleton<ISettingsService, PropertySettingService>();
-            services.AddSingleton<IRedditApiService, RedditApiService>();
+            services.AddHttpClient<RedditApiService>(client =>
+            {
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("RedgifsDownloader/1.0 (by u/test_user)");
+                client.DefaultRequestHeaders.Add("Cookie", "over18=1");
+            });
             services.AddSingleton<IRedditAuthService, RedditAuthService>();
             services.AddSingleton<ILogService, LogService>();
             services.AddSingleton<DupeCleanerService>();

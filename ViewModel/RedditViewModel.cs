@@ -3,10 +3,7 @@ using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Model;
 using RedgifsDownloader.Services;
 using RedgifsDownloader.Services.Reddit;
-using RedgifsDownloader.Services.RedGifs;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Diagnostics.Tracing;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -17,11 +14,12 @@ namespace RedgifsDownloader.ViewModel
     public class RedditViewModel : INotifyPropertyChanged
     {
         private readonly IRedditAuthService _auth;
-        private readonly IRedditApiService _api;
+        private readonly RedditApiService _api;
         private readonly RedditImageDownloadService _downloader;
         private readonly RedditDownloadCoordinator _coordinator;
-        private readonly DownloadCoordinator _videoCoordinator;
+        private readonly RedditVideoDownloadCoordinator _videoCoordinator;
         private readonly RedgifsAuthService _redgifsAuth;
+        private readonly ISettingsService _settingsService;
         private readonly ILogService _logger;
 
         private bool _isLoggedIn = false;
@@ -79,12 +77,13 @@ namespace RedgifsDownloader.ViewModel
         public ICommand LoginCommand { get; }
         public ICommand GetSubmittedCommand { get; }
 
-        public RedditViewModel(IRedditApiService api,
+        public RedditViewModel(RedditApiService api,
                                IRedditAuthService auth,
                                RedditDownloadCoordinator coordinator,
                                RedditImageDownloadService downloader,
                                RedgifsAuthService redgifsAuth,
-                               DownloadCoordinator videoCoordinator,
+                               RedditVideoDownloadCoordinator videoCoordinator,
+                               ISettingsService settingsService,
                                ILogService logger)
         {
             _auth = auth;
@@ -94,6 +93,7 @@ namespace RedgifsDownloader.ViewModel
             _coordinator = coordinator;
             _redgifsAuth = redgifsAuth;
             _videoCoordinator = videoCoordinator;
+            _settingsService = settingsService;
 
             LoginCommand = new RelayCommand(async _ => await TryLogin(), _ => !IsLoggedIn);
             GetSubmittedCommand = new RelayCommand(async _ => await StartDownloadAsync(), _ => IsLoggedIn && !string.IsNullOrEmpty(UsernameInput));
@@ -141,7 +141,7 @@ namespace RedgifsDownloader.ViewModel
                 {
                     var (downloaded, skipped) = await _coordinator.DownloadAllImagesAsync(UsernameInput,
                                                                                       baseDir,
-                                                                                      concurrency: 8,
+                                                                                      concurrency: _settingsService.MaxDownloadCount,
                                                                                       msg => SubmittedJson += msg + "\n",
                                                                                       count => Application.Current.Dispatcher.Invoke(() => DownloadCount = count));
                     SubmittedJson += $"\n下载完成：新下载 {downloaded} 张，跳过 {skipped} 张。";
@@ -149,25 +149,27 @@ namespace RedgifsDownloader.ViewModel
                 else
                 {
                     string token = await _redgifsAuth.GetTokenAsync();
-                    Debug.WriteLine(token); 
-                    
+                    SubmittedJson = "正在下载 Redgifs 视频...\n";
 
-                    var videoItems = new List<VideoItem>();
-                    await foreach (var video in _api.StreamUserRedgifsPostsAsync(UsernameInput))
+                    async IAsyncEnumerable<VideoItem> BuildVideoStream()
                     {
-                        videoItems.Add(new VideoItem
+                        await foreach (var v in _api.StreamUserRedgifsPostsAsync(UsernameInput))
                         {
-                            Url = video.Url,
-                            Username = UsernameInput,
-                            Token = token // ✅ 带上授权
-                        });
-                        Debug.WriteLine(video.Url);
+                            yield return new VideoItem
+                            {
+                                Url = v.Url,
+                                Username = UsernameInput,
+                                Token = token
+                            };
+                        }
                     }
-                    Debug.WriteLine($"[VM] Parsed {videoItems.Count} videos to download.");
-                    var summary = await _videoCoordinator.RunDownloadsAsync(
-                        videoItems, concurrency: 4, strictCheck: false, CancellationToken.None);
 
-                    SubmittedJson += $"\n视频下载完成：成功 {summary.Completed}，失败 {summary.Failed}";
+                    (int downloaded, int failed) = await _videoCoordinator.DownloadStreamAsync(
+                        BuildVideoStream(),
+                        concurrency: _settingsService.MaxDownloadCount,
+                        CancellationToken.None);
+
+                    SubmittedJson += $"\n视频下载完成：成功 {downloaded}，失败 {failed}";
                 }
             }
             catch (Exception ex)

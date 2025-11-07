@@ -1,5 +1,4 @@
-﻿using RedgifsDownloader.Interfaces;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Net.Http;
 
@@ -7,12 +6,12 @@ namespace RedgifsDownloader.Services.Reddit
 {
     public class RedditDownloadCoordinator
     {
-        private readonly IRedditApiService _api;
+        private readonly RedditApiService _api;
         private readonly HttpClient _http;
         private readonly RedditImageDownloadService _downloader;
         private readonly CookieContainer _cookieContainer;
 
-        public RedditDownloadCoordinator(IRedditApiService api, RedditImageDownloadService downloader)
+        public RedditDownloadCoordinator(RedditApiService api, RedditImageDownloadService downloader)
         {
             _api = api;
             _downloader = downloader;

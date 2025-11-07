@@ -2,14 +2,11 @@
 using RedgifsDownloader.Model.Reddit;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using RedgifsDownloader.Services.Reddit;
 
 namespace RedgifsDownloader.Helpers
 {
     public static class RedditPostParser
     {
-        
-
         private static readonly Regex IdExtRegex =
             new(@"redd\.it/([A-Za-z0-9]+)\.(jpg|jpeg|png|gif|webp)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
@@ -18,8 +15,6 @@ namespace RedgifsDownloader.Helpers
 
         private static readonly Regex FormatParamRegex =
             new(@"format=(png|jpg|jpeg|gif|webp)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-        
 
         public static List<RedditPost> ExtractImagePosts(JsonElement dataNode)
         {

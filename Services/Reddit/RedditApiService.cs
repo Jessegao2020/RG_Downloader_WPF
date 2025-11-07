@@ -2,24 +2,23 @@
 using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Model;
 using RedgifsDownloader.Model.Reddit;
-using System.Diagnostics;
-using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace RedgifsDownloader.Services.Reddit
 {
-    public class RedditApiService : IRedditApiService
+    public class RedditApiService
     {
         private readonly IRedditAuthService _auth;
-        private readonly HttpClient _http = new();
+        private readonly HttpClient _http;
         private readonly ILogService _logger;
 
-        public RedditApiService(IRedditAuthService auth, ILogService logger)
+        public RedditApiService(IRedditAuthService auth, ILogService logger, HttpClient http)
         {
             _auth = auth;
             _logger = logger;
+            _http = http;
         }
 
         public async IAsyncEnumerable<JsonElement> StreamUserPostsAsync(string username)
@@ -54,7 +53,6 @@ namespace RedgifsDownloader.Services.Reddit
                     after = afterElem.GetString();
                 else
                     after = null;
-
                 await Task.Delay(1000);
             }
             while (after != null);
