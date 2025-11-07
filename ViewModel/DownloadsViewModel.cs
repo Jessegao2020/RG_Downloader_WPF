@@ -1,13 +1,13 @@
-﻿using RedgifsDownloader.Helpers;
-using RedgifsDownloader.Interfaces;
-using RedgifsDownloader.Model;
-using RedgifsDownloader.Services.RedGifs;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using RedgifsDownloader.Helpers;
+using RedgifsDownloader.Interfaces;
+using RedgifsDownloader.Model;
+using RedgifsDownloader.Services.RedGifs;
 
 namespace RedgifsDownloader.ViewModel
 {
@@ -256,9 +256,6 @@ namespace RedgifsDownloader.ViewModel
         {
             Application.Current.Dispatcher.BeginInvoke(() =>
             {
-                ActiveVideosView.Refresh();
-                FailedVideosView.Refresh();
-
                 CompletedCount = Videos.Count(video => video.Status is VideoStatus.Completed or VideoStatus.Exists);
                 FailedCount = Videos.Count(v => IsFailed(v));
             });
