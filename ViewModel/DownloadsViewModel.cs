@@ -20,16 +20,18 @@ namespace RedgifsDownloader.ViewModel
         private readonly ILogService _logger;
 
         public ObservableCollection<VideoViewModel> Videos { get; } = new();
+        public ObservableCollection<string> Platforms { get; } = new() { "Redgifs", "Fikfap"}   ;
         public ICollectionView ActiveVideosView { get; }
         public ICollectionView FailedVideosView { get; }
 
         private CancellationTokenSource? _cts;
         private bool _isCrawling;
         private bool _isDownloading;
+        private bool _isAllSelected;
         private int _completedCount;
         private int _failedCount;
         private string _username;
-        private bool _isAllSelected;
+        private string _selectedPlatform = "Redgifs";
 
         public string Username
         {
@@ -91,6 +93,12 @@ namespace RedgifsDownloader.ViewModel
                 OnPropertyChanged();
                 (RetryAllCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
+        }
+
+        public string SelectedPlatform
+        {
+            get { return _selectedPlatform; }
+            set { _selectedPlatform = value; OnPropertyChanged(); }
         }
 
         private bool IsFailed(VideoViewModel v)

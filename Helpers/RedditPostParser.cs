@@ -8,13 +8,13 @@ namespace RedgifsDownloader.Helpers
     public static class RedditPostParser
     {
         private static readonly Regex IdExtRegex =
-            new(@"redd\.it/([A-Za-z0-9]+)\.(jpg|jpeg|png|gif|webp)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            new(@"redd\.it/([A-Za-z0-9]+)\.(jpg|jpeg|png|webp)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private static readonly Regex IdOnlyRegex =
             new(@"redd\.it/([A-Za-z0-9]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private static readonly Regex FormatParamRegex =
-            new(@"format=(png|jpg|jpeg|gif|webp)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            new(@"format=(png|jpg|jpeg|webp)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public static List<RedditPost> ExtractImagePosts(JsonElement dataNode)
         {
@@ -176,7 +176,6 @@ namespace RedgifsDownloader.Helpers
             (url.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
              || url.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase)
              || url.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
-             || url.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)
              || url.EndsWith(".webp", StringComparison.OrdinalIgnoreCase));
 
         private static string Normalize(string? url)

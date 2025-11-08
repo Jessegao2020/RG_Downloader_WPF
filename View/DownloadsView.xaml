@@ -25,6 +25,7 @@
                 <ColumnDefinition Width="auto" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
             </Grid.ColumnDefinitions>
             <TextBlock
                 Grid.Column="0"
@@ -36,10 +37,15 @@
                 Margin="5,0,0,0"
                 KeyDown="UserBox_KeyDown"
                 Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" />
-
+            <ComboBox
+                Grid.Column="2"
+                Width="70"
+                Margin="5,0,0,0"
+                ItemsSource="{Binding Platforms}"
+                SelectedItem="{Binding SelectedPlatform}" />
             <Button
                 x:Name="BtnCrawl"
-                Grid.Column="2"
+                Grid.Column="3"
                 MinWidth="70"
                 Margin="5,0,0,0"
                 HorizontalAlignment="Right"
