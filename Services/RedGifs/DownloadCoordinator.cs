@@ -87,6 +87,6 @@ namespace RedgifsDownloader.Services.RedGifs
                     video.Progress = 0;
                 }
             }
-        }
+        } 
     }
 }
