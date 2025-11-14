@@ -1,4 +1,5 @@
-﻿using RedgifsDownloader.Model;
+﻿using RedgifsDownloader.Domain.Enums;
+using RedgifsDownloader.Model;
 using System.Diagnostics;
 
 namespace RedgifsDownloader.Services.RedGifs

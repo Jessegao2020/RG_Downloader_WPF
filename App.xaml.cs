@@ -2,11 +2,11 @@
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using RedgifsDownloader.Interfaces;
+using RedgifsDownloader.Presentation.ViewModel;
 using RedgifsDownloader.Services;
 using RedgifsDownloader.Services.DupeCleaner;
 using RedgifsDownloader.Services.Reddit;
 using RedgifsDownloader.Services.RedGifs;
-using RedgifsDownloader.ViewModel;
 
 namespace RedgifsDownloader
 {

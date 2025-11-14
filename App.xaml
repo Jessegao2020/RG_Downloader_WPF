@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:RedgifsDownloader"
     xmlns:views="clr-namespace:RedgifsDownloader.View"
-    xmlns:vm="clr-namespace:RedgifsDownloader.ViewModel"
+    xmlns:vm="clr-namespace:RedgifsDownloader.Presentation.ViewModel"
     StartupUri="MainWindow.xaml">
     <Application.Resources>
         <DataTemplate DataType="{x:Type vm:DownloadsViewModel}">

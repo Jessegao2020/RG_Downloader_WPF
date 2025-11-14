@@ -5,7 +5,7 @@ using Ookii.Dialogs.Wpf;
 using RedgifsDownloader.Helpers;
 using RedgifsDownloader.Services.DupeCleaner;
 
-namespace RedgifsDownloader.ViewModel
+namespace RedgifsDownloader.Presentation.ViewModel
 {
     public class DupePicsCleanerViewModel : INotifyPropertyChanged
     {

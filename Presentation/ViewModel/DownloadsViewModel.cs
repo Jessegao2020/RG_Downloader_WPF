@@ -4,12 +4,13 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Helpers;
 using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Model;
 using RedgifsDownloader.Services.RedGifs;
 
-namespace RedgifsDownloader.ViewModel
+namespace RedgifsDownloader.Presentation.ViewModel
 {
     public class DownloadsViewModel : INotifyPropertyChanged
     {

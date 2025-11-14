@@ -6,7 +6,7 @@ using Ookii.Dialogs.Wpf;
 using RedgifsDownloader.Helpers;
 using RedgifsDownloader.Interfaces;
 
-namespace RedgifsDownloader.ViewModel
+namespace RedgifsDownloader.Presentation.ViewModel
 {
     public class SettingsViewModel : INotifyPropertyChanged
     {

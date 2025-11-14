@@ -1,4 +1,4 @@
-﻿namespace RedgifsDownloader.Model
+﻿namespace RedgifsDownloader.Domain.Enums
 {
     public enum VideoStatus
     {

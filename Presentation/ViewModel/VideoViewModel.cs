@@ -1,8 +1,9 @@
-﻿using RedgifsDownloader.Model;
+﻿using RedgifsDownloader.Domain.Enums;
+using RedgifsDownloader.Model;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace RedgifsDownloader.ViewModel
+namespace RedgifsDownloader.Presentation.ViewModel
 {
     public class VideoViewModel : INotifyPropertyChanged
     {

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using RedgifsDownloader.Domain.Enums;
 
 namespace RedgifsDownloader.Model
 {

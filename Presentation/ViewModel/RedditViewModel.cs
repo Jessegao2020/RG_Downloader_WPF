@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 
-namespace RedgifsDownloader.ViewModel
+namespace RedgifsDownloader.Presentation.ViewModel
 {
     public class RedditViewModel : INotifyPropertyChanged
     {

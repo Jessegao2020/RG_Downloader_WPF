@@ -1,4 +1,5 @@
-﻿using RedgifsDownloader.Interfaces;
+﻿using RedgifsDownloader.Domain.Enums;
+using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Model;
 using System.Diagnostics;
 using System.Text.Json;

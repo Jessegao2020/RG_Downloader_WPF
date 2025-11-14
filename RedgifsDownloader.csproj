@@ -65,4 +65,13 @@
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="ApplicationLayer\Downloads\" />
+	  <Folder Include="ApplicationLayer\Fikfap\" />
+	  <Folder Include="ApplicationLayer\ImageSimilarity\" />
+	  <Folder Include="ApplicationLayer\DupeCleaner\" />
+	  <Folder Include="ApplicationLayer\Settings\" />
+	  <Folder Include="ApplicationLayer\Reddit\" />
+	</ItemGroup>
+
 </Project>

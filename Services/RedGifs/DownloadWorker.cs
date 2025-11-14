@@ -1,4 +1,4 @@
-﻿using RedgifsDownloader.Model;
+﻿using RedgifsDownloader.Domain.Enums;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO;
