@@ -1,6 +1,10 @@
 ﻿using System.IO;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using RedgifsDownloader.ApplicationLayer.Settings;
+using RedgifsDownloader.Domain.Interfaces;
+using RedgifsDownloader.Infrastructure.Reddit;
+using RedgifsDownloader.Infrastructure.Settings;
 using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Presentation.ViewModel;
 using RedgifsDownloader.Services;
@@ -49,7 +53,7 @@ namespace RedgifsDownloader
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("RedgifsDownloader/1.0 (by u/test_user)");
                 client.DefaultRequestHeaders.Add("Cookie", "over18=1");
             });
-            services.AddSingleton<IRedditAuthService, RedditAuthService>();
+            services.AddSingleton<Interfaces.IRedditAuthService, Services.Reddit.RedditAuthService>();
             services.AddSingleton<ILogService, LogService>();
             services.AddSingleton<DupeCleanerService>();
             services.AddSingleton<RenameService>();
@@ -60,6 +64,8 @@ namespace RedgifsDownloader
                 client.DefaultRequestHeaders.Add("Cookie", "over18=1");
             });
 
+            services.AddSingleton<IAppSettings, AppSettings>();
+            services.AddHttpClient<Domain.Interfaces.IRedditAuthService, Infrastructure.Reddit.RedditAuthService>();
             //生成容器
             ServiceProvider = services.BuildServiceProvider();
 

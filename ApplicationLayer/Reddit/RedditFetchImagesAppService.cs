@@ -1,0 +1,31 @@
+﻿using System.Text.Json;
+using RedgifsDownloader.ApplicationLayer.DTOs;
+using RedgifsDownloader.ApplicationLayer.Reddit.Parser;
+using RedgifsDownloader.Domain.Interfaces;
+
+namespace RedgifsDownloader.ApplicationLayer.Reddit
+{
+    public class RedditFetchImagesAppService
+    {
+        private readonly IRedditApiClient _api;
+
+        public RedditFetchImagesAppService(IRedditApiClient api)
+        {
+            _api = api;
+        }
+
+        public async IAsyncEnumerable<RedditPostDto> Execute(string username)
+        {
+            await foreach (var json in _api.StreamUserPostsJson(username))
+            {
+                var doc = JsonDocument.Parse(json);
+
+                foreach (var post in RedditPostParser.EnumerateChildren(doc))
+                {
+                    foreach (var img in ImagePostParser.Extract(post))
+                        yield return img;
+                }
+            }
+        }
+    }
+}

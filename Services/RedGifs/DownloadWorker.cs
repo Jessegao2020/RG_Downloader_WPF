@@ -1,8 +1,8 @@
-﻿using RedgifsDownloader.Domain.Enums;
-using System.Buffers;
+﻿using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using RedgifsDownloader.Domain.Enums;
 
 namespace RedgifsDownloader.Services.RedGifs
 {

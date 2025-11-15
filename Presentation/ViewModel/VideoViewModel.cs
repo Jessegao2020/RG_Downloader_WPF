@@ -1,4 +1,5 @@
-﻿using RedgifsDownloader.Domain.Enums;
+﻿using RedgifsDownloader.Domain.Entities;
+using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Model;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -7,23 +8,12 @@ namespace RedgifsDownloader.Presentation.ViewModel
 {
     public class VideoViewModel : INotifyPropertyChanged
     {
-        public VideoItem Item { get; }
+        public Video Item { get; }
 
-        public VideoViewModel(VideoItem item)
+        public VideoViewModel(Video item)
         {
             Item = item;
-
-            Item.PropertyChanged += (_, e) =>
-            {
-                OnPropertyChanged(e.PropertyName);
-                if (e.PropertyName is nameof(VideoItem.Status) or nameof(VideoItem.Progress))
-                    OnPropertyChanged(nameof(DisplayStatus));
-            };
         }
-
-        public string Id => Item.Id ?? "";
-        public string Username => Item.Username ?? "";
-        public string Url => Item.Url ?? "";
 
         private bool _isSelected;
         public bool IsSelected
@@ -38,34 +28,42 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 }
             }
         }
-        public VideoStatus Status => Item.Status;
-        public double? Progress => Item.Progress;
+
+        private double? _progress;
+        public double? Progress
+        {
+            get => _progress;
+            set { _progress = value; OnPropertyChanged(); OnPropertyChanged(nameof(DisplayStatus)); }
+        }
+        private long? _createDateRaw;
         public long? CreateDateRaw
         {
-            get => Item.CreateDateRaw;
+            get => _createDateRaw;
             set
             {
-                Item.CreateDateRaw = value;
+                _createDateRaw = value;
+                OnPropertyChanged();
                 OnPropertyChanged(nameof(DisplayCreateDate));
+                OnPropertyChanged(nameof(SortCreateDate));
             }
         }
-        public DateTime? SortCreateDate => Item.CreateDateRaw is long s ? 
-            DateTimeOffset.FromUnixTimeSeconds(s).ToLocalTime().DateTime : (DateTime?)null;
-        public string DisplayCreateDate
-        {
-            get
-            {
-                if (Item.CreateDateRaw is not long raw) return "";
-                var date = DateTimeOffset.FromUnixTimeSeconds(raw).ToLocalTime().DateTime;
-                return date.ToString("MM/dd/yy");
-            }
-        }
+
+        public string Id => Item.Id;
+        public string Username => Item.Username;
+        public string Url => Item.Url.ToString();
+
+        public VideoStatus Status => Item.Status;
+
+        public string DisplayCreateDate => SortCreateDate?.ToString("MM/dd/yy") ?? "";
+
+        public DateTime? SortCreateDate =>
+            CreateDateRaw is long ts ? DateTimeOffset.FromUnixTimeSeconds(ts).LocalDateTime : null;
+
         public string DisplayStatus =>
         Status switch
         {
             VideoStatus.Pending => "",
-            VideoStatus.Downloading when Progress.HasValue => $"{Progress.Value:F1}%",
-            VideoStatus.Downloading => "下载中",
+            VideoStatus.Downloading => Progress.HasValue ? $"{Progress.Value:F1}%" : "下载中",
             VideoStatus.Completed => "完成",
             VideoStatus.Exists => "已存在",
             VideoStatus.Failed => "失败",
