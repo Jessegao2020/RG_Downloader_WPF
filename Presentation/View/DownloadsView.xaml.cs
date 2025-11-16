@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Model;
 using RedgifsDownloader.Presentation.ViewModel;
@@ -16,13 +17,13 @@ namespace RedgifsDownloader.View
     {
         private GridViewColumnHeader? _lastHeaderClicked;
         private ListSortDirection _lastDirection = ListSortDirection.Ascending;
-        private DownloadsViewModelNew _downloadsvm => (DownloadsViewModelNew)DataContext;
+        private DownloadsViewModel _downloadsvm => (DownloadsViewModel)DataContext;
 
         public DownloadsView()
         {
             InitializeComponent();
 
-            DataContext = App.ServiceProvider.GetRequiredService<DownloadsViewModelNew>();
+            DataContext = App.ServiceProvider.GetRequiredService<DownloadsViewModel>();
         }
 
         #region Misc UI Handlers (暂时不用重构)
@@ -71,8 +72,8 @@ namespace RedgifsDownloader.View
 
         private void BtnOpenFolder_Click(object sender, RoutedEventArgs e)
         {
-            var storage = App.ServiceProvider.GetRequiredService<IFileStorage>();
-            string folderPath = storage.GetBaseDirectory();
+            var settings = App.ServiceProvider.GetRequiredService<IAppSettings>();
+            string folderPath = settings.DownloadDirectory;
 
             if (Directory.Exists(folderPath))
                 Process.Start(new ProcessStartInfo()

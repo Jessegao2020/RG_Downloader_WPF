@@ -4,6 +4,8 @@
     {
         bool IsLoggedIn { get; }
 
+        Task LoginAsync();
+
         Task<string> GetAccessTokenAsync();
     }
 }

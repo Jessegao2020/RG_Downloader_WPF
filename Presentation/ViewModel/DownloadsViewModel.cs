@@ -13,7 +13,7 @@ using RedgifsDownloader.Interfaces;
 
 namespace RedgifsDownloader.Presentation.ViewModel
 {
-    public class DownloadsViewModelNew : INotifyPropertyChanged
+    public class DownloadsViewModel : INotifyPropertyChanged
     {
         private readonly IDownloadAppService _downloadService;
         private readonly ILogService _logger;
@@ -100,7 +100,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
         public ICommand RetryAllCommand { get; }
         public ICommand SelectAllCommand { get; }
 
-        public DownloadsViewModelNew(IDownloadAppService downloadService, ILogService logger, IAppSettings settings)
+        public DownloadsViewModel(IDownloadAppService downloadService, ILogService logger, IAppSettings settings)
         {
             _downloadService = downloadService;
             _logger = logger;

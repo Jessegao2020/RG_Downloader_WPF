@@ -4,9 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using RedgifsDownloader.ApplicationLayer;
 using RedgifsDownloader.ApplicationLayer.Downloads;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
+using RedgifsDownloader.ApplicationLayer.Reddit;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Infrastructure;
+using RedgifsDownloader.Infrastructure.Reddit;
 using RedgifsDownloader.Infrastructure.Redgifs;
 using RedgifsDownloader.Infrastructure.Settings;
 using RedgifsDownloader.Interfaces;
@@ -36,15 +38,19 @@ namespace RedgifsDownloader
             // 注册依赖
             // 顶层
             services.AddSingleton<MainViewModel>();
-            services.AddSingleton<DownloadsViewModelNew>();
+            services.AddSingleton<DownloadsViewModel>();
             services.AddSingleton<SettingsViewModel>();
             services.AddSingleton<RedditViewModel>();
+            services.AddSingleton<RedditViewModelNew>();
             services.AddSingleton<ImageSimilarityViewModel>();
             services.AddSingleton<DupePicsCleanerViewModel>();
 
             // 中间层
             services.AddSingleton<RedditDownloadCoordinator>();
+            services.AddSingleton<IRedditDownloadAppService, RedditDownloadAppService>();
             services.AddSingleton<RedditVideoDownloadCoordinator>();
+            services.AddSingleton<RedditFetchImagesAppService>();
+            services.AddSingleton<RedditFetchRedgifsAppService>();
             services.AddSingleton<IDownloadAppService, DownloadAppService>();
             services.AddSingleton<IMediaCrawlerFactory, MediaCrawlerFactory>();
             services.AddHttpClient<IMediaDownloader, HttpMediaDownloader>();
@@ -63,6 +69,7 @@ namespace RedgifsDownloader
                 client.DefaultRequestHeaders.Add("Cookie", "over18=1");
             });
             services.AddSingleton<Interfaces.IRedditAuthService, Services.Reddit.RedditAuthService>();
+            services.AddSingleton<IRedditApiClient, RedditApiClient>();
             services.AddSingleton<ILogService, LogService>();
             services.AddSingleton<DupeCleanerService>();
             services.AddSingleton<RenameService>();

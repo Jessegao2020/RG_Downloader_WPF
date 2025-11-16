@@ -1,9 +1,12 @@
-﻿using RedgifsDownloader.ApplicationLayer.Settings;
+﻿using System.IO;
+using RedgifsDownloader.ApplicationLayer.Settings;
 
 namespace RedgifsDownloader.Infrastructure.Settings
 {
     internal class AppSettings : IAppSettings
     {
+        private static readonly string DefaultDownloadPath = Path.Combine(AppContext.BaseDirectory, "Downloads");
+
         public int MaxConcurrentDownloads
         {
             get => Properties.Settings.Default.MaxDownloadCount;

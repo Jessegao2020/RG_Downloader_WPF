@@ -7,13 +7,13 @@
     xmlns:vm="clr-namespace:RedgifsDownloader.Presentation.ViewModel"
     StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <DataTemplate DataType="{x:Type vm:DownloadsViewModelNew}">
+        <DataTemplate DataType="{x:Type vm:DownloadsViewModel}">
             <views:DownloadsView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
             <views:SettingsView />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:RedditViewModel}">
+        <DataTemplate DataType="{x:Type vm:RedditViewModelNew}">
             <views:RedditView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:DupePicsCleanerViewModel}">
