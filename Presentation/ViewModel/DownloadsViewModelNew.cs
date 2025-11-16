@@ -23,7 +23,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
         public ICollectionView ActiveVideosView { get; }
         public ICollectionView FailedVideosView { get; }
 
-        public ObservableCollection<string> Platfroms { get; } = new() { "Redgifs", "Fikfap" };
+        public ObservableCollection<string> Platforms { get; } = new() { "Redgifs", "Fikfap" };
 
         private CancellationTokenSource? _cts;
         private bool _isCrawling;

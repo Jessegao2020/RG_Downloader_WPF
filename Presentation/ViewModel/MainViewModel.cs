@@ -32,7 +32,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
             CurrentView = page switch
             {
                 "Settings" => _provider.GetRequiredService<SettingsViewModel>(),
-                "Redgifs" => _provider.GetRequiredService<DownloadsViewModel>(),
+                "Redgifs" => _provider.GetRequiredService<DownloadsViewModelNew>(),
                 "Reddit" => _provider.GetRequiredService<RedditViewModel>(),
                 "Cleaner" => _provider.GetRequiredService<DupePicsCleanerViewModel>(),
                 "ImageSim" => _provider.GetRequiredService<ImageSimilarityViewModel>(),

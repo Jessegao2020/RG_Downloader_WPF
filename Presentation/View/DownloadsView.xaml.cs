@@ -15,13 +15,13 @@ namespace RedgifsDownloader.View
     {
         private GridViewColumnHeader? _lastHeaderClicked;
         private ListSortDirection _lastDirection = ListSortDirection.Ascending;
-        private DownloadsViewModel _downloadsvm => (DownloadsViewModel)DataContext;
+        private DownloadsViewModelNew _downloadsvm => (DownloadsViewModelNew)DataContext;
 
         public DownloadsView()
         {
             InitializeComponent();
 
-            DataContext = App.ServiceProvider.GetRequiredService<DownloadsViewModel>();
+            DataContext = App.ServiceProvider.GetRequiredService<DownloadsViewModelNew>();
         }
 
         #region Misc UI Handlers (暂时不用重构)

@@ -1,9 +1,14 @@
 ﻿using System.IO;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using RedgifsDownloader.ApplicationLayer;
+using RedgifsDownloader.ApplicationLayer.Downloads;
+using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Interfaces;
+using RedgifsDownloader.Infrastructure;
 using RedgifsDownloader.Infrastructure.Reddit;
+using RedgifsDownloader.Infrastructure.Redgifs;
 using RedgifsDownloader.Infrastructure.Settings;
 using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Presentation.ViewModel;
@@ -32,7 +37,7 @@ namespace RedgifsDownloader
             // 注册依赖
             // 顶层
             services.AddSingleton<MainViewModel>();
-            services.AddSingleton<DownloadsViewModel>();
+            services.AddSingleton<DownloadsViewModelNew>();
             services.AddSingleton<SettingsViewModel>();
             services.AddSingleton<RedditViewModel>();
             services.AddSingleton<ImageSimilarityViewModel>();
@@ -43,6 +48,13 @@ namespace RedgifsDownloader
             services.AddSingleton<DownloadCoordinator>();
             services.AddSingleton<RedditDownloadCoordinator>();
             services.AddSingleton<RedditVideoDownloadCoordinator>();
+            services.AddSingleton<IDownloadAppService, DownloadAppService>();
+            services.AddSingleton<IMediaCrawlerFactory, MediaCrawlerFactory>();
+            services.AddSingleton<IMediaDownloader, HttpMediaDownloader>();
+            services.AddSingleton<IVideoPathStrategy, VideoPathStrategy>();
+            services.AddSingleton<IFileStorage, FileStorage>();
+            services.AddSingleton<RedgifsCrawler>();
+
 
             //底层
             services.AddSingleton<VideoFileService>();
