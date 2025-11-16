@@ -130,6 +130,12 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 IsAllSelected = on;
             });
             #endregion
+
+            Videos.CollectionChanged += (_, __) =>
+            {
+                OnPropertyChanged(nameof(VideosCount));
+                (DownloadCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            };
         }
 
         private async Task StartCrawlAsync()

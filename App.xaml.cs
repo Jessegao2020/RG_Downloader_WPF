@@ -50,7 +50,7 @@ namespace RedgifsDownloader
             services.AddSingleton<RedditVideoDownloadCoordinator>();
             services.AddSingleton<IDownloadAppService, DownloadAppService>();
             services.AddSingleton<IMediaCrawlerFactory, MediaCrawlerFactory>();
-            services.AddSingleton<IMediaDownloader, HttpMediaDownloader>();
+            services.AddHttpClient<IMediaDownloader, HttpMediaDownloader>();
             services.AddSingleton<IVideoPathStrategy, VideoPathStrategy>();
             services.AddSingleton<IFileStorage, FileStorage>();
             services.AddSingleton<RedgifsCrawler>();
@@ -77,6 +77,7 @@ namespace RedgifsDownloader
             });
 
             services.AddSingleton<IAppSettings, AppSettings>();
+            services.AddSingleton<IMediaCrawler, RedgifsCrawler>();
             services.AddHttpClient<Domain.Interfaces.IRedditAuthService, Infrastructure.Reddit.RedditAuthService>();
             //生成容器
             ServiceProvider = services.BuildServiceProvider();

@@ -81,6 +81,7 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
                 username: dto.Username,
                 url: new Uri(dto.Url),
                 createDateRaw: dto.CreateDateRaw,
+                token: dto.Token,
                 platform: dto.Platform);
         }
 
@@ -92,9 +93,13 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
             {
                 case MediaPlatform.Redgifs:
                     headers["Referer"] = "https://www.redgifs.com/";
+                    headers["Origin"] = "https://www.redgifs.com/";
+                    headers["Accept"] = "application/json, text/plain, */*";
+                    if(!string.IsNullOrEmpty(video.Token))
+                        headers["Authorization"] = $"Bearer {video.Token}";
                     break;
 
-                case MediaPlatform:
+                case MediaPlatform.Fikfap:
                     headers["Referer"] = "https://www.fikfap.com";
                     break;
             }
