@@ -9,7 +9,6 @@ namespace RedgifsDownloader.Presentation.ViewModel
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        private readonly ICrawlService _crawler;
         private readonly IServiceProvider _provider;
         public ICommand NavigateCommand { get; }
 

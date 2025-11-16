@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Model;
 using RedgifsDownloader.Presentation.ViewModel;
 using System.ComponentModel;
@@ -70,7 +71,8 @@ namespace RedgifsDownloader.View
 
         private void BtnOpenFolder_Click(object sender, RoutedEventArgs e)
         {
-            string folderPath = System.IO.Path.Combine(AppContext.BaseDirectory, "Downloads");
+            var storage = App.ServiceProvider.GetRequiredService<IFileStorage>();
+            string folderPath = storage.GetBaseDirectory();
 
             if (Directory.Exists(folderPath))
                 Process.Start(new ProcessStartInfo()

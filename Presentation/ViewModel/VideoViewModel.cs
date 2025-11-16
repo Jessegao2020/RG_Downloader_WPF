@@ -8,11 +8,20 @@ namespace RedgifsDownloader.Presentation.ViewModel
 {
     public class VideoViewModel : INotifyPropertyChanged
     {
+        public Action? RefreshFilters { get; set; }
         public Video Item { get; }
 
         public VideoViewModel(Video item)
         {
             Item = item;
+            item.Onchanged += () =>
+            {
+                OnPropertyChanged(nameof(Status));
+                OnPropertyChanged(nameof(Progress));
+                OnPropertyChanged(nameof(DisplayStatus));
+
+                RefreshFilters?.Invoke();
+            };
         }
 
         private bool _isSelected;
@@ -29,12 +38,8 @@ namespace RedgifsDownloader.Presentation.ViewModel
             }
         }
 
-        private double? _progress;
-        public double? Progress
-        {
-            get => _progress;
-            set { _progress = value; OnPropertyChanged(); OnPropertyChanged(nameof(DisplayStatus)); }
-        }
+
+        public double? Progress => Item.Progress;
         public long? CreateDateRaw => Item.CreateDateRaw;
 
         public string Id => Item.Id;

@@ -19,7 +19,7 @@ namespace RedgifsDownloader.Infrastructure
             string outputPath,
             MediaDownloadContext context,
             CancellationToken ct = default,
-            IProgress<double> progress = null)
+            IProgress<double>? progress = null)
         {
             string tempPath = outputPath + ".tmp";
 

@@ -10,6 +10,6 @@ namespace RedgifsDownloader.Domain.Interfaces
             string outputPath, 
             MediaDownloadContext context,  
             CancellationToken ct = default, 
-            IProgress<double> progress = null);
+            IProgress<double>? progress = null);
     }
 }

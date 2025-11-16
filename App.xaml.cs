@@ -7,7 +7,6 @@ using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Infrastructure;
-using RedgifsDownloader.Infrastructure.Reddit;
 using RedgifsDownloader.Infrastructure.Redgifs;
 using RedgifsDownloader.Infrastructure.Settings;
 using RedgifsDownloader.Interfaces;
@@ -44,8 +43,6 @@ namespace RedgifsDownloader
             services.AddSingleton<DupePicsCleanerViewModel>();
 
             // 中间层
-            services.AddSingleton<ICrawlService, CrawlService>();
-            services.AddSingleton<DownloadCoordinator>();
             services.AddSingleton<RedditDownloadCoordinator>();
             services.AddSingleton<RedditVideoDownloadCoordinator>();
             services.AddSingleton<IDownloadAppService, DownloadAppService>();

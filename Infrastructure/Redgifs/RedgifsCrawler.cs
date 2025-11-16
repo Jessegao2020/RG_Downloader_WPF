@@ -33,8 +33,6 @@ namespace RedgifsDownloader.Infrastructure.Redgifs
                 if (string.IsNullOrWhiteSpace(line)) continue;
 
                 var raw = Deserialize(line);
-                Debug.WriteLine("RAW JSON: " + line);
-
                 if (raw != null)
                     yield return ConverToDomain(raw);
             }

@@ -4,6 +4,7 @@ namespace RedgifsDownloader.Domain.Entities
 {
     public class Video
     {
+        public event Action? Onchanged;
         public string Id { get; }
         public string Username { get; }
         public Uri Url { get; }
@@ -11,6 +12,7 @@ namespace RedgifsDownloader.Domain.Entities
         public MediaPlatform Platform { get; }
         public long? CreateDateRaw { get; private set; }
         public double? Progress { get; private set; }
+        public bool IsFailed { get; private set; }
 
         public VideoStatus Status { get; private set; }
 
@@ -25,10 +27,10 @@ namespace RedgifsDownloader.Domain.Entities
             Status = VideoStatus.Pending;
         }
 
-        public void SetProgress(double? p) => Progress = p;
-        public void MarkDownloading() => Status = VideoStatus.Downloading;
-        public void MarkCompleted() => Status = VideoStatus.Completed;
-        public void MarkFailed() => Status = VideoStatus.Failed;
-        public bool IsFailed() => Status == VideoStatus.Failed;
+        public void SetProgress(double? p) { Console.WriteLine($"video setprogress({p}) called"); Progress = p; Onchanged?.Invoke(); }
+        public void MarkDownloading() { Status = VideoStatus.Downloading; Onchanged?.Invoke(); }
+        public void MarkCompleted() { Status = VideoStatus.Completed; IsFailed = false; Onchanged?.Invoke(); }
+        public void MarkExists() { Status = VideoStatus.Exists; Onchanged?.Invoke(); }
+        public void MarkFailed() { Status = VideoStatus.Failed; IsFailed = true; Onchanged?.Invoke(); }
     }
 }

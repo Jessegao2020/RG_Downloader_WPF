@@ -107,10 +107,10 @@ namespace RedgifsDownloader.Presentation.ViewModel
             _settings = settings;
 
             ActiveVideosView = CollectionViewSource.GetDefaultView(Videos);
-            ActiveVideosView.Filter = v => !IsFailed((VideoViewModel)v);
+            ActiveVideosView.Filter = v => { var vm = (VideoViewModel)v; return !vm.Item.IsFailed; };
 
             FailedVideosView = new CollectionViewSource { Source = Videos }.View;
-            FailedVideosView.Filter = v => IsFailed((VideoViewModel)v);
+            FailedVideosView.Filter = v => { var vm = (VideoViewModel)v; return vm.Item.IsFailed; };
 
             #region Commands
             CrawlCommand = new RelayCommand(async _ => await StartCrawlAsync(), _ => !IsCrawling && !IsDownloading && !string.IsNullOrWhiteSpace(Username));
@@ -156,7 +156,16 @@ namespace RedgifsDownloader.Presentation.ViewModel
                     {
                         await Application.Current.Dispatcher.InvokeAsync(() =>
                         {
-                            Videos.Add(new VideoViewModel(video));
+                            var vm = new VideoViewModel(video)
+                            {
+                                RefreshFilters = () =>
+                                {
+                                    ActiveVideosView.Refresh();
+                                    FailedVideosView.Refresh();
+                                }
+                            };
+
+                            Videos.Add(vm);
                             OnPropertyChanged(nameof(VideosCount));
                         });
                     }
@@ -167,7 +176,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
 
         private async Task StartDownloadAsync()
         {
-            var selected = Videos.Where(v => v.IsSelected).Select(v => v.Item).ToList();
+            var selected = ActiveVideosView.Cast<VideoViewModel>().Where(v => v.IsSelected).Select(v => v.Item).ToList();
             if (!selected.Any())
             {
                 _logger.ShowMessage("请选择要下载的视频");

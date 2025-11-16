@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.IO;
+using System.Runtime.CompilerServices;
 using RedgifsDownloader.ApplicationLayer.DTOs;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.Domain.Entities;
@@ -47,9 +48,22 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
                 try
                 {
                     string outputPath = _pathStrategy.BuildDownloadPath(video);
-                    var context = BuildDownloadContext(video);
+                    Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
-                    var result = await _downloader.DownloadAsync(video.Url, outputPath, context, ct, progress: null);
+                    if (File.Exists(outputPath))
+                    {
+                        video.MarkExists();
+                        video.SetProgress(100);
+                        summary.Completed++;
+                        return;
+                    }
+
+                    video.MarkDownloading();
+
+                    var context = BuildDownloadContext(video);
+                    var progress = new Progress<double>(p => { video.SetProgress(p); });
+
+                    var result = await _downloader.DownloadAsync(video.Url, outputPath, context, ct, progress);
 
                     if (result.Status == VideoStatus.Completed)
                     {
@@ -95,7 +109,7 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
                     headers["Referer"] = "https://www.redgifs.com/";
                     headers["Origin"] = "https://www.redgifs.com/";
                     headers["Accept"] = "application/json, text/plain, */*";
-                    if(!string.IsNullOrEmpty(video.Token))
+                    if (!string.IsNullOrEmpty(video.Token))
                         headers["Authorization"] = $"Bearer {video.Token}";
                     break;
 
