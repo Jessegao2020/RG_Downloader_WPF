@@ -140,19 +140,21 @@ namespace RedgifsDownloader.Presentation.ViewModel
             try
             {
                 var platformEnum = SelectedPlatform == "Redgifs" ? MediaPlatform.Redgifs : MediaPlatform.Fikfap;
-
-                await foreach (Video video in _downloadService.CrawlAsync(
+                await Task.Run(async () =>
+                {
+                    await foreach (Video video in _downloadService.CrawlAsync(
                     platformEnum,
                     Username,
                     msg => Application.Current.Dispatcher.Invoke(() => _logger.ShowMessage(msg)),
                     CancellationToken.None))
-                {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        Videos.Add(new VideoViewModel(video));
-                        OnPropertyChanged(nameof(VideosCount));
-                    });
-                }
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            Videos.Add(new VideoViewModel(video));
+                            OnPropertyChanged(nameof(VideosCount));
+                        });
+                    }
+                });
             }
             finally { IsCrawling = false; _logger.ShowMessage($"共爬取{Videos.Count}个视频"); }
         }

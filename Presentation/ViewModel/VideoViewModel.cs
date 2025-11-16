@@ -35,18 +35,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
             get => _progress;
             set { _progress = value; OnPropertyChanged(); OnPropertyChanged(nameof(DisplayStatus)); }
         }
-        private long? _createDateRaw;
-        public long? CreateDateRaw
-        {
-            get => _createDateRaw;
-            set
-            {
-                _createDateRaw = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(DisplayCreateDate));
-                OnPropertyChanged(nameof(SortCreateDate));
-            }
-        }
+        public long? CreateDateRaw => Item.CreateDateRaw;
 
         public string Id => Item.Id;
         public string Username => Item.Username;
@@ -57,7 +46,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
         public string DisplayCreateDate => SortCreateDate?.ToString("MM/dd/yy") ?? "";
 
         public DateTime? SortCreateDate =>
-            CreateDateRaw is long ts ? DateTimeOffset.FromUnixTimeSeconds(ts).LocalDateTime : null;
+            Item.CreateDateRaw is long ts ? DateTimeOffset.FromUnixTimeSeconds(ts).LocalDateTime : null;
 
         public string DisplayStatus =>
         Status switch

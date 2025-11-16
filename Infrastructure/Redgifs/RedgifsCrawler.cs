@@ -23,7 +23,7 @@ namespace RedgifsDownloader.Infrastructure.Redgifs
 
             var errorMonitor = MonitorErrors(process);
 
-            
+
 
             while (!process.StandardOutput.EndOfStream)
             {
@@ -34,7 +34,7 @@ namespace RedgifsDownloader.Infrastructure.Redgifs
 
                 var raw = Deserialize(line);
 
-                if(raw != null)
+                if (raw != null)
                     yield return ConverToDomain(raw);
             }
             await errorMonitor;
@@ -90,6 +90,7 @@ namespace RedgifsDownloader.Infrastructure.Redgifs
                 id: raw.Id!,
                 username: raw.Username!,
                 url: raw.Url!,
+                createDataRaw: raw.CreateDateRaw,
                 platform: MediaPlatform.Redgifs);
         }
     }

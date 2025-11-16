@@ -80,6 +80,7 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
                 id: dto.Id,
                 username: dto.Username,
                 url: new Uri(dto.Url),
+                createDateRaw: dto.CreateDateRaw,
                 platform: dto.Platform);
         }
 
