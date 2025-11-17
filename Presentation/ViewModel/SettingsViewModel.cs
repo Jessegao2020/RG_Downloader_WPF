@@ -5,7 +5,6 @@ using System.Windows.Input;
 using Ookii.Dialogs.Wpf;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Helpers;
-using RedgifsDownloader.Interfaces;
 
 namespace RedgifsDownloader.Presentation.ViewModel
 {
