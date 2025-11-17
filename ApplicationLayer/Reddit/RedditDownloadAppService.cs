@@ -1,4 +1,5 @@
 ﻿using RedgifsDownloader.ApplicationLayer.Settings;
+using RedgifsDownloader.ApplicationLayer.Utils;
 using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Interfaces;
@@ -75,7 +76,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
                         {
                             Interlocked.Increment(ref count);
                             progress?.Invoke(count);
-                            string filename = $"{img.Title}_{Path.GetFileName(img.Url)}";
+                            string filename = FIleNameSanitizer.MakeSafeFileName(img.Title, img.Id, img.Url);
                             string output = Path.Combine(downloadDir, filename);
 
                             var result = await _downloader.DownloadAsync(new Uri(img.Url), output, new Domain.Enums.MediaDownloadContext(), ct);
