@@ -18,7 +18,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
         {
             await foreach (var json in _api.StreamUserPostsJson(username))
             {
-                var doc = JsonDocument.Parse(json);
+                using var doc = JsonDocument.Parse(json);
 
                 foreach (var post in RedditPostParser.EnumerateChildren(doc))
                 {

@@ -6,10 +6,11 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit.Parser
     {
         public static IEnumerable<JsonElement> EnumerateChildren(JsonDocument doc)
         {
-            var data = doc.RootElement.GetProperty("data");
-
-            if (!data.TryGetProperty("children", out var children))
+            if (!doc.RootElement.TryGetProperty("data", out var data))
                 yield break;
+
+            if(!data.TryGetProperty("children", out var children))
+                    yield break;
 
             foreach (var child in children.EnumerateArray())
             {

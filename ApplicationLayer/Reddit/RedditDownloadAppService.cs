@@ -80,9 +80,15 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
 
                             var result = await _downloader.DownloadAsync(new Uri(img.Url), output, new Domain.Enums.MediaDownloadContext(), ct);
                             if (result.Status == VideoStatus.Completed || result.Status == VideoStatus.Exists)
+                            {
                                 Interlocked.Increment(ref success);
+                                log($"[Finished] {filename}");
+                            }
                             else
+                            {
                                 Interlocked.Increment(ref fail);
+                                log($"[Failed] {filename}");
+                            }
                         }
                         catch (Exception ex)
                         {
