@@ -13,7 +13,7 @@
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
             <views:SettingsView />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:RedditViewModelNew}">
+        <DataTemplate DataType="{x:Type vm:RedditViewModel}">
             <views:RedditView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:DupePicsCleanerViewModel}">

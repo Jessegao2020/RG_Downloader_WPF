@@ -1,9 +1,10 @@
-﻿using RedgifsDownloader.ApplicationLayer.Settings;
+﻿using System.Drawing.Interop;
+using System.IO;
+using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.ApplicationLayer.Utils;
 using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Interfaces;
-using System.IO;
 
 namespace RedgifsDownloader.ApplicationLayer.Reddit
 {
@@ -57,9 +58,9 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
             string downloadDir = Path.Combine(_settings.DownloadDirectory, username);
             Directory.CreateDirectory(downloadDir);
 
-            int success = 0;
-            int fail = 0;
-            int count = 0;
+            int downloaded = 0;
+            int failed = 0;
+            int skipped = 0;
 
             using var semaphore = new SemaphoreSlim(concurrency);
             var tasks = new List<Task>();
@@ -68,33 +69,39 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
             {
                 await foreach (var img in _imageApp.Execute(username).WithCancellation(ct))
                 {
+                    string filename = FIleNameSanitizer.MakeSafeFileName(img.Title, img.Id, img.Url);
+                    string output = Path.Combine(downloadDir, filename);
+
+                    if (File.Exists(output))
+                    {
+                        Interlocked.Increment(ref skipped);
+                        log?.Invoke($"[Skip] {filename}");
+                        continue;
+                    }
+
                     await semaphore.WaitAsync(ct);
 
                     tasks.Add(Task.Run(async () =>
                     {
                         try
                         {
-                            Interlocked.Increment(ref count);
-                            progress?.Invoke(count);
-                            string filename = FIleNameSanitizer.MakeSafeFileName(img.Title, img.Id, img.Url);
-                            string output = Path.Combine(downloadDir, filename);
-
                             var result = await _downloader.DownloadAsync(new Uri(img.Url), output, new Domain.Enums.MediaDownloadContext(), ct);
                             if (result.Status == VideoStatus.Completed || result.Status == VideoStatus.Exists)
                             {
-                                Interlocked.Increment(ref success);
-                                log($"[Finished] {filename}");
+                                int newCount = Interlocked.Increment(ref downloaded);
+                                progress?.Invoke(newCount);
+                                log?.Invoke($"[Finished] {filename}");
                             }
                             else
                             {
-                                Interlocked.Increment(ref fail);
-                                log($"[Failed] {filename}");
+                                Interlocked.Increment(ref failed);
+                                log?.Invoke($"[Failed] {filename}");
                             }
                         }
                         catch (Exception ex)
                         {
-                            Interlocked.Increment(ref fail);
-                            log($"[IMG]下载失败:{ex.Message}");
+                            Interlocked.Increment(ref failed);
+                            log?.Invoke($"[IMG]下载失败:{ex.Message}");
                         }
                         finally { semaphore.Release(); }
                     }, ct));
@@ -105,20 +112,30 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
                 string token = await _auth.GetAccessTokenAsync();
                 log($"[Reddit] Redgifs Token 获取完成");
 
+                var seenVideos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
                 await foreach (var video in _redgifsApp.Execute(username).WithCancellation(ct))
                 {
+                    string filename = Path.GetFileName(new Uri(video.Url).AbsolutePath);
+
+                    if (!seenVideos.Add(filename))
+                        continue;
+
+                    string output = Path.Combine(downloadDir, filename);
+
+                    if (File.Exists(output))
+                    {
+                        Interlocked.Increment(ref skipped);
+                        log?.Invoke($"[Skip] {filename}");
+                        continue;
+                    }
+
                     await semaphore.WaitAsync(ct);
 
                     tasks.Add(Task.Run(async () =>
                     {
                         try
                         {
-                            Interlocked.Increment(ref count);
-                            progress?.Invoke(count);
-
-                            string filename = $"{video.Id}.mp4";
-                            string output = Path.Combine(downloadDir, filename);
-
                             var context = new MediaDownloadContext();
                             context.Headers = new()
                             {
@@ -128,15 +145,18 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
                             var result = await _downloader.DownloadAsync(new Uri(video.Url), output, context, ct);
 
                             if (result.Status == VideoStatus.Completed)
-                                Interlocked.Increment(ref success);
+                            {
+                                int newCount = Interlocked.Increment(ref downloaded);
+                                log?.Invoke($"[Finish] {filename}");
+                                progress?.Invoke(newCount);
+                            }
                             else
-                                Interlocked.Increment(ref fail);
+                                Interlocked.Increment(ref failed);
                         }
                         catch (Exception ex)
                         {
-                            Interlocked.Increment(ref fail);
-                            log($"[Video] 下载失败: {ex.Message}");
-
+                            Interlocked.Increment(ref failed);
+                            log?.Invoke($"[Video] 下载失败: {ex.Message}");
                         }
                         finally { semaphore.Release(); }
                     }, ct));
@@ -144,7 +164,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
             }
 
             await Task.WhenAll(tasks);
-            return new RedditDownloadSummary(success, fail);
+            return new RedditDownloadSummary(downloaded, failed, skipped);
         }
     }
 }

@@ -13,5 +13,5 @@
             CancellationToken ct = default);
     }
 
-    public record RedditDownloadSummary(int Success, int Fail);
+    public record RedditDownloadSummary(int Success, int Fail , int Skip);
 }

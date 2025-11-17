@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Ookii.Dialogs.Wpf;
+using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Helpers;
 using RedgifsDownloader.Interfaces;
 
@@ -10,17 +11,17 @@ namespace RedgifsDownloader.Presentation.ViewModel
 {
     public class SettingsViewModel : INotifyPropertyChanged
     {
-        private readonly ISettingsService _settingsService;
+        private readonly IAppSettings _settingsService;
         public ObservableCollection<int> MaxConcurrencyOptions { get; } = new(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
 
         public int MaxConcurrency
         {
-            get => _settingsService.MaxDownloadCount;
+            get => _settingsService.MaxConcurrentDownloads;
             set
             {
-                if (_settingsService.MaxDownloadCount != value)
+                if (_settingsService.MaxConcurrentDownloads != value)
                 {
-                    _settingsService.MaxDownloadCount = value;
+                    _settingsService.MaxConcurrentDownloads = value;
                     _settingsService.Save();
                     OnPropertyChanged();
                 }
@@ -43,7 +44,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
         public ICommand SaveCommand { get; }
         public ICommand ChooseDownloadFolderCommand { get; }
 
-        public SettingsViewModel(ISettingsService settingsService)
+        public SettingsViewModel(IAppSettings settingsService)
         {
             _settingsService = settingsService;
             ChooseDownloadFolderCommand = new RelayCommand(_ => GetDownloadDirectory());

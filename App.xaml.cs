@@ -15,8 +15,6 @@ using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Presentation.ViewModel;
 using RedgifsDownloader.Services;
 using RedgifsDownloader.Services.DupeCleaner;
-using RedgifsDownloader.Services.Reddit;
-using RedgifsDownloader.Services.RedGifs;
 
 namespace RedgifsDownloader
 {
@@ -41,14 +39,11 @@ namespace RedgifsDownloader
             services.AddSingleton<DownloadsViewModel>();
             services.AddSingleton<SettingsViewModel>();
             services.AddSingleton<RedditViewModel>();
-            services.AddSingleton<RedditViewModelNew>();
             services.AddSingleton<ImageSimilarityViewModel>();
             services.AddSingleton<DupePicsCleanerViewModel>();
 
             // 中间层
-            services.AddSingleton<RedditDownloadCoordinator>();
             services.AddSingleton<IRedditDownloadAppService, RedditDownloadAppService>();
-            services.AddSingleton<RedditVideoDownloadCoordinator>();
             services.AddSingleton<RedditFetchImagesAppService>();
             services.AddSingleton<RedditFetchRedgifsAppService>();
             services.AddSingleton<IDownloadAppService, DownloadAppService>();
@@ -60,29 +55,13 @@ namespace RedgifsDownloader
 
 
             //底层
-            services.AddSingleton<VideoFileService>();
-            services.AddSingleton<DownloadWorker>();
-            services.AddSingleton<ISettingsService, PropertySettingService>();
-            services.AddHttpClient<RedditApiService>(client =>
-            {
-                client.DefaultRequestHeaders.UserAgent.ParseAdd("RedgifsDownloader/1.0 (by u/test_user)");
-                client.DefaultRequestHeaders.Add("Cookie", "over18=1");
-            });
-            services.AddSingleton<Interfaces.IRedditAuthService, Services.Reddit.RedditAuthService>();
             services.AddSingleton<IRedditApiClient, RedditApiClient>();
             services.AddSingleton<ILogService, LogService>();
             services.AddSingleton<DupeCleanerService>();
             services.AddSingleton<RenameService>();
-            services.AddSingleton<RedgifsAuthService>();
-            services.AddHttpClient<RedditImageDownloadService>(client =>
-            {
-                client.DefaultRequestHeaders.UserAgent.ParseAdd("RedgifsDownloader/1.0 (by u/test_user)");
-                client.DefaultRequestHeaders.Add("Cookie", "over18=1");
-            });
-
             services.AddSingleton<IAppSettings, AppSettings>();
             services.AddSingleton<IMediaCrawler, RedgifsCrawler>();
-            services.AddHttpClient<Domain.Interfaces.IRedditAuthService, Infrastructure.Reddit.RedditAuthService>();
+            services.AddHttpClient<IRedditAuthService, RedditAuthService>();
             //生成容器
             ServiceProvider = services.BuildServiceProvider();
 
