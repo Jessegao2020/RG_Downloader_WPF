@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using RedgifsDownloader.Interfaces;
+using RedgifsDownloader.Domain.Interfaces;
 
 namespace RedgifsDownloader.Services
 {

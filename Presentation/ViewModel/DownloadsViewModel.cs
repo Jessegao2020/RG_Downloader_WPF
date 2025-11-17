@@ -8,8 +8,8 @@ using RedgifsDownloader.ApplicationLayer.Downloads;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
+using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Helpers;
-using RedgifsDownloader.Interfaces;
 
 namespace RedgifsDownloader.Presentation.ViewModel
 {

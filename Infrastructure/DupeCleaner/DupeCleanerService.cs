@@ -1,9 +1,10 @@
 ﻿using System.IO;
 using System.Text.RegularExpressions;
+using RedgifsDownloader.Domain.Interfaces;
 
-namespace RedgifsDownloader.Services.DupeCleaner
+namespace RedgifsDownloader.Infrastructure.DupeCleaner
 {
-    public class DupeCleanerService
+    public class DupeCleanerService : IDupeCleanerService
     {
         private readonly Regex _regex = new(@"^S(\d+)__");
 
@@ -38,6 +39,7 @@ namespace RedgifsDownloader.Services.DupeCleaner
                     foreach (var file in list)
                     {
                         if (file.FullName == keep.FullName) continue;
+
                         try
                         {
                             file.Delete();
@@ -48,6 +50,7 @@ namespace RedgifsDownloader.Services.DupeCleaner
                             logs.Add($"删除失败 {file.Name}: {ex.Message}");
                         }
                     }
+
                     kept++;
                     logs.Add($"S{kvp.Key:D3} 保留 {keep.Name}");
                 }

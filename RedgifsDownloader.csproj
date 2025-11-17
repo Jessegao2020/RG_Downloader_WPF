@@ -66,9 +66,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="ApplicationLayer\DupeCleaner\" />
 	  <Folder Include="ApplicationLayer\Fikfap\" />
-	  <Folder Include="ApplicationLayer\ImageSimilarity\" />
 	</ItemGroup>
 
 </Project>

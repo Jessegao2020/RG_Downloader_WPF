@@ -1,9 +1,10 @@
 ﻿using System.IO;
 using System.Text.RegularExpressions;
+using RedgifsDownloader.Domain.Interfaces;
 
-namespace RedgifsDownloader.Services.DupeCleaner
+namespace RedgifsDownloader.Infrastructure.DupeCleaner
 {
-    public class RenameService
+    public class DupeRenameService : IRenameService
     {
         public async Task<(int renamed, List<string> logs)> RenameAsync(string folderPath)
         {
@@ -16,7 +17,7 @@ namespace RedgifsDownloader.Services.DupeCleaner
 
             await Task.Run(() =>
             {
-                foreach (var file in Directory.GetFiles(folderPath, "*.*", SearchOption.TopDirectoryOnly))
+                foreach (var file in Directory.GetFiles(folderPath))
                 {
                     string fileName = Path.GetFileName(file);
                     string newName = regex.Replace(fileName, "");

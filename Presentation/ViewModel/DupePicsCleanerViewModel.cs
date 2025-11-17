@@ -2,15 +2,14 @@
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Ookii.Dialogs.Wpf;
+using RedgifsDownloader.ApplicationLayer.DupeCleaner;
 using RedgifsDownloader.Helpers;
-using RedgifsDownloader.Services.DupeCleaner;
 
 namespace RedgifsDownloader.Presentation.ViewModel
 {
     public class DupePicsCleanerViewModel : INotifyPropertyChanged
     {
-        private readonly DupeCleanerService _cleanerService;
-        private readonly RenameService _renameService;
+        private readonly DupeCleanerAppService _app;
 
         public ICommand BrowseCommand { get; }
         public ICommand DeleteCommand { get; }
@@ -25,21 +24,27 @@ namespace RedgifsDownloader.Presentation.ViewModel
             get => _isBusy;
             set { _isBusy = value; OnPropertyChanged(); }
         }
+
         public string TargetFolder
         {
             get => _targetFolder;
-            set { _targetFolder = value; OnPropertyChanged(); (DeleteCommand as RelayCommand)?.RaiseCanExecuteChanged(); }
+            set
+            {
+                _targetFolder = value;
+                OnPropertyChanged();
+                (DeleteCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
         }
+
         public string ResultMessage
         {
             get => _resultMessage;
             set { _resultMessage = value; OnPropertyChanged(); }
         }
 
-        public DupePicsCleanerViewModel(DupeCleanerService cleanerService, RenameService renameService)
+        public DupePicsCleanerViewModel(DupeCleanerAppService app)
         {
-            _cleanerService = cleanerService;
-            _renameService = renameService;
+            _app = app;
 
             BrowseCommand = new RelayCommand(_ => BrowseFolder());
             DeleteCommand = new RelayCommand(async _ => await DeleteAsync(), _ => !string.IsNullOrWhiteSpace(TargetFolder));
@@ -48,12 +53,9 @@ namespace RedgifsDownloader.Presentation.ViewModel
 
         private void BrowseFolder()
         {
-            var dialog = new VistaFolderBrowserDialog();
-            dialog.Description = "选择图片所在文件夹";
-            if (dialog.ShowDialog() == true)
-            {
-                TargetFolder = dialog.SelectedPath;
-            }
+            var dlg = new VistaFolderBrowserDialog { Description = "选择图片所在文件夹" };
+            if (dlg.ShowDialog() == true)
+                TargetFolder = dlg.SelectedPath;
         }
 
         private async Task DeleteAsync()
@@ -65,7 +67,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
 
             try
             {
-                var (kept, deleted, logs) = await _cleanerService.CleanAsync(TargetFolder);
+                var (kept, deleted, logs) = await _app.CleanAsync(TargetFolder);
                 ResultMessage = string.Join("\n", logs);
             }
             catch (Exception ex)
@@ -81,12 +83,13 @@ namespace RedgifsDownloader.Presentation.ViewModel
         private async Task RenameFiles()
         {
             if (string.IsNullOrWhiteSpace(TargetFolder)) return;
+
             IsBusy = true;
             ResultMessage = "正在重命名文件…";
 
             try
             {
-                var (renamed, logs) = await _renameService.RenameAsync(TargetFolder);
+                var (renamed, logs) = await _app.RenameAsync(TargetFolder);
                 ResultMessage = $"重命名完成，共 {renamed} 个文件。\n" + string.Join("\n", logs);
             }
             catch (Exception ex)

@@ -5,7 +5,6 @@ using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Domain.Interfaces;
-using RedgifsDownloader.Interfaces;
 
 namespace RedgifsDownloader.ApplicationLayer.Downloads
 {

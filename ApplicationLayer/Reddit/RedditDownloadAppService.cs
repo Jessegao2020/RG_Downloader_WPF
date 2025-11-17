@@ -4,7 +4,6 @@ using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.ApplicationLayer.Utils;
 using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Domain.Interfaces;
-using RedgifsDownloader.Interfaces;
 
 namespace RedgifsDownloader.ApplicationLayer.Reddit
 {

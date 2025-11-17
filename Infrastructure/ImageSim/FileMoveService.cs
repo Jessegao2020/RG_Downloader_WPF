@@ -1,15 +1,15 @@
 ﻿using System.IO;
+using RedgifsDownloader.Domain.Interfaces;
 
-namespace RedgifsDownloader.Services.ImageSim
+namespace RedgifsDownloader.Infrastructure.ImageSim
 {
-    public class FileMoveService
+    public class FileMoveService : IDupeFileMoveService
     {
-        public static void MoveToDupeFolder(string baseFolder, Dictionary<int, List<string>> groups)
+        public void MoveToDupeFolder(string baseFolder, Dictionary<int, List<string>> groups)
         {
             string dupeDir = Path.Combine(baseFolder, "dupe");
             Directory.CreateDirectory(dupeDir);
 
-            // 1️⃣ 找出当前 dupe 文件夹中最大的 S 编号
             int nextGroupIndex = GetNextGroupStartIndex(dupeDir);
 
             foreach (var kv in groups)

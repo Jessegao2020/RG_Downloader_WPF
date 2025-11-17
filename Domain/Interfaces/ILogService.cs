@@ -1,4 +1,4 @@
-﻿namespace RedgifsDownloader.Interfaces
+﻿namespace RedgifsDownloader.Domain.Interfaces
 {
     public interface ILogService
     {

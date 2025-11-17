@@ -3,18 +3,20 @@ using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using RedgifsDownloader.ApplicationLayer;
 using RedgifsDownloader.ApplicationLayer.Downloads;
+using RedgifsDownloader.ApplicationLayer.DupeCleaner;
+using RedgifsDownloader.ApplicationLayer.ImageSimilarity;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.ApplicationLayer.Reddit;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Infrastructure;
+using RedgifsDownloader.Infrastructure.DupeCleaner;
+using RedgifsDownloader.Infrastructure.ImageSim;
 using RedgifsDownloader.Infrastructure.Reddit;
 using RedgifsDownloader.Infrastructure.Redgifs;
 using RedgifsDownloader.Infrastructure.Settings;
-using RedgifsDownloader.Interfaces;
 using RedgifsDownloader.Presentation.ViewModel;
 using RedgifsDownloader.Services;
-using RedgifsDownloader.Services.DupeCleaner;
 
 namespace RedgifsDownloader
 {
@@ -52,16 +54,19 @@ namespace RedgifsDownloader
             services.AddSingleton<IVideoPathStrategy, VideoPathStrategy>();
             services.AddSingleton<IFileStorage, FileStorage>();
             services.AddSingleton<RedgifsCrawler>();
-
+            services.AddSingleton<IImageSimilarityAppService, ImageSimilarityAppService>();
+            services.AddSingleton<IDupeFileMoveService, FileMoveService>();
+            services.AddSingleton<DupeCleanerAppService>();
 
             //底层
             services.AddSingleton<IRedditApiClient, RedditApiClient>();
             services.AddSingleton<ILogService, LogService>();
-            services.AddSingleton<DupeCleanerService>();
-            services.AddSingleton<RenameService>();
             services.AddSingleton<IAppSettings, AppSettings>();
             services.AddSingleton<IMediaCrawler, RedgifsCrawler>();
+            services.AddSingleton<IImageHashService, ImageHashService>();
+            services.AddSingleton<IDupeCleanerService, DupeCleanerService>();
             services.AddHttpClient<IRedditAuthService, RedditAuthService>();
+            services.AddSingleton<IRenameService, DupeRenameService>();
             //生成容器
             ServiceProvider = services.BuildServiceProvider();
 
