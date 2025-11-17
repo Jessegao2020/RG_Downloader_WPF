@@ -5,10 +5,11 @@
         Task<bool> LoginAsync();
 
         Task<RedditDownloadSummary> DownloadUserAsync(
-            string username, 
-            bool isVideoMode, 
-            Action<string>? log = null, 
-            Action<int>? progress = null, 
+            string username,
+            bool isVideoMode,
+            int concurrency,
+            Action<string>? log = null,
+            Action<int>? progress = null,
             CancellationToken ct = default);
     }
 

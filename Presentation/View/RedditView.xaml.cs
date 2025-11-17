@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using RedgifsDownloader.Presentation.ViewModel;
+using System.Windows.Controls;
 
 namespace RedgifsDownloader.View
 {
@@ -12,6 +13,12 @@ namespace RedgifsDownloader.View
         private void Logbox_TextChanged(object sender, EventArgs e)
         {
             LogBox.ScrollToEnd();
+        }
+
+        private async void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (DataContext is RedditViewModelNew vm)
+                await vm.CheckLoginStatusAsync();
         }
     }
 }

@@ -4,11 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converter="clr-namespace:RedgifsDownloader.Converter"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:local="clr-namespace:RedgifsDownloader.View"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="450"
     d:DesignWidth="300"
+    Loaded="UserControl_Loaded"
     mc:Ignorable="d">
+
     <UserControl.Resources>
         <converter:InverseBoolConverter x:Key="InverseBoolConverter" />
     </UserControl.Resources>
@@ -71,7 +74,7 @@
                 Margin="5,0,0,0"
                 VerticalContentAlignment="Center"
                 FontSize="13"
-                Text="{Binding UsernameInput, UpdateSourceTrigger=PropertyChanged}" />
+                Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" />
             <Button
                 Grid.Column="2"
                 Height="25"
@@ -79,7 +82,7 @@
                 MaxWidth="110"
                 Margin="5,0,0,0"
                 HorizontalAlignment="Right"
-                Command="{Binding GetSubmittedCommand}"
+                Command="{Binding DownloadCommand}"
                 Content="Download" />
         </Grid>
         <GroupBox
@@ -104,7 +107,7 @@
                     Margin="0,5,0,0"
                     Foreground="Gray"
                     IsReadOnly="True"
-                    Text="{Binding SubmittedJson}"
+                    Text="{Binding LogContent}"
                     TextChanged="Logbox_TextChanged"
                     TextWrapping="Wrap"
                     VerticalScrollBarVisibility="Auto" />
