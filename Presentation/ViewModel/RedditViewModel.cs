@@ -1,7 +1,7 @@
 ﻿using RedgifsDownloader.ApplicationLayer.Reddit;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Interfaces;
-using RedgifsDownloader.Helpers;
+using RedgifsDownloader.Presentation.Helpers;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;

@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.Extensions.DependencyInjection;
+using RedgifsDownloader.Presentation.Helpers;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Microsoft.Extensions.DependencyInjection;
-using RedgifsDownloader.Helpers;
 
 namespace RedgifsDownloader.Presentation.ViewModel
 {

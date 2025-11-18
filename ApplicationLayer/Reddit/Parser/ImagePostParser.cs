@@ -1,6 +1,6 @@
-﻿using System.Text.Json;
+﻿using RedgifsDownloader.ApplicationLayer.DTOs;
+using System.Text.Json;
 using System.Text.RegularExpressions;
-using RedgifsDownloader.ApplicationLayer.DTOs;
 
 namespace RedgifsDownloader.ApplicationLayer.Reddit.Parser
 {

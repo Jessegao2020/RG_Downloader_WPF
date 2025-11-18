@@ -1,12 +1,10 @@
-﻿using System.Diagnostics;
+﻿using RedgifsDownloader.ApplicationLayer.DTOs;
+using RedgifsDownloader.ApplicationLayer.Interfaces;
+using RedgifsDownloader.Domain.Enums;
+using RedgifsDownloader.Infrastructure.Redgifs.Models;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using RedgifsDownloader.ApplicationLayer.DTOs;
-using RedgifsDownloader.ApplicationLayer.Interfaces;
-using RedgifsDownloader.Domain.Entities;
-using RedgifsDownloader.Domain.Enums;
-using RedgifsDownloader.Domain.Interfaces;
-using RedgifsDownloader.Infrastructure.Redgifs.Models;
 
 namespace RedgifsDownloader.Infrastructure.Redgifs
 {

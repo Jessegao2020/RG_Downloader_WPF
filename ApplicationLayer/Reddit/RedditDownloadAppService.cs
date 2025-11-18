@@ -1,9 +1,8 @@
-﻿using System.Drawing.Interop;
-using System.IO;
-using RedgifsDownloader.ApplicationLayer.Settings;
+﻿using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.ApplicationLayer.Utils;
 using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Domain.Interfaces;
+using System.IO;
 
 namespace RedgifsDownloader.ApplicationLayer.Reddit
 {

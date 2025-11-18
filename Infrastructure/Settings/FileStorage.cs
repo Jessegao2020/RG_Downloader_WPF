@@ -1,5 +1,5 @@
-﻿using System.IO;
-using RedgifsDownloader.Domain.Interfaces;
+﻿using RedgifsDownloader.Domain.Interfaces;
+using System.IO;
 
 namespace RedgifsDownloader.Infrastructure.Settings
 {
@@ -7,10 +7,7 @@ namespace RedgifsDownloader.Infrastructure.Settings
     {
         public string CombinePath(params string[] segments) => Path.Combine(segments);
 
-        public void CreateDirectory(string path)
-        {
-            Directory.CreateDirectory(path);
-        }
+        public void CreateDirectory(string path) => Directory.CreateDirectory(path);
 
         public bool FileExists(string path) => File.Exists(path);
 

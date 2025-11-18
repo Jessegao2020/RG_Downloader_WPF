@@ -1,7 +1,7 @@
-﻿using System.Net.Http;
-using System.Text.Json;
-using RedgifsDownloader.Domain.Enums;
+﻿using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Domain.Interfaces;
+using System.Net.Http;
+using System.Text.Json;
 
 namespace RedgifsDownloader.Infrastructure.Redgifs
 {

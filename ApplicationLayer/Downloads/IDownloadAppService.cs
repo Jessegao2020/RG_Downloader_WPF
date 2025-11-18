@@ -12,7 +12,7 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
             CancellationToken ct = default);
 
         Task<DownloadSummary> DownloadAsync(
-            IEnumerable<Video> videos, 
+            IEnumerable<Video> videos,
             int concurrency,
             CancellationToken ct = default);
 

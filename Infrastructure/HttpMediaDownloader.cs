@@ -1,8 +1,8 @@
-﻿using System.Buffers;
+﻿using RedgifsDownloader.Domain.Enums;
+using RedgifsDownloader.Domain.Interfaces;
+using System.Buffers;
 using System.IO;
 using System.Net.Http;
-using RedgifsDownloader.Domain.Enums;
-using RedgifsDownloader.Domain.Interfaces;
 
 namespace RedgifsDownloader.Infrastructure
 {
@@ -75,10 +75,10 @@ namespace RedgifsDownloader.Infrastructure
         }
 
         private async Task<VideoStatus> SaveToFileAsync(
-            Stream stream, 
-            string path, 
-            long totalBytes, 
-            IProgress<double>? progress, 
+            Stream stream,
+            string path,
+            long totalBytes,
+            IProgress<double>? progress,
             CancellationToken ct)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(32768);

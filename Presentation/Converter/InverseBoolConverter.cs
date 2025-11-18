@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Windows.Data;
 
-namespace RedgifsDownloader.Converter
+namespace RedgifsDownloader.Presentation.Converter
 {
     public class InverseBoolConverter : IValueConverter
     {

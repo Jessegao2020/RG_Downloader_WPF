@@ -1,10 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using Ookii.Dialogs.Wpf;
+using RedgifsDownloader.ApplicationLayer.Settings;
+using RedgifsDownloader.Presentation.Helpers;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Ookii.Dialogs.Wpf;
-using RedgifsDownloader.ApplicationLayer.Settings;
-using RedgifsDownloader.Helpers;
 
 namespace RedgifsDownloader.Presentation.ViewModel
 {
@@ -31,7 +31,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
             get => _settingsService.DownloadDirectory;
             set
             {
-                if(_settingsService.DownloadDirectory != value)
+                if (_settingsService.DownloadDirectory != value)
                 {
                     _settingsService.DownloadDirectory = value;
                     _settingsService.Save();

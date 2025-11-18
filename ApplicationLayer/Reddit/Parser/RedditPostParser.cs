@@ -9,8 +9,8 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit.Parser
             if (!doc.RootElement.TryGetProperty("data", out var data))
                 yield break;
 
-            if(!data.TryGetProperty("children", out var children))
-                    yield break;
+            if (!data.TryGetProperty("children", out var children))
+                yield break;
 
             foreach (var child in children.EnumerateArray())
             {

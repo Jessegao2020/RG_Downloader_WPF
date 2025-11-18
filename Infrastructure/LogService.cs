@@ -1,7 +1,7 @@
-﻿using System.Windows;
-using RedgifsDownloader.Domain.Interfaces;
+﻿using RedgifsDownloader.Domain.Interfaces;
+using System.Windows;
 
-namespace RedgifsDownloader.Services
+namespace RedgifsDownloader.Infrastructure
 {
     public class LogService : ILogService
     {

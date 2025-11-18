@@ -1,7 +1,7 @@
-﻿using System.Text.Json;
-using RedgifsDownloader.ApplicationLayer.DTOs;
+﻿using RedgifsDownloader.ApplicationLayer.DTOs;
 using RedgifsDownloader.ApplicationLayer.Reddit.Parser;
 using RedgifsDownloader.Domain.Interfaces;
+using System.Text.Json;
 
 namespace RedgifsDownloader.ApplicationLayer.Reddit
 {

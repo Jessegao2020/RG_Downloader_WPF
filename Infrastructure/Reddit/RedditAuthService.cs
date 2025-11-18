@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using RedgifsDownloader.Domain.Interfaces;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -7,7 +8,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Web;
-using RedgifsDownloader.Domain.Interfaces;
 
 namespace RedgifsDownloader.Infrastructure.Reddit
 {

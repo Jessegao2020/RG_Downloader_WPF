@@ -1,12 +1,12 @@
-﻿using System.ComponentModel;
+﻿using Ookii.Dialogs.Wpf;
+using RedgifsDownloader.ApplicationLayer.ImageSimilarity;
+using RedgifsDownloader.Domain.Interfaces;
+using RedgifsDownloader.Presentation.Helpers;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Ookii.Dialogs.Wpf;
-using RedgifsDownloader.ApplicationLayer.ImageSimilarity;
-using RedgifsDownloader.Domain.Interfaces;
-using RedgifsDownloader.Helpers;
 
 namespace RedgifsDownloader.Presentation.ViewModel
 {

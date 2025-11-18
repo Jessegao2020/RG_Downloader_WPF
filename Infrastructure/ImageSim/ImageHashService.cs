@@ -1,9 +1,9 @@
-﻿using System.Buffers;
-using System.Diagnostics;
-using System.Numerics;
-using RedgifsDownloader.Domain.Interfaces;
+﻿using RedgifsDownloader.Domain.Interfaces;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using System.Buffers;
+using System.Diagnostics;
+using System.Numerics;
 
 namespace RedgifsDownloader.Infrastructure.ImageSim
 {

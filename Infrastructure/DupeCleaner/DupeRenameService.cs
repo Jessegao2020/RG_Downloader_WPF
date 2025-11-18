@@ -1,6 +1,6 @@
-﻿using System.IO;
+﻿using RedgifsDownloader.Domain.Interfaces;
+using System.IO;
 using System.Text.RegularExpressions;
-using RedgifsDownloader.Domain.Interfaces;
 
 namespace RedgifsDownloader.Infrastructure.DupeCleaner
 {

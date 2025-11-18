@@ -12,7 +12,7 @@ namespace RedgifsDownloader
         {
             InitializeComponent();
             RestoreWindowPosition();
-            
+
             DataContext = App.ServiceProvider.GetRequiredService<MainViewModel>();
         }
 

@@ -1,5 +1,5 @@
-﻿using System.IO;
-using RedgifsDownloader.ApplicationLayer.Settings;
+﻿using RedgifsDownloader.ApplicationLayer.Settings;
+using System.IO;
 
 namespace RedgifsDownloader.Infrastructure.Settings
 {

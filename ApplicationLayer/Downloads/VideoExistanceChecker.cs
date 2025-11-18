@@ -1,4 +1,5 @@
-﻿using RedgifsDownloader.Domain.Interfaces;
+﻿using RedgifsDownloader.ApplicationLayer.Interfaces;
+using RedgifsDownloader.Domain.Interfaces;
 
 namespace RedgifsDownloader.ApplicationLayer.Downloads
 {
@@ -26,7 +27,7 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
             if (!context.ExpectedSize.HasValue)
                 return false;
 
-            return _storage.GetFileSize(path) == context.ExpectedSize.Value; 
+            return _storage.GetFileSize(path) == context.ExpectedSize.Value;
         }
     }
 }

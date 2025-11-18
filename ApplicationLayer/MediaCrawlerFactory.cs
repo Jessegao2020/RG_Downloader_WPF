@@ -9,14 +9,14 @@ namespace RedgifsDownloader.ApplicationLayer
     {
         private readonly IServiceProvider _sp;
 
-        public MediaCrawlerFactory(IServiceProvider sp) {  _sp = sp; }
+        public MediaCrawlerFactory(IServiceProvider sp) { _sp = sp; }
 
         public IMediaCrawler Create(MediaPlatform platfrom)
         {
             return platfrom switch
             {
                 MediaPlatform.Redgifs => _sp.GetRequiredService<RedgifsCrawler>(),
-                _=> throw new NotSupportedException($"{platfrom} is not supported")
+                _ => throw new NotSupportedException($"{platfrom} is not supported")
             };
         }
     }

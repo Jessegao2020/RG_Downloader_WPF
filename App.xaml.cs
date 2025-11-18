@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Windows;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using RedgifsDownloader.ApplicationLayer;
 using RedgifsDownloader.ApplicationLayer.Downloads;
 using RedgifsDownloader.ApplicationLayer.DupeCleaner;
@@ -16,7 +14,8 @@ using RedgifsDownloader.Infrastructure.Reddit;
 using RedgifsDownloader.Infrastructure.Redgifs;
 using RedgifsDownloader.Infrastructure.Settings;
 using RedgifsDownloader.Presentation.ViewModel;
-using RedgifsDownloader.Services;
+using System.IO;
+using System.Windows;
 
 namespace RedgifsDownloader
 {
@@ -67,6 +66,7 @@ namespace RedgifsDownloader
             services.AddSingleton<IDupeCleanerService, DupeCleanerService>();
             services.AddHttpClient<IRedditAuthService, RedditAuthService>();
             services.AddSingleton<IRenameService, DupeRenameService>();
+            services.AddSingleton<IFileNameStrategy, FileNameService>();
             //生成容器
             ServiceProvider = services.BuildServiceProvider();
 

@@ -1,15 +1,15 @@
-﻿using System.Collections.ObjectModel;
+﻿using RedgifsDownloader.ApplicationLayer.Downloads;
+using RedgifsDownloader.ApplicationLayer.Settings;
+using RedgifsDownloader.Domain.Entities;
+using RedgifsDownloader.Domain.Enums;
+using RedgifsDownloader.Domain.Interfaces;
+using RedgifsDownloader.Presentation.Helpers;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
-using RedgifsDownloader.ApplicationLayer.Downloads;
-using RedgifsDownloader.ApplicationLayer.Settings;
-using RedgifsDownloader.Domain.Entities;
-using RedgifsDownloader.Domain.Enums;
-using RedgifsDownloader.Domain.Interfaces;
-using RedgifsDownloader.Helpers;
 
 namespace RedgifsDownloader.Presentation.ViewModel
 {

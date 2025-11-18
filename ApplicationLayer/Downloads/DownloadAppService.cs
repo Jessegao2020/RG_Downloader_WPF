@@ -1,10 +1,10 @@
-﻿using System.IO;
-using System.Runtime.CompilerServices;
-using RedgifsDownloader.ApplicationLayer.DTOs;
+﻿using RedgifsDownloader.ApplicationLayer.DTOs;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Domain.Interfaces;
+using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace RedgifsDownloader.ApplicationLayer.Downloads
 {
@@ -13,13 +13,19 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
         private readonly IMediaCrawlerFactory _crawlerFactory;
         private readonly IMediaDownloader _downloader;
         private readonly IVideoPathStrategy _pathStrategy;
+        private readonly IFileStorage _fileStorage;
         private readonly ILogService _logger;
 
-        public DownloadAppService(IMediaCrawlerFactory mediaCrawlerFactory, IMediaDownloader downloader, IVideoPathStrategy pathStrategy, ILogService logger)
+        public DownloadAppService(IMediaCrawlerFactory mediaCrawlerFactory, 
+            IMediaDownloader downloader, 
+            IVideoPathStrategy pathStrategy, 
+            IFileStorage fileStorage,
+            ILogService logger)
         {
             _crawlerFactory = mediaCrawlerFactory;
             _downloader = downloader;
             _pathStrategy = pathStrategy;
+            _fileStorage = fileStorage;
             _logger = logger;
         }
 
@@ -47,7 +53,7 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
                 try
                 {
                     string outputPath = _pathStrategy.BuildDownloadPath(video);
-                    Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+                    _fileStorage.CreateDirectory(Path.GetDirectoryName(outputPath));
 
                     if (File.Exists(outputPath))
                     {

@@ -3,7 +3,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 
-namespace RedgifsDownloader.Services
+namespace RedgifsDownloader.Infrastructure
 {
     public static class GlobalExceptionHandler
     {

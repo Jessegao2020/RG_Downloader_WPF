@@ -1,6 +1,5 @@
 ﻿using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
-using RedgifsDownloader.Model;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -8,23 +7,11 @@ namespace RedgifsDownloader.Presentation.ViewModel
 {
     public class VideoViewModel : INotifyPropertyChanged
     {
+        private bool _isSelected;
+
         public Action? RefreshFilters { get; set; }
         public Video Item { get; }
 
-        public VideoViewModel(Video item)
-        {
-            Item = item;
-            item.Onchanged += () =>
-            {
-                OnPropertyChanged(nameof(Status));
-                OnPropertyChanged(nameof(Progress));
-                OnPropertyChanged(nameof(DisplayStatus));
-
-                RefreshFilters?.Invoke();
-            };
-        }
-
-        private bool _isSelected;
         public bool IsSelected
         {
             get => _isSelected;
@@ -38,13 +25,25 @@ namespace RedgifsDownloader.Presentation.ViewModel
             }
         }
 
-
         public double? Progress => Item.Progress;
         public long? CreateDateRaw => Item.CreateDateRaw;
 
         public string Id => Item.Id;
         public string Username => Item.Username;
         public string Url => Item.Url.ToString();
+
+        public VideoViewModel(Video item)
+        {
+            Item = item;
+            item.Onchanged += () =>
+            {
+                OnPropertyChanged(nameof(Status));
+                OnPropertyChanged(nameof(Progress));
+                OnPropertyChanged(nameof(DisplayStatus));
+
+                RefreshFilters?.Invoke();
+            };
+        }
 
         public VideoStatus Status => Item.Status;
 

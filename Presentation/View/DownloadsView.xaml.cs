@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using RedgifsDownloader.ApplicationLayer.Settings;
-using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Model;
 using RedgifsDownloader.Presentation.ViewModel;
 using System.ComponentModel;

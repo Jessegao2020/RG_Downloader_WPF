@@ -1,5 +1,5 @@
-﻿using System.IO;
-using RedgifsDownloader.Domain.Interfaces;
+﻿using RedgifsDownloader.Domain.Interfaces;
+using System.IO;
 
 namespace RedgifsDownloader.Infrastructure.ImageSim
 {

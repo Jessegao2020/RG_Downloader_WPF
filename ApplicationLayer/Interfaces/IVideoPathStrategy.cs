@@ -1,6 +1,6 @@
 ﻿using RedgifsDownloader.Domain.Entities;
 
-namespace RedgifsDownloader.ApplicationLayer
+namespace RedgifsDownloader.ApplicationLayer.Interfaces
 {
     public interface IVideoPathStrategy
     {
