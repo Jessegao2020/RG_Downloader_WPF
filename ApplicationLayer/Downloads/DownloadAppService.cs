@@ -41,6 +41,7 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
             }
         }
 
+        /// TODO: 是不是能和crawl类似弄个downloaderfactory，传入不同的downloader下载不同类型的媒体？
         public async Task<DownloadSummary> DownloadAsync(IEnumerable<Video> videos, int concurrency, CancellationToken ct = default)
         {
             var summary = new DownloadSummary();

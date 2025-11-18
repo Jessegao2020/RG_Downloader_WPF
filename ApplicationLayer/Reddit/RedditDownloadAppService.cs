@@ -29,6 +29,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
             _settings = settings;
             _logger = logger;
         }
+
         public async Task<bool> LoginAsync()
         {
             try

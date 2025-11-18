@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using RedgifsDownloader.ApplicationLayer.Fikfap;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Infrastructure.Redgifs;
@@ -16,6 +17,7 @@ namespace RedgifsDownloader.ApplicationLayer
             return platfrom switch
             {
                 MediaPlatform.Redgifs => _sp.GetRequiredService<RedgifsCrawler>(),
+                MediaPlatform.Fikfap => _sp.GetRequiredService<FikfapCrawler>(),
                 _ => throw new NotSupportedException($"{platfrom} is not supported")
             };
         }

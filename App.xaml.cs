@@ -2,6 +2,7 @@
 using RedgifsDownloader.ApplicationLayer;
 using RedgifsDownloader.ApplicationLayer.Downloads;
 using RedgifsDownloader.ApplicationLayer.DupeCleaner;
+using RedgifsDownloader.ApplicationLayer.Fikfap;
 using RedgifsDownloader.ApplicationLayer.ImageSimilarity;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.ApplicationLayer.Reddit;
@@ -9,6 +10,7 @@ using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Infrastructure;
 using RedgifsDownloader.Infrastructure.DupeCleaner;
+using RedgifsDownloader.Infrastructure.Fikfap;
 using RedgifsDownloader.Infrastructure.ImageSim;
 using RedgifsDownloader.Infrastructure.Reddit;
 using RedgifsDownloader.Infrastructure.Redgifs;
@@ -53,9 +55,11 @@ namespace RedgifsDownloader
             services.AddSingleton<IVideoPathStrategy, VideoPathStrategy>();
             services.AddSingleton<IFileStorage, FileStorage>();
             services.AddSingleton<RedgifsCrawler>();
+            services.AddSingleton<FikfapCrawler>();
             services.AddSingleton<IImageSimilarityAppService, ImageSimilarityAppService>();
             services.AddSingleton<IDupeFileMoveService, FileMoveService>();
             services.AddSingleton<DupeCleanerAppService>();
+            services.AddSingleton(new FikfapSession { Token = Guid.NewGuid().ToString() });
 
             //底层
             services.AddSingleton<IRedditApiClient, RedditApiClient>();
@@ -67,6 +71,7 @@ namespace RedgifsDownloader
             services.AddHttpClient<IRedditAuthService, RedditAuthService>();
             services.AddSingleton<IRenameService, DupeRenameService>();
             services.AddSingleton<IFileNameStrategy, FileNameService>();
+            services.AddSingleton<IFikfapApiClient, FikfapApiClient>();
             //生成容器
             ServiceProvider = services.BuildServiceProvider();
 
