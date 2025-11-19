@@ -1,12 +1,11 @@
-﻿using RedgifsDownloader.ApplicationLayer.DTOs;
+﻿using System.IO;
+using System.Runtime.CompilerServices;
+using RedgifsDownloader.ApplicationLayer.DTOs;
 using RedgifsDownloader.ApplicationLayer.Fikfap;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Domain.Interfaces;
-using System.Diagnostics;
-using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace RedgifsDownloader.ApplicationLayer.Downloads
 {
@@ -19,8 +18,8 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
         private readonly ILogService _logger;
         private readonly FikfapSession _session;
 
-        public DownloadAppService(IMediaCrawlerFactory mediaCrawlerFactory, 
-            IVideoPathStrategy pathStrategy, 
+        public DownloadAppService(IMediaCrawlerFactory mediaCrawlerFactory,
+            IVideoPathStrategy pathStrategy,
             IPlatformDownloadStrategy platformStrategy,
             IFileStorage fileStorage,
             FikfapSession session,
@@ -46,7 +45,6 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
             }
         }
 
-        /// TODO: 是不是能和crawl类似弄个downloaderfactory，传入不同的downloader下载不同类型的媒体？
         public async Task<DownloadSummary> DownloadAsync(IEnumerable<Video> videos, int concurrency, CancellationToken ct = default)
         {
             var summary = new DownloadSummary();
@@ -112,6 +110,7 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
                 platform: dto.Platform);
         }
 
+        /// TODO: 在appservice里直接定义headers不美观，考虑搬出来
         private MediaDownloadContext BuildDownloadContext(Video video)
         {
             var headers = new Dictionary<string, string> { ["User-Agent"] = "Mozilla/5.0" };
@@ -132,8 +131,6 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
                     headers["accept"] = "*/*";
                     headers["accept-encoding"] = "gzip, deflate, br";
                     headers["authorization-anonymous"] = _session.Token;
-                    Debug.WriteLine(_session.Token);
-                    Debug.WriteLine(video.Url);
                     break;
             }
 

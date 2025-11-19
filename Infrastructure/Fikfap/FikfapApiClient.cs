@@ -21,7 +21,6 @@ namespace RedgifsDownloader.Infrastructure.Fikfap
         {
             string? afterId = null;
             int amount = 21;
-
             while (true)
             {
                 string url = afterId == null
@@ -30,7 +29,9 @@ namespace RedgifsDownloader.Infrastructure.Fikfap
 
                 using var request = new HttpRequestMessage(HttpMethod.Get, url);
                 request.Headers.Add("authorization-anonymous", _token);
-                request.Headers.Add("User-Agent", "Mozilla/5.0");
+                request.Headers.Add("accept", "*/*");
+                request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36");
+                request.Headers.Add("accept-language", "zh-CN,zh;q=0.9,en;q=0.8");
                 request.Headers.Add("Origin", "https://fikfap.com");
                 request.Headers.Add("Referer", $"https://fikfap.com/user/{username}");
 

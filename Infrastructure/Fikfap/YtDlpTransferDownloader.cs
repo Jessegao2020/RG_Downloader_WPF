@@ -1,8 +1,7 @@
-﻿using RedgifsDownloader.Domain.Enums;
-using RedgifsDownloader.Domain.Interfaces;
-using System.Diagnostics;
-using System.IO;
+﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
+using RedgifsDownloader.Domain.Enums;
+using RedgifsDownloader.Domain.Interfaces;
 
 namespace RedgifsDownloader.Infrastructure.Fikfap
 {
@@ -24,9 +23,15 @@ namespace RedgifsDownloader.Infrastructure.Fikfap
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
-            psi.ArgumentList.Add(url.ToString());
-            psi.ArgumentList.Add(url.ToString());
+
+            psi.ArgumentList.Add("-S");
+            psi.ArgumentList.Add("vcodec:avc1,res");
+            psi.ArgumentList.Add("-f");
+            psi.ArgumentList.Add("bv+ba");
+            psi.ArgumentList.Add("-o");
             psi.ArgumentList.Add(outputPath);
+            psi.ArgumentList.Add(url.ToString());
+
             AddHeadersToArgs(context, ref psi);
 
             using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
@@ -53,13 +58,20 @@ namespace RedgifsDownloader.Infrastructure.Fikfap
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            await process.WaitForExitAsync(ct);
+            try
+            {
+                await process.WaitForExitAsync(ct);
+            }
+            catch (TaskCanceledException)
+            {
+                return new DownloadResult(VideoStatus.Canceled, 0);
+            }
 
             if (ct.IsCancellationRequested)
                 return new DownloadResult(VideoStatus.Canceled, 0);
 
             if (process.ExitCode == 0)
-                return new DownloadResult(VideoStatus.Completed, new FileInfo(outputPath).Length);
+                return new DownloadResult(VideoStatus.Completed, 0);
 
             return new DownloadResult(VideoStatus.UnknownError, 0);
         }
@@ -83,9 +95,10 @@ namespace RedgifsDownloader.Infrastructure.Fikfap
 
             foreach (var (key, value) in context.Headers)
             {
-                psi.ArgumentList.Add("-add-header");
+                psi.ArgumentList.Add("--add-header");
                 psi.ArgumentList.Add($"{key}:{value}");
             }
         }
     }
 }
+

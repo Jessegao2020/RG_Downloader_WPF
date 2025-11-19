@@ -2,7 +2,6 @@
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Interfaces;
-using System.IO;
 
 namespace RedgifsDownloader.ApplicationLayer.Downloads
 {
