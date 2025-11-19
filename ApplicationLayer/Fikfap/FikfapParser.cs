@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using RedgifsDownloader.ApplicationLayer.DTOs;
+using RedgifsDownloader.Domain.Enums;
 
 namespace RedgifsDownloader.ApplicationLayer.Fikfap
 {
@@ -41,7 +42,8 @@ namespace RedgifsDownloader.ApplicationLayer.Fikfap
                     Username = username,
                     Id = mediaId,
                     Url = videoUrl,
-                    CreateDateRaw = DateTimeOffset.Parse(createAt).ToUnixTimeSeconds()
+                    CreateDateRaw = DateTimeOffset.Parse(createAt).ToUnixTimeSeconds(),
+                    Platform = MediaPlatform.Fikfap
                 };
             }
         }

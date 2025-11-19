@@ -1,8 +1,10 @@
 ﻿using RedgifsDownloader.ApplicationLayer.DTOs;
+using RedgifsDownloader.ApplicationLayer.Fikfap;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Domain.Interfaces;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 
@@ -11,22 +13,25 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
     public class DownloadAppService : IDownloadAppService
     {
         private readonly IMediaCrawlerFactory _crawlerFactory;
-        private readonly IMediaDownloader _downloader;
         private readonly IVideoPathStrategy _pathStrategy;
+        private readonly IPlatformDownloadStrategy _platformStrategy;
         private readonly IFileStorage _fileStorage;
         private readonly ILogService _logger;
+        private readonly FikfapSession _session;
 
         public DownloadAppService(IMediaCrawlerFactory mediaCrawlerFactory, 
-            IMediaDownloader downloader, 
             IVideoPathStrategy pathStrategy, 
+            IPlatformDownloadStrategy platformStrategy,
             IFileStorage fileStorage,
+            FikfapSession session,
             ILogService logger)
         {
             _crawlerFactory = mediaCrawlerFactory;
-            _downloader = downloader;
             _pathStrategy = pathStrategy;
+            _platformStrategy = platformStrategy;
             _fileStorage = fileStorage;
             _logger = logger;
+            _session = session;
         }
 
         public async IAsyncEnumerable<Video> CrawlAsync(MediaPlatform platform, string username, Action<string>? onError = null, [EnumeratorCancellation] CancellationToken ct = default)
@@ -66,10 +71,12 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
 
                     video.MarkDownloading();
 
+                    var downloader = _platformStrategy.Resolve(video.Platform);
+
                     var context = BuildDownloadContext(video);
                     var progress = new Progress<double>(p => { video.SetProgress(p); });
 
-                    var result = await _downloader.DownloadAsync(video.Url, outputPath, context, ct, progress);
+                    var result = await downloader.DownloadAsync(video.Url, outputPath, context, ct, progress);
 
                     if (result.Status == VideoStatus.Completed)
                     {
@@ -121,6 +128,12 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
 
                 case MediaPlatform.Fikfap:
                     headers["Referer"] = "https://www.fikfap.com";
+                    headers["origin"] = "https://www.fikfap.com";
+                    headers["accept"] = "*/*";
+                    headers["accept-encoding"] = "gzip, deflate, br";
+                    headers["authorization-anonymous"] = _session.Token;
+                    Debug.WriteLine(_session.Token);
+                    Debug.WriteLine(video.Url);
                     break;
             }
 

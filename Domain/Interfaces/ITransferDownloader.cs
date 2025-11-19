@@ -2,7 +2,7 @@
 
 namespace RedgifsDownloader.Domain.Interfaces
 {
-    public interface IMediaDownloader
+    public interface ITransferDownloader
     {
         Task<DownloadResult> DownloadAsync(
             Uri url,

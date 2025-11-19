@@ -11,7 +11,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
         private readonly RedgifsDownloader.Domain.Interfaces.IRedditAuthService _auth;
         private readonly RedditFetchImagesAppService _imageApp;
         private readonly RedditFetchRedgifsAppService _redgifsApp;
-        private readonly IMediaDownloader _downloader;
+        private readonly ITransferDownloader _downloader;
         private readonly IAppSettings _settings;
         private readonly ILogService _logger;
 
@@ -19,7 +19,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
             Domain.Interfaces.IRedditAuthService auth,
             RedditFetchImagesAppService imageApp,
             RedditFetchRedgifsAppService redgifsApp,
-            IMediaDownloader downloader,
+            ITransferDownloader downloader,
             IAppSettings settings, ILogService logger)
         {
             _auth = auth;

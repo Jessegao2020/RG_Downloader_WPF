@@ -6,10 +6,10 @@ using System.Net.Http;
 
 namespace RedgifsDownloader.Infrastructure
 {
-    public class HttpMediaDownloader : IMediaDownloader
+    public class HttpTransferDownloader : ITransferDownloader
     {
         private readonly HttpClient _http;
-        public HttpMediaDownloader(HttpClient http)
+        public HttpTransferDownloader(HttpClient http)
         {
             _http = http;
         }
