@@ -53,7 +53,9 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
 
             var tasks = videos.Select(async video =>
             {
-                await semaphore.WaitAsync(ct);
+                try { await semaphore.WaitAsync(ct); }
+                catch(OperationCanceledException) { return; }
+                
                 try
                 {
                     string outputPath = _pathStrategy.BuildDownloadPath(video);
@@ -74,7 +76,17 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
                     var context = BuildDownloadContext(video);
                     var progress = new Progress<double>(p => { video.SetProgress(p); });
 
-                    var result = await downloader.DownloadAsync(video.Url, outputPath, context, ct, progress);
+                    DownloadResult result;
+                    try
+                    {
+                        result = await downloader.DownloadAsync(video.Url, outputPath, context, ct, progress);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        video.MarkFailed();
+                        summary.Failed++;
+                        return;
+                    }
 
                     if (result.Status == VideoStatus.Completed)
                     {

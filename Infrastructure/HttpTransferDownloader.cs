@@ -28,6 +28,16 @@ namespace RedgifsDownloader.Infrastructure
                 using var response = await SendRequestAsync(url, context, ct);
                 response.EnsureSuccessStatusCode();
 
+                // 临时命名逻辑，解决文件名没后缀的问题
+                var contentType = response.Content.Headers.ContentType?.MediaType;
+                string ext = contentType switch
+                {
+                    "video/mp4" => ".mp4",
+                    "image/jpeg" => ".jpg",
+                    "image/png" => ".png",
+                    _ => ".bin"
+                };
+
                 long totalBytes = response.Content.Headers.ContentLength ?? -1;
                 using var stream = await response.Content.ReadAsStreamAsync(ct);
 
@@ -38,7 +48,7 @@ namespace RedgifsDownloader.Infrastructure
                     if (File.Exists(outputPath))
                         File.Delete(outputPath);
 
-                    File.Move(tempPath, outputPath);
+                    File.Move(tempPath, outputPath + ext); // 临时解决命后缀问题
                 }
                 else DeleteTempFile(tempPath);
 
