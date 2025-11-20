@@ -1,4 +1,5 @@
-﻿using RedgifsDownloader.Domain.Entities;
+﻿using RedgifsDownloader.ApplicationLayer.DTOs;
+using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
 
 namespace RedgifsDownloader.ApplicationLayer.Downloads

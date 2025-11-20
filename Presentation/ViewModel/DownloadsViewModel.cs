@@ -136,6 +136,15 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 OnPropertyChanged(nameof(VideosCount));
                 (DownloadCommand as RelayCommand)?.RaiseCanExecuteChanged();
             };
+
+            Videos.CollectionChanged += (_, __) =>
+            {
+                foreach (var vm in Videos)
+                {
+                    vm.PropertyChanged -= OnVideoPropertyChanged;
+                    vm.PropertyChanged += OnVideoPropertyChanged;
+                }
+            };
         }
 
         private async Task StartCrawlAsync()
@@ -229,6 +238,19 @@ namespace RedgifsDownloader.Presentation.ViewModel
             VideoStatus.WriteError or
             VideoStatus.UnknownError or
             VideoStatus.Canceled;
+
+        private void OnVideoPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(VideoViewModel.Status))
+            {
+                CompletedCount = Videos.Count(v => v.Status == VideoStatus.Completed);
+                FailedCount = Videos.Count(v =>
+                    v.Status == VideoStatus.Failed ||
+                    v.Status == VideoStatus.NetworkError ||
+                    v.Status == VideoStatus.WriteError ||
+                    v.Status == VideoStatus.UnknownError);
+            }
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string? name = null)
