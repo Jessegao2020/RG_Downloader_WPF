@@ -5,6 +5,6 @@ namespace RedgifsDownloader.ApplicationLayer.Interfaces
 {
     public interface IPlatformDownloadStrategy
     {
-        ITransferDownloader Resolve(MediaPlatform platform);
+        ITransferDownloader SelectDownloader(MediaPlatform platform);
     }
 }

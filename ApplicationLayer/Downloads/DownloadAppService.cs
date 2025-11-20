@@ -71,7 +71,7 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
 
                     video.MarkDownloading();
 
-                    var downloader = _platformStrategy.Resolve(video.Platform);
+                    var downloader = _platformStrategy.SelectDownloader(video.Platform);
 
                     var context = BuildDownloadContext(video);
                     var progress = new Progress<double>(p => { video.SetProgress(p); });

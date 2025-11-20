@@ -17,7 +17,7 @@ namespace RedgifsDownloader.ApplicationLayer
             _ytdlp = ytdlp;
         }
 
-        public ITransferDownloader Resolve(MediaPlatform platform)
+        public ITransferDownloader SelectDownloader(MediaPlatform platform)
         {
             return platform switch
             {
