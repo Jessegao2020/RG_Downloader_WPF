@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using RedgifsDownloader.ApplicationLayer.DTOs;
+using RedgifsDownloader.ApplicationLayer.Utils;
 using RedgifsDownloader.Domain.Enums;
 
 namespace RedgifsDownloader.ApplicationLayer.Fikfap
@@ -31,7 +32,7 @@ namespace RedgifsDownloader.ApplicationLayer.Fikfap
                     username = uNode.GetString() ?? "";
                 }
 
-                string mediaId = p.TryGetProperty("mediaId", out var mid) && 
+                string title = p.TryGetProperty("label", out var mid) && 
                     mid.ValueKind == JsonValueKind.String ? mid.GetString() ?? "" : "";
 
                 string createAt = p.TryGetProperty("createdAt", out var createdNode) && createdNode.ValueKind == JsonValueKind.String
@@ -40,7 +41,7 @@ namespace RedgifsDownloader.ApplicationLayer.Fikfap
                 yield return new VideoDto
                 {
                     Username = username,
-                    Id = mediaId,
+                    Id = FIleNameSanitizer.MakeSafe(title),
                     Url = videoUrl,
                     CreateDateRaw = DateTimeOffset.Parse(createAt).ToUnixTimeSeconds(),
                     Platform = MediaPlatform.Fikfap
