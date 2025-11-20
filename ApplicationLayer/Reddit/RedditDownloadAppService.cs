@@ -8,7 +8,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
 {
     public class RedditDownloadAppService : IRedditDownloadAppService
     {
-        private readonly RedgifsDownloader.Domain.Interfaces.IRedditAuthService _auth;
+        private readonly IRedditAuthService _auth;
         private readonly RedditFetchImagesAppService _imageApp;
         private readonly RedditFetchRedgifsAppService _redgifsApp;
         private readonly ITransferDownloader _downloader;

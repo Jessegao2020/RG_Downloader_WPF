@@ -51,7 +51,6 @@ namespace RedgifsDownloader
             services.AddSingleton<RedditFetchRedgifsAppService>();
             services.AddSingleton<IDownloadAppService, DownloadAppService>();
             services.AddSingleton<IMediaCrawlerFactory, MediaCrawlerFactory>();
-            services.AddHttpClient<HttpTransferDownloader>();
             services.AddSingleton<IVideoPathStrategy, VideoPathStrategy>();
             services.AddSingleton<IPlatformDownloadStrategy, PlatformDownloadStrategy>();
             services.AddSingleton<IFileStorage, FileStorage>();
@@ -74,6 +73,9 @@ namespace RedgifsDownloader
             services.AddSingleton<IFileNameStrategy, FileNameService>();
             services.AddSingleton<IFikfapApiClient, FikfapApiClient>();
             services.AddSingleton<YtDlpTransferDownloader>();
+            services.AddHttpClient<HttpTransferDownloader>();
+            services.AddSingleton<HttpTransferDownloader>();
+            services.AddSingleton<ITransferDownloader>(sp => sp.GetRequiredService<HttpTransferDownloader>());
             //生成容器
             ServiceProvider = services.BuildServiceProvider();
 

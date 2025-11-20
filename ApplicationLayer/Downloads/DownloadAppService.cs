@@ -54,8 +54,8 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
             var tasks = videos.Select(async video =>
             {
                 try { await semaphore.WaitAsync(ct); }
-                catch(OperationCanceledException) { return; }
-                
+                catch (OperationCanceledException) { return; }
+
                 try
                 {
                     string outputPath = _pathStrategy.BuildDownloadPath(video);
