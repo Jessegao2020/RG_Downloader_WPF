@@ -35,6 +35,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
         private string _selectedPlatform = "Redgifs";
         private string? _sortByProperty;
         private ListSortDirection _sortDirection = ListSortDirection.Descending;
+        private bool _isAdvancedMode = false; // 默认简单版
 
         public string Username
         {
@@ -111,6 +112,19 @@ namespace RedgifsDownloader.Presentation.ViewModel
         public string SortByNameButtonText => _sortByProperty == "Id"
             ? (_sortDirection == ListSortDirection.Ascending ? "名称 ↑" : "名称 ↓")
             : "名称";
+
+        public bool IsAdvancedMode
+        {
+            get => _isAdvancedMode;
+            set
+            {
+                if (_isAdvancedMode != value)
+                {
+                    _isAdvancedMode = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public DownloadsViewModel(IDownloadAppService downloadService, ILogService logger, IAppSettings settings)
         {

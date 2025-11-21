@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Concurrent;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using RedgifsDownloader.Presentation.Helpers;
 
 namespace RedgifsDownloader.Presentation.Helpers
 {
