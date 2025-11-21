@@ -41,7 +41,7 @@ namespace RedgifsDownloader.ApplicationLayer.Fikfap
                 yield return new VideoDto
                 {
                     Username = username,
-                    Id = FIleNameSanitizer.MakeSafe(title),
+                    Id = FileNameSanitizer.MakeSafe(title),
                     Url = videoUrl,
                     CreateDateRaw = DateTimeOffset.Parse(createAt).ToUnixTimeSeconds(),
                     Platform = MediaPlatform.Fikfap

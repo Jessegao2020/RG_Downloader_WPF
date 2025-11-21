@@ -2,7 +2,7 @@
 
 namespace RedgifsDownloader.ApplicationLayer.Utils
 {
-    public static class FIleNameSanitizer
+    public static class FileNameSanitizer
     {
         public static string MakeSafe(string raw)
         {
@@ -26,7 +26,7 @@ namespace RedgifsDownloader.ApplicationLayer.Utils
             string ext = Path.GetExtension(url) ?? ".jpg";
             string safeTitle = MakeSafe(title);
 
-            return $"{safeTitle}-{id}{ext}";
+            return $"{safeTitle}-{id}";
         }
     }
 }

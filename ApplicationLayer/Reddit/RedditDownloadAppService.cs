@@ -68,7 +68,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
             {
                 await foreach (var img in _imageApp.Execute(username).WithCancellation(ct))
                 {
-                    string filename = FIleNameSanitizer.MakeSafeFileName(img.Title, img.Id, img.Url);
+                    string filename = FileNameSanitizer.MakeSafeFileName(img.Title, img.Id, img.Url);
                     string output = Path.Combine(downloadDir, filename);
 
                     if (File.Exists(output))

@@ -2,6 +2,7 @@
 using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Domain.Interfaces;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 
@@ -22,7 +23,7 @@ namespace RedgifsDownloader.Infrastructure
             CancellationToken ct = default,
             IProgress<double>? progress = null)
         {
-            string tempPath = outputPath + ".tmp";
+            string tempPath = null;
 
             try
             {
@@ -38,10 +39,10 @@ namespace RedgifsDownloader.Infrastructure
                     "image/png" => ".png",
                     _ => ".bin"
                 };
-
                 long totalBytes = response.Content.Headers.ContentLength ?? -1;
                 using var stream = await response.Content.ReadAsStreamAsync(ct);
 
+                tempPath = outputPath + ext + ".tmp";
                 var status = await SaveToFileAsync(stream, tempPath, totalBytes, progress, ct);
 
                 if (status == VideoStatus.Completed)
