@@ -27,21 +27,19 @@ namespace RedgifsDownloader.View
 
         #region Misc UI Handlers (暂时不用重构)
 
-        private void ListViewResults_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void ListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (ListViewResults.SelectedItem is VideoItem video && !string.IsNullOrEmpty(video.Url))
-            {
-                Clipboard.SetText(video.Url);
-                new ToastWindow($"已复制 URL:\n{video.Url}").Show();
-            }
-        }
+            if (sender is not ListView lv) return;
 
-        private void ListViewFailed_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (ListViewFailed.SelectedItem is VideoItem video && !string.IsNullOrEmpty(video.Url))
+            if (lv.SelectedItem is VideoViewModel vm && !string.IsNullOrEmpty(vm.Url))
             {
-                Clipboard.SetText(video.Url);
-                MessageBox.Show($"已复制 URL:\n{video.Url}", "复制成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                Clipboard.SetText(vm.Url);
+
+                // 根据 Tag 区分 toast 或 messagebox（你喜欢可以改成其它方式）
+                if (lv.Tag as string == "Active")
+                    ToastWindow.Show($"已复制 URL:\n{vm.Url}");
+                else
+                    ToastWindow.Show($"已复制 URL:\n{vm.Url}");
             }
         }
 
@@ -95,8 +93,6 @@ namespace RedgifsDownloader.View
             }
         }
 
-        #endregion
-
         private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (sender is not ListView lv) return;
@@ -104,20 +100,21 @@ namespace RedgifsDownloader.View
 
             double total = lv.ActualWidth - 35;
 
-            if (gv.Columns.Count == 4)
+            switch (lv.Tag)
             {
-                // ActiveVideosView
-                gv.Columns[0].Width = total * 0.10;
-                gv.Columns[1].Width = total * 0.40;
-                gv.Columns[2].Width = total * 0.30;
-                gv.Columns[3].Width = total * 0.20;
-            }
-            else if (gv.Columns.Count == 2)
-            {
-                // FailedVideosView
-                gv.Columns[0].Width = total * 0.70;
-                gv.Columns[1].Width = total * 0.30;
+                case "Active":
+                    gv.Columns[0].Width = 30;
+                    gv.Columns[1].Width = total * 0.45;
+                    gv.Columns[2].Width = total * 0.25;
+                    gv.Columns[3].Width = total * 0.20;
+                    break;
+
+                case "Failed":
+                    gv.Columns[0].Width = total * 0.80;
+                    gv.Columns[1].Width = total * 0.20;
+                    break;
             }
         }
+        #endregion
     }
 }

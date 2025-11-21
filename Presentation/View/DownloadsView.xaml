@@ -35,6 +35,7 @@
                 x:Name="UserBox"
                 Grid.Column="1"
                 Margin="5,0,0,0"
+                VerticalContentAlignment="Center"
                 KeyDown="UserBox_KeyDown"
                 Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" />
             <ComboBox
@@ -58,12 +59,13 @@
             Grid.Row="1"
             MinHeight="120"
             Margin="0,0,0,5"
-            SizeChanged="ListView_SizeChanged"
             HorizontalAlignment="Stretch"
             GridViewColumnHeader.Click="GridViewColumnHeader_Click"
             ItemsSource="{Binding ActiveVideosView}"
-            MouseDoubleClick="ListViewResults_MouseDoubleClick"
-            SelectionMode="Extended">
+            MouseDoubleClick="ListView_MouseDoubleClick"
+            SelectionMode="Extended"
+            SizeChanged="ListView_SizeChanged"
+            Tag="Active">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
@@ -174,7 +176,9 @@
             MinHeight="50"
             GridViewColumnHeader.Click="GridViewColumnHeader_Click"
             ItemsSource="{Binding FailedVideosView}"
-            MouseDoubleClick="ListViewFailed_MouseDoubleClick">
+            MouseDoubleClick="ListView_MouseDoubleClick"
+            SizeChanged="ListView_SizeChanged"
+            Tag="Failed">
             <ListView.View>
                 <GridView>
                     <GridViewColumn
