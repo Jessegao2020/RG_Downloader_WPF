@@ -49,6 +49,9 @@ namespace RedgifsDownloader.View
         {
             if (e.OriginalSource is not GridViewColumnHeader header) return;
 
+            var listView = sender as ListView;
+            if(listView == null) return;
+
             // 优先用 Tag 指定的排序字段；否则退回到绑定路径
             string? sortBy = header.Tag as string;
             if (sortBy is null && header.Column?.DisplayMemberBinding is Binding b)
@@ -60,7 +63,7 @@ namespace RedgifsDownloader.View
                 ? ListSortDirection.Descending
                 : ListSortDirection.Ascending;
 
-            var view = CollectionViewSource.GetDefaultView(ListViewResults.ItemsSource);
+            var view = CollectionViewSource.GetDefaultView(listView.ItemsSource);
             view.SortDescriptions.Clear();
             view.SortDescriptions.Add(new SortDescription(sortBy, dir));
             view.Refresh();
@@ -93,5 +96,28 @@ namespace RedgifsDownloader.View
         }
 
         #endregion
+
+        private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (sender is not ListView lv) return;
+            if (lv.View is not GridView gv) return;
+
+            double total = lv.ActualWidth - 35;
+
+            if (gv.Columns.Count == 4)
+            {
+                // ActiveVideosView
+                gv.Columns[0].Width = total * 0.10;
+                gv.Columns[1].Width = total * 0.40;
+                gv.Columns[2].Width = total * 0.30;
+                gv.Columns[3].Width = total * 0.20;
+            }
+            else if (gv.Columns.Count == 2)
+            {
+                // FailedVideosView
+                gv.Columns[0].Width = total * 0.70;
+                gv.Columns[1].Width = total * 0.30;
+            }
+        }
     }
 }

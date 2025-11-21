@@ -96,6 +96,8 @@ namespace RedgifsDownloader.Presentation.ViewModel
 
             LoginCommand = new RelayCommand(async _ => await Login(), _ => !IsLoggedIn);
             DownloadCommand = new RelayCommand(async _ => await Download(), _ => IsLoggedIn && !string.IsNullOrEmpty(Username));
+
+            _ = CheckLoginStatusAsync();
         }
 
         private async Task Login()

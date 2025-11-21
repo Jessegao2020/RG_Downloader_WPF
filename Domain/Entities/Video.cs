@@ -32,5 +32,9 @@ namespace RedgifsDownloader.Domain.Entities
         public void MarkCompleted() { Status = VideoStatus.Completed; IsFailed = false; Onchanged?.Invoke(); }
         public void MarkExists() { Status = VideoStatus.Exists; Onchanged?.Invoke(); }
         public void MarkFailed() { Status = VideoStatus.Failed; IsFailed = true; Onchanged?.Invoke(); }
+        public void MarkCanceled() { Status = VideoStatus.Canceled; IsFailed = true; Onchanged?.Invoke(); }
+        public void MarkNetworkError() { Status = VideoStatus.NetworkError; IsFailed = true; Onchanged?.Invoke(); }
+        public void MarkWriteError() { Status = VideoStatus.WriteError; IsFailed = true; Onchanged?.Invoke(); }
+        public void MarkUnknownError() { Status = VideoStatus.UnknownError; IsFailed = true; Onchanged?.Invoke(); }
     }
 }

@@ -60,7 +60,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
             VideoStatus.Completed => "完成",
             VideoStatus.Exists => "已存在",
             VideoStatus.Failed => "失败",
-            VideoStatus.Canceled => "已停止",
+            VideoStatus.Canceled => "已取消",
             VideoStatus.NetworkError => "网络错误",
             VideoStatus.WriteError => "写入错误",
             VideoStatus.UnknownError => "未知错误",

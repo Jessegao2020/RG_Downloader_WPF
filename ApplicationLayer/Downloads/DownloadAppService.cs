@@ -83,20 +83,35 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
                     }
                     catch (OperationCanceledException)
                     {
-                        video.MarkFailed();
-                        summary.Failed++;
                         return;
                     }
 
-                    if (result.Status == VideoStatus.Completed)
+                    switch (result.Status)
                     {
-                        video.MarkCompleted();
-                        summary.Completed++;
-                    }
-                    else
-                    {
-                        video.MarkFailed();
-                        summary.Failed++;
+                        case VideoStatus.Completed:
+                            video.MarkCompleted();
+                            summary.Completed++;
+                            break;
+                        case VideoStatus.Canceled:
+                            video.MarkCanceled();
+                            summary.Failed++;
+                            break;
+                        case VideoStatus.NetworkError:
+                            video.MarkNetworkError();
+                            summary.Failed++;
+                            break;
+                        case VideoStatus.WriteError:
+                            video.MarkWriteError();
+                            summary.Failed++;
+                            break;
+                        case VideoStatus.UnknownError:
+                            video.MarkUnknownError();
+                            summary.Failed++;
+                            break;
+                        default:
+                            video.MarkFailed();
+                            summary.Failed++;
+                            break;
                     }
                 }
                 finally { semaphore.Release(); }
