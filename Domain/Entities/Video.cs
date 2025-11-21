@@ -13,10 +13,11 @@ namespace RedgifsDownloader.Domain.Entities
         public long? CreateDateRaw { get; private set; }
         public double? Progress { get; private set; }
         public bool IsFailed { get; private set; }
+        public string? ThumbnailUrl { get; }
 
         public VideoStatus Status { get; private set; }
 
-        public Video(string id, string username, Uri url, MediaPlatform platform, string? token = null, long? createDateRaw = null)
+        public Video(string id, string username, Uri url, MediaPlatform platform, string? token = null, long? createDateRaw = null, string? thumbnailUrl = null)
         {
             Id = id;
             Username = username;
@@ -24,6 +25,7 @@ namespace RedgifsDownloader.Domain.Entities
             Platform = platform;
             CreateDateRaw = createDateRaw;
             Token = token;
+            ThumbnailUrl = thumbnailUrl;
             Status = VideoStatus.Pending;
         }
 

@@ -72,8 +72,10 @@ class VideosSpider(scrapy.Spider):
 	
         for gif in gifs:
             url = None
+            thumbnailUrl = None
             if isinstance(gif.get("urls"), dict):
                 url = gif["urls"].get("hd") or gif["urls"].get("sd")
+                thumbnailUrl = gif["urls"].get("thumbnail")
 
             userName = gif.get("userName") or "Unknown"
             item = {
@@ -81,7 +83,8 @@ class VideosSpider(scrapy.Spider):
                 "Id": gif.get("id"),
                 "Url": url,
                 "CreateDateRaw": gif.get("createDate"),
-                "Token": self.token
+                "Token": self.token,
+                "ThumbnailUrl": thumbnailUrl
             }
             print(json.dumps(item, ensure_ascii=False))
             yield item

@@ -33,6 +33,8 @@ namespace RedgifsDownloader.Presentation.ViewModel
         private int _failedCount;
         private string _username = "";
         private string _selectedPlatform = "Redgifs";
+        private string? _sortByProperty;
+        private ListSortDirection _sortDirection = ListSortDirection.Descending;
 
         public string Username
         {
@@ -99,6 +101,16 @@ namespace RedgifsDownloader.Presentation.ViewModel
         public ICommand StopCommand { get; }
         public ICommand RetryAllCommand { get; }
         public ICommand SelectAllCommand { get; }
+        public ICommand SortByDateCommand { get; }
+        public ICommand SortByNameCommand { get; }
+
+        public string SortByDateButtonText => _sortByProperty == "SortCreateDate" 
+            ? (_sortDirection == ListSortDirection.Ascending ? "时间 ↑" : "时间 ↓")
+            : "时间";
+
+        public string SortByNameButtonText => _sortByProperty == "Id"
+            ? (_sortDirection == ListSortDirection.Ascending ? "名称 ↑" : "名称 ↓")
+            : "名称";
 
         public DownloadsViewModel(IDownloadAppService downloadService, ILogService logger, IAppSettings settings)
         {
@@ -128,6 +140,44 @@ namespace RedgifsDownloader.Presentation.ViewModel
                     v.IsSelected = on;
 
                 IsAllSelected = on;
+            });
+
+            SortByDateCommand = new RelayCommand(_ =>
+            {
+                if (_sortByProperty == "SortCreateDate")
+                {
+                    // 切换升序/降序
+                    _sortDirection = _sortDirection == ListSortDirection.Ascending 
+                        ? ListSortDirection.Descending 
+                        : ListSortDirection.Ascending;
+                }
+                else
+                {
+                    _sortByProperty = "SortCreateDate";
+                    _sortDirection = ListSortDirection.Descending;
+                }
+                ApplySort();
+                OnPropertyChanged(nameof(SortByDateButtonText));
+                OnPropertyChanged(nameof(SortByNameButtonText));
+            });
+
+            SortByNameCommand = new RelayCommand(_ =>
+            {
+                if (_sortByProperty == "Id")
+                {
+                    // 切换升序/降序
+                    _sortDirection = _sortDirection == ListSortDirection.Ascending 
+                        ? ListSortDirection.Descending 
+                        : ListSortDirection.Ascending;
+                }
+                else
+                {
+                    _sortByProperty = "Id";
+                    _sortDirection = ListSortDirection.Ascending;
+                }
+                ApplySort();
+                OnPropertyChanged(nameof(SortByDateButtonText));
+                OnPropertyChanged(nameof(SortByNameButtonText));
             });
             #endregion
 
@@ -243,6 +293,16 @@ namespace RedgifsDownloader.Presentation.ViewModel
         {
             CompletedCount = Videos.Count(v => v.Status == VideoStatus.Completed);
             FailedCount = Videos.Count(v => IsFailed(v));
+        }
+
+        private void ApplySort()
+        {
+            if (string.IsNullOrEmpty(_sortByProperty))
+                return;
+
+            ActiveVideosView.SortDescriptions.Clear();
+            ActiveVideosView.SortDescriptions.Add(new SortDescription(_sortByProperty, _sortDirection));
+            ActiveVideosView.Refresh();
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

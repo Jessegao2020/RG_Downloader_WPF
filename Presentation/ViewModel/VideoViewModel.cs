@@ -31,17 +31,27 @@ namespace RedgifsDownloader.Presentation.ViewModel
         public string Id => Item.Id;
         public string Username => Item.Username;
         public string Url => Item.Url.ToString();
+        public string? ThumbnailUrl => Item.ThumbnailUrl;
+
+        private bool _lastIsFailed;
 
         public VideoViewModel(Video item)
         {
             Item = item;
+            _lastIsFailed = item.IsFailed;
             item.Onchanged += () =>
             {
                 OnPropertyChanged(nameof(Status));
                 OnPropertyChanged(nameof(Progress));
                 OnPropertyChanged(nameof(DisplayStatus));
 
-                RefreshFilters?.Invoke();
+                // 只在IsFailed状态改变时才刷新Filter，避免频繁刷新导致图片消失
+                bool currentIsFailed = Item.IsFailed;
+                if (_lastIsFailed != currentIsFailed)
+                {
+                    _lastIsFailed = currentIsFailed;
+                    RefreshFilters?.Invoke();
+                }
             };
         }
 

@@ -89,7 +89,8 @@ namespace RedgifsDownloader.Infrastructure.Redgifs
                 url: raw.Url!,
                 createDataRaw: raw.CreateDateRaw,
                 token: raw.Token!,
-                platform: MediaPlatform.Redgifs);
+                platform: MediaPlatform.Redgifs,
+                thumbnailUrl: raw.ThumbnailUrl);
         }
     }
 }

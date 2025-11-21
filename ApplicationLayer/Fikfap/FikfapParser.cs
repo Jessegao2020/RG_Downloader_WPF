@@ -38,13 +38,20 @@ namespace RedgifsDownloader.ApplicationLayer.Fikfap
                 string createAt = p.TryGetProperty("createdAt", out var createdNode) && createdNode.ValueKind == JsonValueKind.String
                     ? createdNode.GetString() ?? "" : "";
 
+                string? thumbnailUrl = null;
+                if (p.TryGetProperty("thumbnailStreamUrl", out var thumbNode) && thumbNode.ValueKind == JsonValueKind.String)
+                {
+                    thumbnailUrl = thumbNode.GetString();
+                }
+
                 yield return new VideoDto
                 {
                     Username = username,
                     Id = FileNameSanitizer.MakeSafe(title),
                     Url = videoUrl,
                     CreateDateRaw = DateTimeOffset.Parse(createAt).ToUnixTimeSeconds(),
-                    Platform = MediaPlatform.Fikfap
+                    Platform = MediaPlatform.Fikfap,
+                    ThumbnailUrl = thumbnailUrl
                 };
             }
         }

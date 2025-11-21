@@ -115,6 +115,32 @@ namespace RedgifsDownloader.View
                     break;
             }
         }
+
+        private void Thumbnail_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not Border border) return;
+            if (border.DataContext is not VideoViewModel vm) return;
+
+            // 如果点击的是CheckBox，不处理（让CheckBox自己处理）
+            if (e.OriginalSource is CheckBox)
+                return;
+
+            // 切换选择状态
+            vm.IsSelected = !vm.IsSelected;
+            e.Handled = true;
+        }
+
+        private void Thumbnail_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not Border border) return;
+            if (border.DataContext is not VideoViewModel vm) return;
+
+            if (!string.IsNullOrEmpty(vm.Url))
+            {
+                Clipboard.SetText(vm.Url);
+                ToastWindow.Show($"已复制 URL:\n{vm.Url}");
+            }
+        }
         #endregion
     }
 }

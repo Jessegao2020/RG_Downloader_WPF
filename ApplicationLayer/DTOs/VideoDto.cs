@@ -10,10 +10,11 @@ namespace RedgifsDownloader.ApplicationLayer.DTOs
         public long? CreateDateRaw { get; set; }
         public string? Token { get; set; }
         public MediaPlatform Platform { get; set; }
+        public string? ThumbnailUrl { get; set; }
 
         public VideoDto() { }
 
-        public VideoDto(string id, string username, string url, string? token, long? createDataRaw, MediaPlatform platform)
+        public VideoDto(string id, string username, string url, string? token, long? createDataRaw, MediaPlatform platform, string? thumbnailUrl = null)
         {
             Id = id;
             Username = username;
@@ -21,6 +22,7 @@ namespace RedgifsDownloader.ApplicationLayer.DTOs
             CreateDateRaw = createDataRaw;
             Token = token;
             Platform = platform;
+            ThumbnailUrl = thumbnailUrl;
         }
     }
 }

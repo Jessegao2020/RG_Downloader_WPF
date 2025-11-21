@@ -134,7 +134,8 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
                 url: new Uri(dto.Url),
                 createDateRaw: dto.CreateDateRaw,
                 token: dto.Token,
-                platform: dto.Platform);
+                platform: dto.Platform,
+                thumbnailUrl: dto.ThumbnailUrl);
         }
 
         /// TODO: 在appservice里直接定义headers不美观，考虑搬出来
