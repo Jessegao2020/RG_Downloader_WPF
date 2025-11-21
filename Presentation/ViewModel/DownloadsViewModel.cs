@@ -1,15 +1,15 @@
-﻿using RedgifsDownloader.ApplicationLayer.Downloads;
-using RedgifsDownloader.ApplicationLayer.Settings;
-using RedgifsDownloader.Domain.Entities;
-using RedgifsDownloader.Domain.Enums;
-using RedgifsDownloader.Domain.Interfaces;
-using RedgifsDownloader.Presentation.Helpers;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using RedgifsDownloader.ApplicationLayer.Downloads;
+using RedgifsDownloader.ApplicationLayer.Settings;
+using RedgifsDownloader.Domain.Entities;
+using RedgifsDownloader.Domain.Enums;
+using RedgifsDownloader.Domain.Interfaces;
+using RedgifsDownloader.Presentation.Helpers;
 
 namespace RedgifsDownloader.Presentation.ViewModel
 {
@@ -198,10 +198,6 @@ namespace RedgifsDownloader.Presentation.ViewModel
             try
             {
                 var summary = await _downloadService.DownloadAsync(selected, _settings.MaxConcurrentDownloads, _cts.Token);
-
-                CompletedCount = summary.Completed;
-                FailedCount = summary.Failed;
-
                 _logger.ShowMessage($"下载结束：成功{summary.Completed}, 失败{summary.Failed}");
             }
             finally { IsDownloading = false; _cts = null; }
@@ -224,9 +220,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
             try
             {
                 var summary = await _downloadService.RetryFailedAsync(videos, _settings.MaxConcurrentDownloads, _cts.Token);
-
-                CompletedCount = summary.Completed;
-                FailedCount = summary.Failed;
+                _logger.ShowMessage($"下载结束：成功{summary.Completed}, 失败{summary.Failed}");
             }
             finally { IsDownloading = false; _cts = null; }
         }
@@ -242,14 +236,13 @@ namespace RedgifsDownloader.Presentation.ViewModel
         private void OnVideoPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(VideoViewModel.Status))
-            {
-                CompletedCount = Videos.Count(v => v.Status == VideoStatus.Completed);
-                FailedCount = Videos.Count(v =>
-                    v.Status == VideoStatus.Failed ||
-                    v.Status == VideoStatus.NetworkError ||
-                    v.Status == VideoStatus.WriteError ||
-                    v.Status == VideoStatus.UnknownError);
-            }
+                RefreshCounts();
+        }
+
+        private void RefreshCounts()
+        {
+            CompletedCount = Videos.Count(v => v.Status == VideoStatus.Completed);
+            FailedCount = Videos.Count(v => IsFailed(v));
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
