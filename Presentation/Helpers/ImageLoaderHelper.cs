@@ -39,6 +39,7 @@ namespace RedgifsDownloader.Presentation.Helpers
                     bitmap.BeginInit();
                     bitmap.CacheOption = BitmapCacheOption.OnLoad;
                     bitmap.StreamSource = memoryStream;
+                    bitmap.DecodePixelWidth = 300;
                     bitmap.EndInit();
                     bitmap.Freeze();
 
@@ -61,6 +62,7 @@ namespace RedgifsDownloader.Presentation.Helpers
                     bitmap.BeginInit();
                     bitmap.CacheOption = BitmapCacheOption.OnLoad;
                     bitmap.StreamSource = memoryStream;
+                    bitmap.DecodePixelWidth = 300;
                     bitmap.EndInit();
                     bitmap.Freeze();
 

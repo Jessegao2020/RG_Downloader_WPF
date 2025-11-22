@@ -18,6 +18,14 @@ namespace RedgifsDownloader.View
         private ListSortDirection _lastDirection = ListSortDirection.Ascending;
         private DownloadsViewModel _downloadsvm => (DownloadsViewModel)DataContext;
 
+        public int ThumbnailColumns
+        {
+            get => (int)GetValue(ThumbnailColumnsProperty);
+            set => SetValue(ThumbnailColumnsProperty, value);
+        }
+
+        public static readonly DependencyProperty ThumbnailColumnsProperty = DependencyProperty.Register("ThumbnailColumns", typeof(int), typeof(DownloadsView), new PropertyMetadata(5));
+
         public DownloadsView()
         {
             InitializeComponent();
@@ -48,7 +56,7 @@ namespace RedgifsDownloader.View
             if (e.OriginalSource is not GridViewColumnHeader header) return;
 
             var listView = sender as ListView;
-            if(listView == null) return;
+            if (listView == null) return;
 
             // 优先用 Tag 指定的排序字段；否则退回到绑定路径
             string? sortBy = header.Tag as string;
@@ -140,6 +148,21 @@ namespace RedgifsDownloader.View
                 Clipboard.SetText(vm.Url);
                 ToastWindow.Show($"已复制 URL:\n{vm.Url}");
             }
+        }
+
+        private void ScrollViewer_Thumbnail_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (sender is not ScrollViewer sv)
+                return;
+
+            double targetItemWidth = 120.0;
+            double availableWidth = e.NewSize.Width;
+
+            int columns = (int)(availableWidth / targetItemWidth);
+
+            if (columns < 1) columns = 1;
+
+            ThumbnailColumns = columns;
         }
         #endregion
     }

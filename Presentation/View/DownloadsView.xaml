@@ -14,8 +14,7 @@
         <conv:InverseBoolConverter x:Key="InverseBoolConverter" />
         <conv:BoolToModeConverter x:Key="BoolToModeConverter" />
         <Style x:Key="VideoThumbnailStyle" TargetType="Border">
-            <Setter Property="Width" Value="150" />
-            <Setter Property="Height" Value="200" />
+            <Setter Property="Height" Value="150" />
             <Setter Property="Margin" Value="5" />
             <Setter Property="BorderBrush" Value="Gray" />
             <Setter Property="BorderThickness" Value="1" />
@@ -31,10 +30,9 @@
     <Grid Grid.Row="1" Margin="5">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
-            <RowDefinition Height="1.8*" />
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="1.5*" />
+            <RowDefinition Height="5" />
+            <RowDefinition Height="*" MinHeight="100" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,0,0,5">
             <Grid.ColumnDefinitions>
@@ -80,7 +78,7 @@
                 Content="{Binding CrawlBtnText}"
                 IsEnabled="{Binding IsCrawling, Converter={StaticResource InverseBoolConverter}}" />
         </Grid>
-        <Grid Grid.Row="1" Margin="0,0,0,5">
+        <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="*" />
@@ -185,13 +183,9 @@
                     </ListView.View>
                 </ListView>
                 <!--  高级版：缩略图网格  -->
-                <ScrollViewer
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
-                    <ScrollViewer.Style>
-                        <Style TargetType="ScrollViewer">
+                <Border BorderBrush="Gray" BorderThickness="1">
+                    <Border.Style>
+                        <Style TargetType="Border">
                             <Setter Property="Visibility" Value="Collapsed" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsAdvancedMode}" Value="True">
@@ -199,173 +193,198 @@
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </ScrollViewer.Style>
-                    <ItemsControl Tag="Active">
-                        <ItemsControl.Style>
-                            <Style TargetType="ItemsControl">
-                                <Setter Property="ItemsSource" Value="{Binding ActiveVideosView}" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsAdvancedMode}" Value="False">
-                                        <Setter Property="ItemsSource" Value="{x:Null}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ItemsControl.Style>
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border MouseLeftButtonDown="Thumbnail_MouseLeftButtonDown" Style="{StaticResource VideoThumbnailStyle}">
-                                    <Grid>
-                                        <Image
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            helpers:ImageSourceBehavior.AsyncImageSource="{Binding ThumbnailUrl}"
-                                            Stretch="UniformToFill">
-                                            <Image.Style>
-                                                <Style TargetType="Image">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding ThumbnailUrl}" Value="{x:Null}">
-                                                            <Setter Property="Source" Value="pack://application:,,,/Resources/icon.ico" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Image.Style>
-                                        </Image>
-                                        <Grid VerticalAlignment="Bottom" Background="#55000000">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="auto" />
-                                                <RowDefinition Height="auto" />
-                                                <RowDefinition Height="auto" />
-                                            </Grid.RowDefinitions>
-                                            <TextBlock
+                    </Border.Style>
+                    <ScrollViewer
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        HorizontalScrollBarVisibility="Disabled"
+                        SizeChanged="ScrollViewer_Thumbnail_SizeChanged"
+                        VerticalScrollBarVisibility="Auto">
+                        <ItemsControl VerticalAlignment="Top" Tag="Active">
+                            <ItemsControl.Style>
+                                <Style TargetType="ItemsControl">
+                                    <Setter Property="ItemsSource" Value="{Binding ActiveVideosView}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsAdvancedMode}" Value="False">
+                                            <Setter Property="ItemsSource" Value="{x:Null}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ItemsControl.Style>
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="{Binding Path=ThumbnailColumns, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border MouseLeftButtonDown="Thumbnail_MouseLeftButtonDown" Style="{StaticResource VideoThumbnailStyle}">
+                                        <Grid>
+                                            <Image
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                helpers:ImageSourceBehavior.AsyncImageSource="{Binding ThumbnailUrl}"
+                                                Stretch="UniformToFill">
+                                                <Image.Style>
+                                                    <Style TargetType="Image">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding ThumbnailUrl}" Value="{x:Null}">
+                                                                <Setter Property="Source" Value="pack://application:,,,/Resources/icon.ico" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Image.Style>
+                                            </Image>
+                                            <Grid VerticalAlignment="Bottom" Background="#55000000">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="auto" />
+                                                    <RowDefinition Height="auto" />
+                                                    <RowDefinition Height="auto" />
+                                                </Grid.RowDefinitions>
+                                                <TextBlock
+                                                    Grid.Row="0"
+                                                    Margin="3"
+                                                    FontSize="10"
+                                                    Foreground="White"
+                                                    Text="{Binding Id}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    TextWrapping="Wrap" />
+                                                <TextBlock
+                                                    Grid.Row="1"
+                                                    Margin="3,0"
+                                                    FontSize="9"
+                                                    Foreground="LightGray"
+                                                    Text="{Binding DisplayCreateDate}" />
+                                                <TextBlock
+                                                    Grid.Row="2"
+                                                    Margin="3,0,3,3"
+                                                    FontSize="9"
+                                                    Foreground="LightGreen"
+                                                    Text="{Binding DisplayStatus}" />
+                                            </Grid>
+                                            <CheckBox
                                                 Grid.Row="0"
-                                                Margin="3"
-                                                FontSize="10"
-                                                Foreground="White"
-                                                Text="{Binding Id}"
-                                                TextTrimming="CharacterEllipsis"
-                                                TextWrapping="Wrap" />
-                                            <TextBlock
-                                                Grid.Row="1"
-                                                Margin="3,0"
-                                                FontSize="9"
-                                                Foreground="LightGray"
-                                                Text="{Binding DisplayCreateDate}" />
-                                            <TextBlock
-                                                Grid.Row="2"
-                                                Margin="3,0,3,3"
-                                                FontSize="9"
-                                                Foreground="LightGreen"
-                                                Text="{Binding DisplayStatus}" />
+                                                Grid.RowSpan="2"
+                                                Margin="5"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Top"
+                                                Background="White"
+                                                IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                Opacity="0.8" />
                                         </Grid>
-                                        <CheckBox
-                                            Grid.Row="0"
-                                            Grid.RowSpan="2"
-                                            Margin="5"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Top"
-                                            Background="White"
-                                            IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                            Opacity="0.8" />
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+
             </Grid>
         </Grid>
-        <Grid
+
+        <!--  Splitter  -->
+        <GridSplitter
             Grid.Row="2"
-            Height="20"
-            Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="auto" />
-                <ColumnDefinition Width="auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="结果:" />
-            <TextBlock Grid.Column="1" Text="{Binding VideosCount}" />
-            <Button
-                x:Name="BtnOpenFolder"
-                Grid.Column="2"
-                Width="70"
-                HorizontalAlignment="Right"
-                Click="BtnOpenFolder_Click"
-                Content="D/L Folder" />
-            <Button
-                x:Name="BtnDownload"
-                Grid.Column="3"
-                Width="70"
-                Margin="5,0,0,0"
-                HorizontalAlignment="Right"
-                Command="{Binding DownloadCommand}"
-                Content="{Binding DownloadBtnText}" />
-            <Button
-                x:Name="BtnStop"
-                Grid.Column="4"
-                Width="35"
-                Margin="5,0,0,0"
-                HorizontalAlignment="Right"
-                Command="{Binding StopCommand}"
-                Content="停止" />
+            Height="2"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            Background="Transparent"
+            ShowsPreview="True" />
+        <Grid Grid.Row="3" MinHeight="100">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid
+                Grid.Row="0"
+                Height="20"
+                Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="结果:" />
+                <TextBlock Grid.Column="1" Text="{Binding VideosCount}" />
+                <Button
+                    x:Name="BtnOpenFolder"
+                    Grid.Column="2"
+                    Width="70"
+                    HorizontalAlignment="Right"
+                    Click="BtnOpenFolder_Click"
+                    Content="D/L Folder" />
+                <Button
+                    x:Name="BtnDownload"
+                    Grid.Column="3"
+                    Width="70"
+                    Margin="5,0,0,0"
+                    HorizontalAlignment="Right"
+                    Command="{Binding DownloadCommand}"
+                    Content="{Binding DownloadBtnText}" />
+                <Button
+                    x:Name="BtnStop"
+                    Grid.Column="4"
+                    Width="35"
+                    Margin="5,0,0,0"
+                    HorizontalAlignment="Right"
+                    Command="{Binding StopCommand}"
+                    Content="停止" />
+            </Grid>
+            <Grid
+                Grid.Row="1"
+                Height="20"
+                Margin="0,0,0,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="失败:" />
+                <TextBlock
+                    x:Name="TxtFailedCount"
+                    Grid.Column="1"
+                    Text="{Binding FailedCount}" />
+                <TextBlock Grid.Column="2" Text="已下载:" />
+                <TextBlock
+                    x:Name="TxtDownloadedCount"
+                    Grid.Column="3"
+                    Text="{Binding CompletedCount}" />
+                <Button
+                    x:Name="BtnRetryAll"
+                    Grid.Column="4"
+                    Width="70"
+                    HorizontalAlignment="Right"
+                    Command="{Binding RetryAllCommand}"
+                    Content="全部重试" />
+            </Grid>
+            <ListView
+                x:Name="ListViewFailed"
+                Grid.Row="2"
+                MinHeight="50"
+                GridViewColumnHeader.Click="GridViewColumnHeader_Click"
+                ItemsSource="{Binding FailedVideosView}"
+                MouseDoubleClick="ListView_MouseDoubleClick"
+                SizeChanged="ListView_SizeChanged"
+                Tag="Failed">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn
+                            Width="210"
+                            DisplayMemberBinding="{Binding Id}"
+                            Header="Title" />
+                        <GridViewColumn
+                            Width="60"
+                            DisplayMemberBinding="{Binding DisplayStatus}"
+                            Header="状态" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
         </Grid>
-        <Grid
-            Grid.Row="3"
-            Height="20"
-            Margin="0,0,0,5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto" />
-                <ColumnDefinition />
-                <ColumnDefinition Width="auto" />
-                <ColumnDefinition />
-                <ColumnDefinition Width="auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" Text="失败:" />
-            <TextBlock
-                x:Name="TxtFailedCount"
-                Grid.Column="1"
-                Text="{Binding FailedCount}" />
-            <TextBlock Grid.Column="2" Text="已下载:" />
-            <TextBlock
-                x:Name="TxtDownloadedCount"
-                Grid.Column="3"
-                Text="{Binding CompletedCount}" />
-            <Button
-                x:Name="BtnRetryAll"
-                Grid.Column="4"
-                Width="70"
-                HorizontalAlignment="Right"
-                Command="{Binding RetryAllCommand}"
-                Content="全部重试" />
-        </Grid>
-        <ListView
-            x:Name="ListViewFailed"
-            Grid.Row="4"
-            MinHeight="50"
-            GridViewColumnHeader.Click="GridViewColumnHeader_Click"
-            ItemsSource="{Binding FailedVideosView}"
-            MouseDoubleClick="ListView_MouseDoubleClick"
-            SizeChanged="ListView_SizeChanged"
-            Tag="Failed">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn
-                        Width="210"
-                        DisplayMemberBinding="{Binding Id}"
-                        Header="Title" />
-                    <GridViewColumn
-                        Width="60"
-                        DisplayMemberBinding="{Binding DisplayStatus}"
-                        Header="状态" />
-                </GridView>
-            </ListView.View>
-        </ListView>
+
     </Grid>
 </UserControl>
