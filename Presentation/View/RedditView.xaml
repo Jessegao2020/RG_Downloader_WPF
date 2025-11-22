@@ -81,7 +81,7 @@
                 Margin="5,0,0,0"
                 HorizontalAlignment="Right"
                 Command="{Binding DownloadCommand}"
-                Content="Download" />
+                Content="{Binding DownloadBtnText}" />
         </Grid>
         <GroupBox
             Grid.Row="2"

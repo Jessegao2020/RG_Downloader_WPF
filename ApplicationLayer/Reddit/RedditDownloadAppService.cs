@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using RedgifsDownloader.ApplicationLayer.DTOs;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.ApplicationLayer.Utils;
 using RedgifsDownloader.Domain.Enums;
@@ -65,6 +66,9 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
             int failed = 0;
             int skipped = 0;
 
+            // 使用 stats 对象来在异步方法间共享计数
+            var stats = new DownloadStats();
+
             using var semaphore = new SemaphoreSlim(concurrency);
             var tasks = new List<Task>();
 
@@ -77,37 +81,14 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
 
                     if (_fileStorage.FileExistsWithCommonExtensions(output))
                     {
-                        Interlocked.Increment(ref skipped);
+                        Interlocked.Increment(ref stats.Skipped);
                         log?.Invoke($"[Skip] {filename}");
                         continue;
                     }
 
                     await semaphore.WaitAsync(ct);
 
-                    tasks.Add(Task.Run(async () =>
-                    {
-                        try
-                        {
-                            var result = await _downloader.DownloadAsync(new Uri(img.Url), output, new Domain.Enums.MediaDownloadContext(), ct);
-                            if (result.Status == VideoStatus.Completed || result.Status == VideoStatus.Exists)
-                            {
-                                int newCount = Interlocked.Increment(ref downloaded);
-                                progress?.Invoke(newCount);
-                                log?.Invoke($"[Finished] {filename}");
-                            }
-                            else
-                            {
-                                Interlocked.Increment(ref failed);
-                                log?.Invoke($"[Failed] {filename}");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Interlocked.Increment(ref failed);
-                            log?.Invoke($"[IMG]下载失败:{ex.Message}");
-                        }
-                        finally { semaphore.Release(); }
-                    }, ct));
+                    tasks.Add(DownloadImageAsync(img, output, semaphore, ct, log, progress, stats));
                 }
             }
             else
@@ -128,46 +109,103 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
 
                     if (_fileStorage.FileExistsWithCommonExtensions(output))
                     {
-                        Interlocked.Increment(ref skipped);
+                        Interlocked.Increment(ref stats.Skipped);
                         log?.Invoke($"[Skip] {filename}");
                         continue;
                     }
 
                     await semaphore.WaitAsync(ct);
 
-                    tasks.Add(Task.Run(async () =>
-                    {
-                        try
-                        {
-                            var context = new MediaDownloadContext();
-                            context.Headers = new()
-                            {
-                                { "Authorization", "Bearer " + token },
-                                { "User-Agent", "Mozilla/5.0" }
-                            };
-                            var result = await _downloader.DownloadAsync(new Uri(video.Url), output, context, ct);
-
-                            if (result.Status == VideoStatus.Completed)
-                            {
-                                int newCount = Interlocked.Increment(ref downloaded);
-                                log?.Invoke($"[Finish] {filename}");
-                                progress?.Invoke(newCount);
-                            }
-                            else
-                                Interlocked.Increment(ref failed);
-                        }
-                        catch (Exception ex)
-                        {
-                            Interlocked.Increment(ref failed);
-                            log?.Invoke($"[Video] 下载失败: {ex.Message}");
-                        }
-                        finally { semaphore.Release(); }
-                    }, ct));
+                    tasks.Add(DownloadVideoAsync(video, output, token, semaphore, ct, log, progress, stats));
                 }
             }
 
             await Task.WhenAll(tasks);
-            return new RedditDownloadSummary(downloaded, failed, skipped);
+            return new RedditDownloadSummary(stats.Downloaded, stats.Failed, stats.Skipped);
+        }
+
+        private class DownloadStats
+        {
+            public int Downloaded;
+            public int Failed;
+            public int Skipped;
+        }
+
+        private async Task DownloadImageAsync(
+            RedditPostDto img,
+            string output,
+            SemaphoreSlim semaphore,
+            CancellationToken ct,
+            Action<string>? log,
+            Action<int>? progress,
+            DownloadStats stats)
+        {
+            try
+            {
+                string filename = Path.GetFileName(output); // 从 output 重新获取文件名用于日志
+                var result = await _downloader.DownloadAsync(new Uri(img.Url), output, new Domain.Enums.MediaDownloadContext(), ct);
+                if (result.Status == VideoStatus.Completed || result.Status == VideoStatus.Exists)
+                {
+                    int newCount = Interlocked.Increment(ref stats.Downloaded);
+                    progress?.Invoke(newCount);
+                    log?.Invoke($"[Finished] {filename}");
+                }
+                else
+                {
+                    Interlocked.Increment(ref stats.Failed);
+                    log?.Invoke($"[Failed] {filename}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Interlocked.Increment(ref stats.Failed);
+                log?.Invoke($"[IMG]下载失败:{ex.Message}");
+            }
+            finally
+            {
+                try { semaphore.Release(); } catch (ObjectDisposedException) { }
+            }
+        }
+
+        private async Task DownloadVideoAsync(
+            VideoDto video,
+            string output,
+            string token,
+            SemaphoreSlim semaphore,
+            CancellationToken ct,
+            Action<string>? log,
+            Action<int>? progress,
+            DownloadStats stats)
+        {
+            try
+            {
+                string filename = Path.GetFileName(output);
+                var context = new MediaDownloadContext();
+                context.Headers = new()
+                {
+                    { "Authorization", "Bearer " + token },
+                    { "User-Agent", "Mozilla/5.0" }
+                };
+                var result = await _downloader.DownloadAsync(new Uri(video.Url), output, context, ct);
+
+                if (result.Status == VideoStatus.Completed)
+                {
+                    int newCount = Interlocked.Increment(ref stats.Downloaded);
+                    log?.Invoke($"[Finish] {filename}");
+                    progress?.Invoke(newCount);
+                }
+                else
+                    Interlocked.Increment(ref stats.Failed);
+            }
+            catch (Exception ex)
+            {
+                Interlocked.Increment(ref stats.Failed);
+                log?.Invoke($"[Video] 下载失败: {ex.Message}");
+            }
+            finally
+            {
+                try { semaphore.Release(); } catch (ObjectDisposedException) { }
+            }
         }
     }
 }
