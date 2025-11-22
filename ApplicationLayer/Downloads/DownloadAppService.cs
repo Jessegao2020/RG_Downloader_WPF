@@ -61,12 +61,22 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
                     string outputPath = _pathStrategy.BuildDownloadPath(video);
                     _fileStorage.CreateDirectory(Path.GetDirectoryName(outputPath));
 
-                    if (File.Exists(outputPath))
+                    // 检查文件是否存在 (支持常见视频/图片格式后缀)
+                    // 由于下载器会根据Content-Type自动添加后缀，所以此处需遍历检查
+                    var extensions = new[] { ".mp4", ".jpg", ".png", ".jpeg", ".gif", ".mkv", ".webm", ".ts", ".mov", ".avi", ".wmv", "" };
+                    foreach (var ext in extensions)
                     {
-                        video.MarkExists();
-                        video.SetProgress(100);
-                        summary.Completed++;
-                        return;
+                        var pathToCheck = outputPath.EndsWith(ext, StringComparison.OrdinalIgnoreCase) 
+                            ? outputPath 
+                            : outputPath + ext;
+
+                        if (File.Exists(pathToCheck))
+                        {
+                            video.MarkExists();
+                            video.SetProgress(100);
+                            summary.Completed++;
+                            return;
+                        }
                     }
 
                     video.MarkDownloading();

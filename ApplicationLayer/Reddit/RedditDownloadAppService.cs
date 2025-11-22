@@ -1,33 +1,37 @@
-﻿using RedgifsDownloader.ApplicationLayer.Settings;
+﻿using System.IO;
+using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.ApplicationLayer.Utils;
 using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Domain.Interfaces;
-using System.IO;
 
 namespace RedgifsDownloader.ApplicationLayer.Reddit
 {
     public class RedditDownloadAppService : IRedditDownloadAppService
     {
         private readonly IRedditAuthService _auth;
-        private readonly RedditFetchImagesAppService _imageApp;
-        private readonly RedditFetchRedgifsAppService _redgifsApp;
         private readonly ITransferDownloader _downloader;
         private readonly IAppSettings _settings;
         private readonly ILogService _logger;
+        private readonly IFileStorage _fileStorage;
+        private readonly RedditFetchImagesAppService _imageApp;
+        private readonly RedditFetchRedgifsAppService _redgifsApp;
 
         public RedditDownloadAppService(
-            Domain.Interfaces.IRedditAuthService auth,
-            RedditFetchImagesAppService imageApp,
-            RedditFetchRedgifsAppService redgifsApp,
+            IRedditAuthService auth,
             ITransferDownloader downloader,
-            IAppSettings settings, ILogService logger)
+            IAppSettings settings,
+            ILogService logger,
+            IFileStorage fileStorage,
+            RedditFetchImagesAppService imageApp,
+            RedditFetchRedgifsAppService redgifsApp)
         {
             _auth = auth;
-            _imageApp = imageApp;
-            _redgifsApp = redgifsApp;
             _downloader = downloader;
             _settings = settings;
             _logger = logger;
+            _fileStorage = fileStorage;
+            _imageApp = imageApp;
+            _redgifsApp = redgifsApp;
         }
 
         public async Task<bool> LoginAsync()
@@ -71,7 +75,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
                     string filename = FileNameSanitizer.MakeSafeFileName(img.Title, img.Id, img.Url);
                     string output = Path.Combine(downloadDir, filename);
 
-                    if (File.Exists(output))
+                    if (_fileStorage.FileExistsWithCommonExtensions(output))
                     {
                         Interlocked.Increment(ref skipped);
                         log?.Invoke($"[Skip] {filename}");
@@ -122,7 +126,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
 
                     string output = Path.Combine(downloadDir, filename);
 
-                    if (File.Exists(output))
+                    if (_fileStorage.FileExistsWithCommonExtensions(output))
                     {
                         Interlocked.Increment(ref skipped);
                         log?.Invoke($"[Skip] {filename}");

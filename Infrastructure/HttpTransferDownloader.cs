@@ -47,10 +47,15 @@ namespace RedgifsDownloader.Infrastructure
 
                 if (status == VideoStatus.Completed)
                 {
-                    if (File.Exists(outputPath))
+                    string finalPath = outputPath + ext;
+                    // 如果目标文件已存在，先删除，否则File.Move会报错
+                    if (File.Exists(finalPath))
+                        File.Delete(finalPath);
+
+                    if (File.Exists(outputPath)) // 之前的逻辑删除无后缀文件，保留以防万一
                         File.Delete(outputPath);
 
-                    File.Move(tempPath, outputPath + ext); // 临时解决命后缀问题
+                    File.Move(tempPath, finalPath);
                 }
                 else DeleteTempFile(tempPath);
 
