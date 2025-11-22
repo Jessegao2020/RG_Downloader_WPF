@@ -1,9 +1,10 @@
 ﻿using System.Runtime.CompilerServices;
 using RedgifsDownloader.ApplicationLayer.DTOs;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
+using RedgifsDownloader.ApplicationLayer.Fikfap;
 using RedgifsDownloader.Domain.Interfaces;
 
-namespace RedgifsDownloader.ApplicationLayer.Fikfap
+namespace RedgifsDownloader.Infrastructure.Fikfap
 {
     public class FikfapCrawler : IMediaCrawler
     {

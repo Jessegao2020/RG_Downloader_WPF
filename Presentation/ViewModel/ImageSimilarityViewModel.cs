@@ -1,18 +1,19 @@
-﻿using Ookii.Dialogs.Wpf;
-using RedgifsDownloader.ApplicationLayer.ImageSimilarity;
-using RedgifsDownloader.Domain.Interfaces;
-using RedgifsDownloader.Presentation.Helpers;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Ookii.Dialogs.Wpf;
+using RedgifsDownloader.ApplicationLayer.ImageSimilarity;
+using RedgifsDownloader.ApplicationLayer.Interfaces;
+using RedgifsDownloader.Domain.Interfaces;
+using RedgifsDownloader.Presentation.Helpers;
 
 namespace RedgifsDownloader.Presentation.ViewModel
 {
     public class ImageSimilarityViewModel : INotifyPropertyChanged
     {
-        private readonly ILogService _log;
+        private readonly IUserNotificationService _log;
         private readonly IImageSimilarityAppService _imageSim;
         private readonly IDupeFileMoveService _dupeMover;
 
@@ -50,7 +51,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
         }
 
         public ImageSimilarityViewModel(
-            ILogService log,
+            IUserNotificationService log,
             IImageSimilarityAppService imageSim,
             IDupeFileMoveService dupeMover)
         {
@@ -93,12 +94,10 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 ProgressValue = (double)p.done / p.total * 100;
             });
 
-            // 计算 hash —— 调用 ApplicationLayer，不再直接掉 Infra 静态方法
             var hashes = await Task.Run(() =>
                 _imageSim.GetImageHashes(FolderPath, progress, msg => Logger += msg + "\n")
             );
 
-            // 分组 —— 同样来自 ApplicationLayer
             var groups = await Task.Run(() =>
                 _imageSim.GroupSimilarImages(hashes, Threshold)
             );
@@ -106,7 +105,6 @@ namespace RedgifsDownloader.Presentation.ViewModel
             int dupCount = groups.Values.Sum(g => g.Count);
             Logger += $"检测到 {groups.Count} 组相似图片，共 {dupCount} 张。\n";
 
-            // 移动重复文件 —— 调用 Domain Service 实现
             Logger += "正在移动重复文件到 dupe 文件夹...\n";
             await Task.Run(() =>
                 _dupeMover.MoveToDupeFolder(FolderPath, groups)

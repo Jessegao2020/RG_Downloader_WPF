@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using RedgifsDownloader.ApplicationLayer.DTOs;
 using RedgifsDownloader.ApplicationLayer.Fikfap;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
+using RedgifsDownloader.ApplicationLayer.Notifications;
 using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Domain.Interfaces;
@@ -15,15 +16,17 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
         private readonly IVideoPathStrategy _pathStrategy;
         private readonly IPlatformDownloadStrategy _platformStrategy;
         private readonly IFileStorage _fileStorage;
-        private readonly ILogService _logger;
+        private readonly IUserNotificationService _logger;
         private readonly FikfapSession _session;
+        private readonly VideoChangeNotifier _notifier;
 
         public DownloadAppService(IMediaCrawlerFactory mediaCrawlerFactory,
             IVideoPathStrategy pathStrategy,
             IPlatformDownloadStrategy platformStrategy,
             IFileStorage fileStorage,
             FikfapSession session,
-            ILogService logger)
+            IUserNotificationService logger,
+            VideoChangeNotifier notifier)
         {
             _crawlerFactory = mediaCrawlerFactory;
             _pathStrategy = pathStrategy;
@@ -31,6 +34,7 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
             _fileStorage = fileStorage;
             _logger = logger;
             _session = session;
+            _notifier = notifier;
         }
 
         public async IAsyncEnumerable<Video> CrawlAsync(MediaPlatform platform, string username, Action<string>? onError = null, [EnumeratorCancellation] CancellationToken ct = default)
@@ -66,25 +70,31 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
                     var extensions = new[] { ".mp4", ".jpg", ".png", ".jpeg", ".gif", ".mkv", ".webm", ".ts", ".mov", ".avi", ".wmv", "" };
                     foreach (var ext in extensions)
                     {
-                        var pathToCheck = outputPath.EndsWith(ext, StringComparison.OrdinalIgnoreCase) 
-                            ? outputPath 
+                        var pathToCheck = outputPath.EndsWith(ext, StringComparison.OrdinalIgnoreCase)
+                            ? outputPath
                             : outputPath + ext;
 
                         if (File.Exists(pathToCheck))
                         {
                             video.MarkExists();
                             video.SetProgress(100);
+                            _notifier.NotifyIfChanged(video);
                             summary.Completed++;
                             return;
                         }
                     }
 
                     video.MarkDownloading();
+                    _notifier.NotifyIfChanged(video);
 
                     var downloader = _platformStrategy.SelectDownloader(video.Platform);
 
                     var context = BuildDownloadContext(video);
-                    var progress = new Progress<double>(p => { video.SetProgress(p); });
+                    var progress = new Progress<double>(p =>
+                    {
+                        video.SetProgress(p);
+                        _notifier.NotifyIfChanged(video);
+                    });
 
                     DownloadResult result;
                     try
@@ -123,6 +133,7 @@ namespace RedgifsDownloader.ApplicationLayer.Downloads
                             summary.Failed++;
                             break;
                     }
+                    _notifier.NotifyIfChanged(video);
                 }
                 finally { semaphore.Release(); }
             });

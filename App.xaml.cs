@@ -1,10 +1,14 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.IO;
+using System.Net.Http;
+using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
 using RedgifsDownloader.ApplicationLayer;
 using RedgifsDownloader.ApplicationLayer.Downloads;
 using RedgifsDownloader.ApplicationLayer.DupeCleaner;
 using RedgifsDownloader.ApplicationLayer.Fikfap;
 using RedgifsDownloader.ApplicationLayer.ImageSimilarity;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
+using RedgifsDownloader.ApplicationLayer.Notifications;
 using RedgifsDownloader.ApplicationLayer.Reddit;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Interfaces;
@@ -16,8 +20,6 @@ using RedgifsDownloader.Infrastructure.Reddit;
 using RedgifsDownloader.Infrastructure.Redgifs;
 using RedgifsDownloader.Infrastructure.Settings;
 using RedgifsDownloader.Presentation.ViewModel;
-using System.IO;
-using System.Windows;
 
 namespace RedgifsDownloader
 {
@@ -46,6 +48,7 @@ namespace RedgifsDownloader
             services.AddSingleton<DupePicsCleanerViewModel>();
 
             // 中间层
+            services.AddSingleton<VideoChangeNotifier>(); // 视频变化通知服务
             services.AddSingleton<IRedditDownloadAppService, RedditDownloadAppService>();
             services.AddSingleton<RedditFetchImagesAppService>();
             services.AddSingleton<RedditFetchRedgifsAppService>();
@@ -54,6 +57,7 @@ namespace RedgifsDownloader
             services.AddSingleton<IVideoPathStrategy, VideoPathStrategy>();
             services.AddSingleton<IPlatformDownloadStrategy, PlatformDownloadStrategy>();
             services.AddSingleton<IFileStorage, FileStorage>();
+            services.AddSingleton<RedgifsApiClient>(); // Redgifs API 客户端
             services.AddSingleton<RedgifsCrawler>();
             services.AddSingleton<FikfapCrawler>();
             services.AddSingleton<IImageSimilarityAppService, ImageSimilarityAppService>();
@@ -63,9 +67,19 @@ namespace RedgifsDownloader
 
             //底层
             services.AddSingleton<IRedditApiClient, RedditApiClient>();
-            services.AddSingleton<ILogService, LogService>();
+            services.AddSingleton<IUserNotificationService, LogService>();
             services.AddSingleton<IAppSettings, AppSettings>();
             services.AddSingleton<IMediaCrawler, RedgifsCrawler>();
+
+            // Redgifs 相关服务
+            services.AddSingleton<RedgifsAuthProvider>(sp => new RedgifsAuthProvider(new HttpClient()));
+            services.AddSingleton<IPlatformAuthProvider>(sp => sp.GetRequiredService<RedgifsAuthProvider>());
+            services.AddSingleton<RedgifsApiClient>(sp =>
+            {
+                var authProvider = sp.GetRequiredService<IPlatformAuthProvider>();
+                return new RedgifsApiClient(new HttpClient(), authProvider);
+            });
+
             services.AddSingleton<IImageHashService, ImageHashService>();
             services.AddSingleton<IDupeCleanerService, DupeCleanerService>();
             services.AddHttpClient<IRedditAuthService, RedditAuthService>();

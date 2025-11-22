@@ -4,7 +4,8 @@ namespace RedgifsDownloader.Domain.Entities
 {
     public class Video
     {
-        public event Action? Onchanged;
+        private int _version;
+
         public string Id { get; }
         public string Username { get; }
         public Uri Url { get; }
@@ -16,6 +17,9 @@ namespace RedgifsDownloader.Domain.Entities
         public string? ThumbnailUrl { get; }
 
         public VideoStatus Status { get; private set; }
+
+        // 内部版本号，用于 ViewModel 检测变化
+        public int Version => _version;
 
         public Video(string id, string username, Uri url, MediaPlatform platform, string? token = null, long? createDateRaw = null, string? thumbnailUrl = null)
         {
@@ -29,14 +33,66 @@ namespace RedgifsDownloader.Domain.Entities
             Status = VideoStatus.Pending;
         }
 
-        public void SetProgress(double? p) { Console.WriteLine($"video setprogress({p}) called"); Progress = p; Onchanged?.Invoke(); }
-        public void MarkDownloading() { Status = VideoStatus.Downloading; Onchanged?.Invoke(); }
-        public void MarkCompleted() { Status = VideoStatus.Completed; IsFailed = false; Onchanged?.Invoke(); }
-        public void MarkExists() { Status = VideoStatus.Exists; Onchanged?.Invoke(); }
-        public void MarkFailed() { Status = VideoStatus.Failed; IsFailed = true; Onchanged?.Invoke(); }
-        public void MarkCanceled() { Status = VideoStatus.Canceled; IsFailed = true; Onchanged?.Invoke(); }
-        public void MarkNetworkError() { Status = VideoStatus.NetworkError; IsFailed = true; Onchanged?.Invoke(); }
-        public void MarkWriteError() { Status = VideoStatus.WriteError; IsFailed = true; Onchanged?.Invoke(); }
-        public void MarkUnknownError() { Status = VideoStatus.UnknownError; IsFailed = true; Onchanged?.Invoke(); }
+        #region 设置状态变化
+        public void SetProgress(double? p)
+        {
+            Progress = p;
+            _version++;
+        }
+
+        public void MarkDownloading()
+        {
+            Status = VideoStatus.Downloading;
+            _version++;
+        }
+
+        public void MarkCompleted()
+        {
+            Status = VideoStatus.Completed;
+            IsFailed = false;
+            _version++;
+        }
+
+        public void MarkExists()
+        {
+            Status = VideoStatus.Exists;
+            _version++;
+        }
+
+        public void MarkFailed()
+        {
+            Status = VideoStatus.Failed;
+            IsFailed = true;
+            _version++;
+        }
+
+        public void MarkCanceled()
+        {
+            Status = VideoStatus.Canceled;
+            IsFailed = true;
+            _version++;
+        }
+
+        public void MarkNetworkError()
+        {
+            Status = VideoStatus.NetworkError;
+            IsFailed = true;
+            _version++;
+        }
+
+        public void MarkWriteError()
+        {
+            Status = VideoStatus.WriteError;
+            IsFailed = true;
+            _version++;
+        }
+
+        public void MarkUnknownError()
+        {
+            Status = VideoStatus.UnknownError;
+            IsFailed = true;
+            _version++;
+        }
+        #endregion
     }
 }

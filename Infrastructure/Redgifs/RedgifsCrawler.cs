@@ -1,96 +1,42 @@
-﻿using RedgifsDownloader.ApplicationLayer.DTOs;
+﻿using System.Runtime.CompilerServices;
+using RedgifsDownloader.ApplicationLayer.DTOs;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.Domain.Enums;
-using RedgifsDownloader.Infrastructure.Redgifs.Models;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
 
 namespace RedgifsDownloader.Infrastructure.Redgifs
 {
     public class RedgifsCrawler : IMediaCrawler
     {
+        private readonly RedgifsApiClient _apiClient;
+
         public event Action<string>? OnError;
+
+        public RedgifsCrawler(RedgifsApiClient apiClient)
+        {
+            _apiClient = apiClient;
+        }
 
         public async IAsyncEnumerable<VideoDto> CrawlAsync(string username, [EnumeratorCancellation] CancellationToken ct = default)
         {
-            string spiderPath = System.IO.Path.Combine(AppContext.BaseDirectory, "videoSpider");
-
-            using var process = CreateProcess(username, spiderPath);
-            process.Start();
-
-            var errorMonitor = MonitorErrors(process);
-
-
-
-            while (!process.StandardOutput.EndOfStream)
+            await foreach (var video in _apiClient.FetchUserVideosAsync(username, pageSize: 40, ct))
             {
-                ct.ThrowIfCancellationRequested();
+                if (video?.Id == null || video.Urls == null)
+                    continue;
 
-                var line = await process.StandardOutput.ReadLineAsync();
-                if (string.IsNullOrWhiteSpace(line)) continue;
+                var videoUrl = video.Urls.Hd ?? video.Urls.Sd;
+                if (string.IsNullOrEmpty(videoUrl))
+                    continue;
 
-                var raw = Deserialize(line);
-                if (raw != null)
-                    yield return ConverToDomain(raw);
+                yield return new VideoDto(
+                    id: video.Id,
+                    username: video.UserName ?? username,
+                    url: videoUrl,
+                    createDataRaw: video.CreateDate,
+                    token: null, // Redgifs 不需要单独的视频 token
+                    platform: MediaPlatform.Redgifs,
+                    thumbnailUrl: video.Urls.Thumbnail 
+                );
             }
-            await errorMonitor;
-            await process.WaitForExitAsync();
-        }
-
-        private Process CreateProcess(string username, string path)
-        {
-            return new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "python",
-                    WorkingDirectory = path,
-                    Arguments = $"-u -m scrapy crawl videos -a user={username} --loglevel ERROR",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
-        }
-
-        private async Task MonitorErrors(Process process)
-        {
-            while (!process.StandardError.EndOfStream)
-            {
-                var err = await process.StandardError.ReadLineAsync();
-
-                if (!string.IsNullOrWhiteSpace(err) && err.StartsWith("ERROR_MSG:"))
-                {
-                    var msg = err.Substring("ERROR_MSG:".Length).Trim();
-                    OnError?.Invoke(msg); // 上报应用层
-                }
-            }
-        }
-
-        private RedgifsRawVideoDto? Deserialize(string json)
-        {
-            try
-            {
-                return JsonSerializer.Deserialize<RedgifsRawVideoDto>(json);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private VideoDto ConverToDomain(RedgifsRawVideoDto raw)
-        {
-            return new VideoDto(
-                id: raw.Id!,
-                username: raw.Username!,
-                url: raw.Url!,
-                createDataRaw: raw.CreateDateRaw,
-                token: raw.Token!,
-                platform: MediaPlatform.Redgifs,
-                thumbnailUrl: raw.ThumbnailUrl);
         }
     }
 }

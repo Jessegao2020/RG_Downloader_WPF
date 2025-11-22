@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using RedgifsDownloader.ApplicationLayer.Fikfap;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.Domain.Enums;
+using RedgifsDownloader.Infrastructure.Fikfap;
 using RedgifsDownloader.Infrastructure.Redgifs;
 
 namespace RedgifsDownloader.ApplicationLayer

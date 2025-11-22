@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using RedgifsDownloader.ApplicationLayer.DTOs;
+using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.ApplicationLayer.Utils;
 using RedgifsDownloader.Domain.Enums;
@@ -12,7 +13,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
         private readonly IRedditAuthService _auth;
         private readonly ITransferDownloader _downloader;
         private readonly IAppSettings _settings;
-        private readonly ILogService _logger;
+        private readonly IUserNotificationService _logger;
         private readonly IFileStorage _fileStorage;
         private readonly RedditFetchImagesAppService _imageApp;
         private readonly RedditFetchRedgifsAppService _redgifsApp;
@@ -21,7 +22,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
             IRedditAuthService auth,
             ITransferDownloader downloader,
             IAppSettings settings,
-            ILogService logger,
+            IUserNotificationService logger,
             IFileStorage fileStorage,
             RedditFetchImagesAppService imageApp,
             RedditFetchRedgifsAppService redgifsApp)

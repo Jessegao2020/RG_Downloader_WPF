@@ -1,7 +1,8 @@
-﻿using RedgifsDownloader.Domain.Enums;
-using RedgifsDownloader.Domain.Interfaces;
+﻿using System.Diagnostics;
 using System.Net.Http;
 using System.Text.Json;
+using RedgifsDownloader.Domain.Enums;
+using RedgifsDownloader.Domain.Interfaces;
 
 namespace RedgifsDownloader.Infrastructure.Redgifs
 {
@@ -26,9 +27,17 @@ namespace RedgifsDownloader.Infrastructure.Redgifs
             AddPlatformHeaders(request);
 
             var response = await _http.SendAsync(request, ct);
-            response.EnsureSuccessStatusCode();
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync(ct);
+                Debug.WriteLine($"[RedgifsAuth] Token 获取失败: {errorContent}");
+                throw new HttpRequestException($"Failed to get Redgifs token: {response.StatusCode}");
+            }
 
-            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            var jsonContent = await response.Content.ReadAsStringAsync(ct);
+            
+            using var doc = JsonDocument.Parse(jsonContent);
             _token = doc.RootElement.GetProperty("token").GetString();
             _expiry = DateTime.UtcNow.AddMinutes(90);
 
@@ -37,9 +46,8 @@ namespace RedgifsDownloader.Infrastructure.Redgifs
 
         private void AddPlatformHeaders(HttpRequestMessage request)
         {
-            request.Headers.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-            request.Headers.TryAddWithoutValidation("Origin", "https://www.redgifs.com");
-            request.Headers.TryAddWithoutValidation("Referer", "https://www.redgifs.com");
+            request.Headers.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36");
+            request.Headers.TryAddWithoutValidation("Referer", "https://www.redgifs.com/");
             request.Headers.TryAddWithoutValidation("Accept", "application/json, text/plain, */*");
         }
     }

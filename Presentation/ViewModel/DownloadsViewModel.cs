@@ -5,10 +5,11 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using RedgifsDownloader.ApplicationLayer.Downloads;
+using RedgifsDownloader.ApplicationLayer.Interfaces;
+using RedgifsDownloader.ApplicationLayer.Notifications;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
-using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Presentation.Helpers;
 
 namespace RedgifsDownloader.Presentation.ViewModel
@@ -16,8 +17,9 @@ namespace RedgifsDownloader.Presentation.ViewModel
     public class DownloadsViewModel : INotifyPropertyChanged
     {
         private readonly IDownloadAppService _downloadService;
-        private readonly ILogService _logger;
+        private readonly IUserNotificationService _logger;
         private readonly IAppSettings _settings;
+        private readonly VideoChangeNotifier _notifier;
 
         public ObservableCollection<VideoViewModel> Videos { get; } = new();
         public ICollectionView ActiveVideosView { get; }
@@ -105,7 +107,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
         public ICommand SortByDateCommand { get; }
         public ICommand SortByNameCommand { get; }
 
-        public string SortByDateButtonText => _sortByProperty == "SortCreateDate" 
+        public string SortByDateButtonText => _sortByProperty == "SortCreateDate"
             ? (_sortDirection == ListSortDirection.Ascending ? "时间 ↑" : "时间 ↓")
             : "时间";
 
@@ -126,11 +128,12 @@ namespace RedgifsDownloader.Presentation.ViewModel
             }
         }
 
-        public DownloadsViewModel(IDownloadAppService downloadService, ILogService logger, IAppSettings settings)
+        public DownloadsViewModel(IDownloadAppService downloadService, IUserNotificationService logger, IAppSettings settings, VideoChangeNotifier notifier)
         {
             _downloadService = downloadService;
             _logger = logger;
             _settings = settings;
+            _notifier = notifier;
 
             ActiveVideosView = CollectionViewSource.GetDefaultView(Videos);
             ActiveVideosView.Filter = v => { var vm = (VideoViewModel)v; return !vm.Item.IsFailed; };
@@ -161,8 +164,8 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 if (_sortByProperty == "SortCreateDate")
                 {
                     // 切换升序/降序
-                    _sortDirection = _sortDirection == ListSortDirection.Ascending 
-                        ? ListSortDirection.Descending 
+                    _sortDirection = _sortDirection == ListSortDirection.Ascending
+                        ? ListSortDirection.Descending
                         : ListSortDirection.Ascending;
                 }
                 else
@@ -180,8 +183,8 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 if (_sortByProperty == "Id")
                 {
                     // 切换升序/降序
-                    _sortDirection = _sortDirection == ListSortDirection.Ascending 
-                        ? ListSortDirection.Descending 
+                    _sortDirection = _sortDirection == ListSortDirection.Ascending
+                        ? ListSortDirection.Descending
                         : ListSortDirection.Ascending;
                 }
                 else
@@ -229,7 +232,10 @@ namespace RedgifsDownloader.Presentation.ViewModel
                     {
                         await Application.Current.Dispatcher.InvokeAsync(() =>
                         {
-                            var vm = new VideoViewModel(video)
+                            // 注册视频到通知器
+                            _notifier.RegisterVideo(video);
+
+                            var vm = new VideoViewModel(video, _notifier)
                             {
                                 RefreshFilters = () =>
                                 {
@@ -264,7 +270,11 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 var summary = await _downloadService.DownloadAsync(selected, _settings.MaxConcurrentDownloads, _cts.Token);
                 _logger.ShowMessage($"下载结束：成功{summary.Completed}, 失败{summary.Failed}");
             }
-            finally { IsDownloading = false; _cts = null; }
+            finally
+            {
+                IsDownloading = false;
+                _cts = null;
+            }
         }
 
         private async Task RetryAllAsync()
@@ -286,7 +296,11 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 var summary = await _downloadService.RetryFailedAsync(videos, _settings.MaxConcurrentDownloads, _cts.Token);
                 _logger.ShowMessage($"下载结束：成功{summary.Completed}, 失败{summary.Failed}");
             }
-            finally { IsDownloading = false; _cts = null; }
+            finally
+            {
+                IsDownloading = false;
+                _cts = null;
+            }
         }
 
         private bool IsFailed(VideoViewModel v) =>
