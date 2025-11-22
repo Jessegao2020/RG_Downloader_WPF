@@ -55,6 +55,16 @@ namespace RedgifsDownloader
             services.AddSingleton<IDownloadAppService, DownloadAppService>();
             services.AddSingleton<IMediaCrawlerFactory, MediaCrawlerFactory>();
             services.AddSingleton<IVideoPathStrategy, VideoPathStrategy>();
+
+            // 下载器必须先注册，因为 PlatformDownloadStrategy 需要它们
+            services.AddHttpClient<HttpTransferDownloader>();
+            services.AddSingleton<HttpTransferDownloader>();
+
+            // 创建不启用压缩的 HttpClient（避免服务器发送 gzip 内容）
+            var fikfapHttpClient = new HttpClient();
+            fikfapHttpClient.DefaultRequestHeaders.Remove("Accept-Encoding");
+            services.AddSingleton<FikfapM3u8Downloader>(sp => new FikfapM3u8Downloader(fikfapHttpClient));
+
             services.AddSingleton<IPlatformDownloadStrategy, PlatformDownloadStrategy>();
             services.AddSingleton<IFileStorage, FileStorage>();
             services.AddSingleton<RedgifsApiClient>(); // Redgifs API 客户端
@@ -86,9 +96,6 @@ namespace RedgifsDownloader
             services.AddSingleton<IRenameService, DupeRenameService>();
             services.AddSingleton<IFileNameStrategy, FileNameService>();
             services.AddSingleton<IFikfapApiClient, FikfapApiClient>();
-            services.AddSingleton<YtDlpTransferDownloader>();
-            services.AddHttpClient<HttpTransferDownloader>();
-            services.AddSingleton<HttpTransferDownloader>();
             services.AddSingleton<ITransferDownloader>(sp => sp.GetRequiredService<HttpTransferDownloader>());
             //生成容器
             ServiceProvider = services.BuildServiceProvider();

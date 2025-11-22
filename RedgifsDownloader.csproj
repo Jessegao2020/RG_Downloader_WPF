@@ -11,6 +11,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Remove="Infrastructure\M3u8\README.md" />
 		<None Remove="Resources\dupe-clean.ico" />
 		<None Remove="Resources\image-sim.ico" />
 		<None Remove="Resources\reddit.ico" />
@@ -29,6 +30,11 @@
 	</ItemGroup>
   <ItemGroup>
     <None Remove="Downloads\**\*.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Infrastructure\M3u8\README.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\dupe-clean.ico">

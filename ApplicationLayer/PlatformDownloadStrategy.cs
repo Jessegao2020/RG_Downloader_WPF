@@ -9,12 +9,12 @@ namespace RedgifsDownloader.ApplicationLayer
     public class PlatformDownloadStrategy : IPlatformDownloadStrategy
     {
         private readonly HttpTransferDownloader _http;
-        private readonly YtDlpTransferDownloader _ytdlp;
+        private readonly FikfapM3u8Downloader _fikfapM3u8;
 
-        public PlatformDownloadStrategy(HttpTransferDownloader http, YtDlpTransferDownloader ytdlp)
+        public PlatformDownloadStrategy(HttpTransferDownloader http, FikfapM3u8Downloader fikfapM3u8)
         {
             _http = http;
-            _ytdlp = ytdlp;
+            _fikfapM3u8 = fikfapM3u8;
         }
 
         public ITransferDownloader SelectDownloader(MediaPlatform platform)
@@ -22,7 +22,7 @@ namespace RedgifsDownloader.ApplicationLayer
             return platform switch
             {
                 MediaPlatform.Redgifs => _http,
-                MediaPlatform.Fikfap => _ytdlp,
+                MediaPlatform.Fikfap => _fikfapM3u8,
                 _ => throw new NotSupportedException($"{platform} not supported.")
             };
         }

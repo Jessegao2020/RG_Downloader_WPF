@@ -110,15 +110,15 @@
                 <Button
                     Grid.Column="1"
                     MinWidth="60"
-                    Margin="10,0,0,0"
-                    Command="{Binding SortByDateCommand}"
-                    Content="{Binding SortByDateButtonText}" />
-                <Button
-                    Grid.Column="2"
-                    MinWidth="60"
                     Margin="5,0,0,0"
                     Command="{Binding SortByNameCommand}"
                     Content="{Binding SortByNameButtonText}" />
+                <Button
+                    Grid.Column="2"
+                    MinWidth="60"
+                    Margin="10,0,0,0"
+                    Command="{Binding SortByDateCommand}"
+                    Content="{Binding SortByDateButtonText}" />
             </Grid>
             <!--  简单版和高级版互斥切换  -->
             <Grid Grid.Row="1">
