@@ -44,6 +44,9 @@ namespace RedgifsDownloader.Presentation.ViewModel
         private string _selectedPlatform = "Redgifs";
         private string? _sortByProperty;
         private ListSortDirection _sortDirection = ListSortDirection.Descending;
+
+        // 选择会话状态保存（用于拖拽和Shift）
+        private Dictionary<VideoViewModel, bool> _selectionOriginalStates = new();
         #endregion
 
         #region UI - 绑定属性
@@ -353,6 +356,50 @@ namespace RedgifsDownloader.Presentation.ViewModel
             ActiveVideosView.SortDescriptions.Add(new SortDescription(_sortByProperty, _sortDirection));
             ActiveVideosView.Refresh();
         }
+
+        /// <summary>
+        /// 开始范围选择会话（拖拽或Shift）：保存所有项的当前状态
+        /// </summary>
+        public void BeginRangeSelect()
+        {
+            _selectionOriginalStates.Clear();
+            foreach (var video in Videos)
+                _selectionOriginalStates[video] = video.IsSelected;
+        }
+
+        /// <summary>
+        /// 范围选择（拖拽或Shift）：局部影响模式
+        /// - 接触过的范围内但不在当前范围的：取消选中
+        /// - 当前范围内的：选中
+        /// - 从未接触过的区域：保持会话前状态
+        /// </summary>
+        public void RangeSelect(int fromIndex, int toIndex, int touchedMinIndex, int touchedMaxIndex)
+        {
+            if (fromIndex < 0 || toIndex < 0 || fromIndex >= Videos.Count || toIndex >= Videos.Count)
+                return;
+
+            int currentStart = Math.Min(fromIndex, toIndex);
+            int currentEnd = Math.Max(fromIndex, toIndex);
+
+            for (int i = 0; i < Videos.Count; i++)
+            {
+                if (i >= touchedMinIndex && i <= touchedMaxIndex)
+                {
+                    // 接触过的范围：选中当前范围，取消离开的
+                    Videos[i].IsSelected = i >= currentStart && i <= currentEnd;
+                }
+                else if (_selectionOriginalStates.TryGetValue(Videos[i], out bool originalState))
+                {
+                    // 未接触的区域：恢复原始状态
+                    Videos[i].IsSelected = originalState;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 结束范围选择会话：清理状态
+        /// </summary>
+        public void EndRangeSelect() => _selectionOriginalStates.Clear();
         #endregion
 
         #region 事件函数

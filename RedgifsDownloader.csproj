@@ -29,7 +29,11 @@
 	  <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
 	</ItemGroup>
   <ItemGroup>
+    <Compile Remove="ApplicationLayer\Settings\**" />
+    <EmbeddedResource Remove="ApplicationLayer\Settings\**" />
+    <None Remove="ApplicationLayer\Settings\**" />
     <None Remove="Downloads\**\*.*" />
+    <Page Remove="ApplicationLayer\Settings\**" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="README.md">
@@ -67,10 +71,6 @@
 			<Generator>SettingsSingleFileGenerator</Generator>
 			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
 		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="ApplicationLayer\Settings\" />
 	</ItemGroup>
 
 </Project>

@@ -213,7 +213,7 @@ namespace RedgifsDownloader.Infrastructure.M3u8
 
         private string FindFfmpegPath()
         {
-            // 1. 检查程序 bin 目录
+            // 1. 检查程序根目录
             string binPath = Path.Combine(AppContext.BaseDirectory, "ffmpeg.exe");
             if (File.Exists(binPath))
                 return binPath;
