@@ -16,47 +16,60 @@ namespace RedgifsDownloader.Presentation.ViewModel
 {
     public class DownloadsViewModel : INotifyPropertyChanged
     {
+        #region 依赖注入
         private readonly IDownloadAppService _downloadService;
         private readonly IUserNotificationService _logger;
         private readonly IAppSettings _settings;
         private readonly VideoChangeNotifier _notifier;
+        #endregion
 
-        public ObservableCollection<VideoViewModel> Videos { get; } = new();
+        #region 数据集合
         public ICollectionView ActiveVideosView { get; }
         public ICollectionView FailedVideosView { get; }
-
+        public ObservableCollection<VideoViewModel> Videos { get; } = new();
         public ObservableCollection<string> Platforms { get; } = new() { "Redgifs", "Fikfap" };
+        #endregion
 
+        #region 私有字段
         private CancellationTokenSource? _cts;
+
         private bool _isCrawling;
         private bool _isDownloading;
         private bool _isAllSelected;
+        private bool _isAdvancedMode = false;
+        private bool _isCaptionVisible = false;
         private int _completedCount;
         private int _failedCount;
         private string _username = "";
         private string _selectedPlatform = "Redgifs";
         private string? _sortByProperty;
         private ListSortDirection _sortDirection = ListSortDirection.Descending;
-        private bool _isAdvancedMode = false; // 默认简单版
+        #endregion
 
+        #region UI - 绑定属性
+        public string CrawlBtnText => IsCrawling ? "Crawling..." : "Crawl";
+        public string DownloadBtnText => IsDownloading ? "下载中..." : "下载";
+        public string SortByDateBtnText => _sortByProperty == "SortCreateDate"
+            ? (_sortDirection == ListSortDirection.Ascending ? "时间 ↑" : "时间 ↓")
+            : "时间";
+        public string SortByNameBtnText => _sortByProperty == "Id"
+            ? (_sortDirection == ListSortDirection.Ascending ? "名称 ↑" : "名称 ↓")
+            : "名称";
         public string Username
         {
             get => _username;
             set { _username = value; OnPropertyChanged(); (CrawlCommand as RelayCommand)?.RaiseCanExecuteChanged(); }
         }
-
         public string SelectedPlatform
         {
             get => _selectedPlatform;
             set { _selectedPlatform = value; OnPropertyChanged(); }
         }
-
         public bool IsCrawling
         {
             get => _isCrawling;
             set { _isCrawling = value; OnPropertyChanged(); OnPropertyChanged(nameof(CrawlBtnText)); }
         }
-
         public bool IsDownloading
         {
             get => _isDownloading;
@@ -71,50 +84,6 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 ((RelayCommand)RetryAllCommand).RaiseCanExecuteChanged();
             }
         }
-
-        public int CompletedCount
-        {
-            get => _completedCount;
-            set { _completedCount = value; OnPropertyChanged(); }
-        }
-
-        public int FailedCount
-        {
-            get => _failedCount;
-            set { _failedCount = value; OnPropertyChanged(); (RetryAllCommand as RelayCommand)?.RaiseCanExecuteChanged(); }
-        }
-
-        public bool IsAllSelected
-        {
-            get => _isAllSelected;
-            set
-            {
-                if (_isAllSelected == value) return;
-                _isAllSelected = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string CrawlBtnText => IsCrawling ? "Crawling..." : "Crawl";
-        public string DownloadBtnText => IsDownloading ? "下载中..." : "下载";
-        public int VideosCount => Videos.Count;
-
-        public ICommand CrawlCommand { get; }
-        public ICommand DownloadCommand { get; }
-        public ICommand StopCommand { get; }
-        public ICommand RetryAllCommand { get; }
-        public ICommand SelectAllCommand { get; }
-        public ICommand SortByDateCommand { get; }
-        public ICommand SortByNameCommand { get; }
-
-        public string SortByDateButtonText => _sortByProperty == "SortCreateDate"
-            ? (_sortDirection == ListSortDirection.Ascending ? "时间 ↑" : "时间 ↓")
-            : "时间";
-
-        public string SortByNameButtonText => _sortByProperty == "Id"
-            ? (_sortDirection == ListSortDirection.Ascending ? "名称 ↑" : "名称 ↓")
-            : "名称";
-
         public bool IsAdvancedMode
         {
             get => _isAdvancedMode;
@@ -127,7 +96,53 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 }
             }
         }
+        public bool IsCaptionVisible
+        {
+            get => _isCaptionVisible;
+            set
+            {
+                if (_isCaptionVisible != value)
+                {
+                    _isCaptionVisible = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public bool IsAllSelected
+        {
+            get => _isAllSelected;
+            set
+            {
+                if (_isAllSelected == value) return;
+                _isAllSelected = value;
+                OnPropertyChanged();
+            }
+        }
+        public int CompletedCount
+        {
+            get => _completedCount;
+            set { _completedCount = value; OnPropertyChanged(); }
+        }
+        public int FailedCount
+        {
+            get => _failedCount;
+            set { _failedCount = value; OnPropertyChanged(); (RetryAllCommand as RelayCommand)?.RaiseCanExecuteChanged(); }
+        }
+        public int VideosCount => Videos.Count;
+        #endregion
 
+        #region Commands
+        public ICommand CrawlCommand { get; }
+        public ICommand DownloadCommand { get; }
+        public ICommand StopCommand { get; }
+        public ICommand RetryAllCommand { get; }
+        public ICommand SelectAllCommand { get; }
+        public ICommand DeselectAllCommand { get; }
+        public ICommand SortByDateCommand { get; }
+        public ICommand SortByNameCommand { get; }
+        #endregion
+
+        #region 构造函数
         public DownloadsViewModel(IDownloadAppService downloadService, IUserNotificationService logger, IAppSettings settings, VideoChangeNotifier notifier)
         {
             _downloadService = downloadService;
@@ -159,6 +174,14 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 IsAllSelected = on;
             });
 
+            DeselectAllCommand = new RelayCommand(_ =>
+            {
+                foreach (var v in Videos)
+                    v.IsSelected = false;
+
+                IsAllSelected = false;
+            });
+
             SortByDateCommand = new RelayCommand(_ =>
             {
                 if (_sortByProperty == "SortCreateDate")
@@ -174,8 +197,8 @@ namespace RedgifsDownloader.Presentation.ViewModel
                     _sortDirection = ListSortDirection.Descending;
                 }
                 ApplySort();
-                OnPropertyChanged(nameof(SortByDateButtonText));
-                OnPropertyChanged(nameof(SortByNameButtonText));
+                OnPropertyChanged(nameof(SortByDateBtnText));
+                OnPropertyChanged(nameof(SortByNameBtnText));
             });
 
             SortByNameCommand = new RelayCommand(_ =>
@@ -193,8 +216,8 @@ namespace RedgifsDownloader.Presentation.ViewModel
                     _sortDirection = ListSortDirection.Ascending;
                 }
                 ApplySort();
-                OnPropertyChanged(nameof(SortByDateButtonText));
-                OnPropertyChanged(nameof(SortByNameButtonText));
+                OnPropertyChanged(nameof(SortByDateBtnText));
+                OnPropertyChanged(nameof(SortByNameBtnText));
             });
             #endregion
 
@@ -213,7 +236,9 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 }
             };
         }
+        #endregion
 
+        #region Commands Methods
         private async Task StartCrawlAsync()
         {
             Videos.Clear();
@@ -302,7 +327,9 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 _cts = null;
             }
         }
+        #endregion
 
+        #region 辅助函数
         private bool IsFailed(VideoViewModel v) =>
             v.Status is
             VideoStatus.Failed or
@@ -310,12 +337,6 @@ namespace RedgifsDownloader.Presentation.ViewModel
             VideoStatus.WriteError or
             VideoStatus.UnknownError or
             VideoStatus.Canceled;
-
-        private void OnVideoPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(VideoViewModel.Status))
-                RefreshCounts();
-        }
 
         private void RefreshCounts()
         {
@@ -332,9 +353,18 @@ namespace RedgifsDownloader.Presentation.ViewModel
             ActiveVideosView.SortDescriptions.Add(new SortDescription(_sortByProperty, _sortDirection));
             ActiveVideosView.Refresh();
         }
+        #endregion
 
+        #region 事件函数
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+        private void OnVideoPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(VideoViewModel.Status))
+                RefreshCounts();
+        }
+        #endregion
     }
 }

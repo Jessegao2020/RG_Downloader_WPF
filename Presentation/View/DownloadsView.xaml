@@ -13,6 +13,7 @@
     <UserControl.Resources>
         <conv:InverseBoolConverter x:Key="InverseBoolConverter" />
         <conv:BoolToModeConverter x:Key="BoolToModeConverter" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <Style x:Key="VideoThumbnailStyle" TargetType="Border">
             <Setter Property="Height" Value="150" />
             <Setter Property="Margin" Value="5" />
@@ -98,6 +99,8 @@
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <CheckBox
                     Grid.Column="0"
@@ -111,14 +114,26 @@
                     Grid.Column="1"
                     MinWidth="60"
                     Margin="5,0,0,0"
-                    Command="{Binding SortByNameCommand}"
-                    Content="{Binding SortByNameButtonText}" />
+                    Command="{Binding DeselectAllCommand}"
+                    Content="取消全选" />
                 <Button
                     Grid.Column="2"
-                    MinWidth="60"
+                    MinWidth="50"
                     Margin="10,0,0,0"
+                    Command="{Binding SortByNameCommand}"
+                    Content="{Binding SortByNameBtnText}" />
+                <Button
+                    Grid.Column="3"
+                    MinWidth="50"
+                    Margin="5,0,0,0"
                     Command="{Binding SortByDateCommand}"
-                    Content="{Binding SortByDateButtonText}" />
+                    Content="{Binding SortByDateBtnText}" />
+                <CheckBox
+                    Grid.Column="4"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Content="显示标题"
+                    IsChecked="{Binding IsCaptionVisible, Mode=TwoWay}" />
             </Grid>
             <!--  简单版和高级版互斥切换  -->
             <Grid Grid.Row="1">
@@ -248,13 +263,15 @@
                                                     Foreground="White"
                                                     Text="{Binding Id}"
                                                     TextTrimming="CharacterEllipsis"
-                                                    TextWrapping="Wrap" />
+                                                    TextWrapping="Wrap"
+                                                    Visibility="{Binding DataContext.IsCaptionVisible, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                 <TextBlock
                                                     Grid.Row="1"
                                                     Margin="3,0"
                                                     FontSize="9"
                                                     Foreground="LightGray"
-                                                    Text="{Binding DisplayCreateDate}" />
+                                                    Text="{Binding DisplayCreateDate}"
+                                                    Visibility="{Binding DataContext.IsCaptionVisible, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                 <TextBlock
                                                     Grid.Row="2"
                                                     Margin="3,0,3,3"
@@ -299,7 +316,7 @@
             <Grid
                 Grid.Row="0"
                 Height="20"
-                Margin="0,0,0,20">
+                Margin="0,0,0,15">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="*" />
