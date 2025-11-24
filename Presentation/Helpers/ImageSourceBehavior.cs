@@ -45,9 +45,13 @@ namespace RedgifsDownloader.Presentation.Helpers
             // 检查缓存
             if (_imageCache.TryGetValue(imageUrl, out var cachedImage))
             {
+                // 缓存命中，立即设置（无闪烁）
                 image.Source = cachedImage;
                 return;
             }
+
+            // 缓存未命中，清空旧图片，避免在容器回收时显示错误的图片
+            image.Source = null;
 
             // 检查是否正在加载
             if (_loadingTasks.TryGetValue(imageUrl, out var loadingTask))

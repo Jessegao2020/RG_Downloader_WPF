@@ -7,6 +7,7 @@
     xmlns:helpers="clr-namespace:RedgifsDownloader.Presentation.Helpers"
     xmlns:local="clr-namespace:RedgifsDownloader.View"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vwp="clr-namespace:WpfToolkit.Controls;assembly=VirtualizingWrapPanel"
     d:DesignHeight="450"
     d:DesignWidth="300"
     mc:Ignorable="d">
@@ -15,8 +16,9 @@
         <conv:BoolToModeConverter x:Key="BoolToModeConverter" />
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <Style x:Key="VideoThumbnailStyle" TargetType="Border">
-            <Setter Property="Height" Value="150" />
-            <Setter Property="Margin" Value="5" />
+            <Setter Property="Width" Value="150" />
+            <Setter Property="Height" Value="200" />
+            <Setter Property="Margin" Value="0" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Gray" />
             <Setter Property="BorderThickness" Value="1" />
@@ -198,111 +200,126 @@
                         </GridView>
                     </ListView.View>
                 </ListView>
-                <!--  高级版：缩略图网格  -->
-                <Border BorderBrush="Gray" BorderThickness="1">
-                    <Border.Style>
-                        <Style TargetType="Border">
+                <!--  高级版：缩略图网格（虚拟化）  -->
+                <ListBox
+                    x:Name="ThumbnailListBox"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    BorderBrush="Gray"
+                    BorderThickness="1"
+                    MouseLeave="ScrollViewer_MouseLeave"
+                    PreviewMouseLeftButtonUp="ScrollViewer_PreviewMouseLeftButtonUp"
+                    PreviewMouseMove="ScrollViewer_PreviewMouseMove"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    SelectionMode="Multiple"
+                    SizeChanged="ScrollViewer_Thumbnail_SizeChanged"
+                    Tag="Active"
+                    VirtualizingPanel.CacheLength="2,2"
+                    VirtualizingPanel.CacheLengthUnit="Item"
+                    VirtualizingPanel.IsVirtualizing="True"
+                    VirtualizingPanel.VirtualizationMode="Recycling">
+                    <ListBox.Style>
+                        <Style TargetType="ListBox">
                             <Setter Property="Visibility" Value="Collapsed" />
+                            <Setter Property="ItemsSource" Value="{Binding ActiveVideosView}" />
+                            <Setter Property="Background" Value="Transparent" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsAdvancedMode}" Value="True">
                                     <Setter Property="Visibility" Value="Visible" />
                                 </DataTrigger>
+                                <DataTrigger Binding="{Binding IsAdvancedMode}" Value="False">
+                                    <Setter Property="ItemsSource" Value="{x:Null}" />
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </Border.Style>
-                    <ScrollViewer
-                        x:Name="ThumbnailScrollViewer"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        HorizontalScrollBarVisibility="Disabled"
-                        MouseLeave="ScrollViewer_MouseLeave"
-                        PreviewMouseLeftButtonUp="ScrollViewer_PreviewMouseLeftButtonUp"
-                        PreviewMouseMove="ScrollViewer_PreviewMouseMove"
-                        SizeChanged="ScrollViewer_Thumbnail_SizeChanged"
-                        VerticalScrollBarVisibility="Auto">
-                        <ItemsControl
-                            x:Name="ThumbnailItemsControl"
-                            VerticalAlignment="Top"
-                            Tag="Active">
-                            <ItemsControl.Style>
-                                <Style TargetType="ItemsControl">
-                                    <Setter Property="ItemsSource" Value="{Binding ActiveVideosView}" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsAdvancedMode}" Value="False">
-                                            <Setter Property="ItemsSource" Value="{x:Null}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </ItemsControl.Style>
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="{Binding Path=ThumbnailColumns, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border MouseLeftButtonDown="Thumbnail_MouseLeftButtonDown" Style="{StaticResource VideoThumbnailStyle}">
-                                        <Grid>
-                                            <Image
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                helpers:ImageSourceBehavior.AsyncImageSource="{Binding ThumbnailUrl}"
-                                                Stretch="UniformToFill">
-                                                <Image.Style>
-                                                    <Style TargetType="Image">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding ThumbnailUrl}" Value="{x:Null}">
-                                                                <Setter Property="Source" Value="pack://application:,,,/Resources/icon.ico" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Image.Style>
-                                            </Image>
-                                            <Grid VerticalAlignment="Bottom" Background="#55000000">
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="auto" />
-                                                    <RowDefinition Height="auto" />
-                                                    <RowDefinition Height="auto" />
-                                                </Grid.RowDefinitions>
-                                                <TextBlock
-                                                    Grid.Row="0"
-                                                    Margin="3"
-                                                    FontSize="10"
-                                                    Foreground="White"
-                                                    Text="{Binding Id}"
-                                                    TextTrimming="CharacterEllipsis"
-                                                    TextWrapping="Wrap"
-                                                    Visibility="{Binding DataContext.IsCaptionVisible, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Margin="3,0"
-                                                    FontSize="9"
-                                                    Foreground="LightGray"
-                                                    Text="{Binding DisplayCreateDate}"
-                                                    Visibility="{Binding DataContext.IsCaptionVisible, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                                <TextBlock
-                                                    Grid.Row="2"
-                                                    Margin="3,0,3,3"
-                                                    FontSize="9"
-                                                    Foreground="LightGreen"
-                                                    Text="{Binding DisplayStatus}" />
-                                            </Grid>
-                                            <CheckBox
-                                                Grid.Row="0"
-                                                Grid.RowSpan="2"
-                                                Margin="5"
-                                                HorizontalAlignment="Right"
-                                                VerticalAlignment="Top"
-                                                Background="White"
-                                                IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                Opacity="0.8" />
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Border>
+                    </ListBox.Style>
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <vwp:VirtualizingWrapPanel
+                                Orientation="Horizontal"
+                                SpacingMode="Uniform"
+                                StretchItems="False" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="2" />
+                            <Setter Property="Width" Value="150" />
+                            <Setter Property="Height" Value="200" />
+                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <ContentPresenter />
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border MouseLeftButtonDown="Thumbnail_MouseLeftButtonDown" Style="{StaticResource VideoThumbnailStyle}">
+                                <Grid>
+                                    <Image
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        helpers:ImageSourceBehavior.AsyncImageSource="{Binding ThumbnailUrl}"
+                                        Stretch="UniformToFill">
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ThumbnailUrl}" Value="{x:Null}">
+                                                        <Setter Property="Source" Value="pack://application:,,,/Resources/icon.ico" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
+                                    <Grid VerticalAlignment="Bottom" Background="#55000000">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="auto" />
+                                            <RowDefinition Height="auto" />
+                                            <RowDefinition Height="auto" />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Margin="3"
+                                            FontSize="10"
+                                            Foreground="White"
+                                            Text="{Binding Id}"
+                                            TextTrimming="CharacterEllipsis"
+                                            TextWrapping="Wrap"
+                                            Visibility="{Binding DataContext.IsCaptionVisible, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            Margin="3,0"
+                                            FontSize="9"
+                                            Foreground="LightGray"
+                                            Text="{Binding DisplayCreateDate}"
+                                            Visibility="{Binding DataContext.IsCaptionVisible, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        <TextBlock
+                                            Grid.Row="2"
+                                            Margin="3,0,3,3"
+                                            FontSize="9"
+                                            Foreground="LightGreen"
+                                            Text="{Binding DisplayStatus}" />
+                                    </Grid>
+                                    <CheckBox
+                                        Grid.Row="0"
+                                        Grid.RowSpan="2"
+                                        Margin="5"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Background="White"
+                                        IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                        Opacity="0.8" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
 
             </Grid>
         </Grid>

@@ -193,7 +193,7 @@ namespace RedgifsDownloader.View
 
                 // 普通点击：不立即改变状态，等待判断是点击还是拖拽
                 _dragStartIndex = currentIndex;
-                _dragStartPoint = e.GetPosition(ThumbnailScrollViewer);
+                _dragStartPoint = e.GetPosition(ThumbnailListBox);
                 _isDragging = false;
             }
 
@@ -241,7 +241,7 @@ namespace RedgifsDownloader.View
             // 如果还没开始拖动，检查是否移动超过系统阈值
             if (!_isDragging && _dragStartIndex >= 0)
             {
-                var currentPoint = e.GetPosition(ThumbnailScrollViewer);
+                var currentPoint = e.GetPosition(ThumbnailListBox);
                 var deltaX = Math.Abs(currentPoint.X - _dragStartPoint.X);
                 var deltaY = Math.Abs(currentPoint.Y - _dragStartPoint.Y);
 
@@ -263,13 +263,13 @@ namespace RedgifsDownloader.View
             if (!_isDragging) return;
 
             // 获取鼠标位置并查找下方的元素
-            var position = e.GetPosition(ThumbnailItemsControl);
-            var hitResult = VisualTreeHelper.HitTest(ThumbnailItemsControl, position);
-
+            var position = e.GetPosition(ThumbnailListBox);
+            var hitResult = VisualTreeHelper.HitTest(ThumbnailListBox, position);
+            
             if (hitResult != null)
             {
                 var element = hitResult.VisualHit;
-                while (element != null && element != ThumbnailItemsControl)
+                while (element != null && element != ThumbnailListBox)
                 {
                     if (element is Border border && border.DataContext is VideoViewModel vm)
                     {
@@ -279,7 +279,7 @@ namespace RedgifsDownloader.View
                             // 更新拖拽接触过的最大范围
                             _dragMinIndex = Math.Min(_dragMinIndex, Math.Min(_dragStartIndex, currentIndex));
                             _dragMaxIndex = Math.Max(_dragMaxIndex, Math.Max(_dragStartIndex, currentIndex));
-
+                            
                             _downloadsvm.RangeSelect(_dragStartIndex, currentIndex, _dragMinIndex, _dragMaxIndex);
                         }
                         break;
@@ -291,17 +291,7 @@ namespace RedgifsDownloader.View
 
         private void ScrollViewer_Thumbnail_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (sender is not ScrollViewer sv)
-                return;
-
-            double targetItemWidth = 120.0;
-            double availableWidth = e.NewSize.Width;
-
-            int columns = (int)(availableWidth / targetItemWidth);
-
-            if (columns < 1) columns = 1;
-
-            ThumbnailColumns = columns;
+            // 虚拟化后不再需要动态计算列数，VirtualizingWrapPanel会自动处理
         }
 
         private void ScrollViewer_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
