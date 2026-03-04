@@ -8,8 +8,8 @@
             string username,
             bool isVideoMode,
             int concurrency,
-            Action<string>? log = null,
-            Action<int>? progress = null,
+            IProgress<string>? log = null,
+            IProgress<int>? progress = null,
             CancellationToken ct = default);
     }
 

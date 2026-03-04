@@ -1,10 +1,10 @@
-﻿using System.IO;
-using RedgifsDownloader.ApplicationLayer.DTOs;
+﻿using RedgifsDownloader.ApplicationLayer.DTOs;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.ApplicationLayer.Utils;
 using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Domain.Interfaces;
+using System.IO;
 
 namespace RedgifsDownloader.ApplicationLayer.Reddit
 {
@@ -40,11 +40,12 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
         {
             try
             {
-                await _auth.LoginAsync();
+                await _auth.LoginAsync().ConfigureAwait(false);
                 return true;
             }
             catch (Exception ex)
             {
+                // 这里如果 _logger 是 UI 弹窗服务，建议它内部自己 dispatch 到 UI 线程
                 _logger.ShowMessage($"[Reddit] 登陆失败: {ex.Message}");
                 return false;
             }
@@ -54,20 +55,13 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
             string username,
             bool isVideoMode,
             int concurrency,
-            Action<string>? log = null,
-            Action<int>? progress = null,
+            IProgress<string>? log = null,
+            IProgress<int>? progress = null,
             CancellationToken ct = default)
         {
-            log ??= _ => { };
-
             string downloadDir = Path.Combine(_settings.DownloadDirectory, username);
             Directory.CreateDirectory(downloadDir);
 
-            int downloaded = 0;
-            int failed = 0;
-            int skipped = 0;
-
-            // 使用 stats 对象来在异步方法间共享计数
             var stats = new DownloadStats();
 
             using var semaphore = new SemaphoreSlim(concurrency);
@@ -75,7 +69,9 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
 
             if (!isVideoMode)
             {
-                await foreach (var img in _imageApp.Execute(username).WithCancellation(ct))
+                await foreach (var img in _imageApp.Execute(username)
+                                                   .WithCancellation(ct)
+                                                   .ConfigureAwait(false))
                 {
                     string filename = FileNameSanitizer.MakeSafeFileName(img.Title, img.Id, img.Url);
                     string output = Path.Combine(downloadDir, filename);
@@ -83,26 +79,27 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
                     if (_fileStorage.FileExistsWithCommonExtensions(output))
                     {
                         Interlocked.Increment(ref stats.Skipped);
-                        log?.Invoke($"[Skip] {filename}");
+                        log?.Report($"[Skip] {filename}");
                         continue;
                     }
 
-                    await semaphore.WaitAsync(ct);
+                    await semaphore.WaitAsync(ct).ConfigureAwait(false);
 
                     tasks.Add(DownloadImageAsync(img, output, semaphore, ct, log, progress, stats));
                 }
             }
             else
             {
-                string token = await _auth.GetAccessTokenAsync();
-                log($"[Reddit] Redgifs Token 获取完成");
+                string token = await _auth.GetAccessTokenAsync().ConfigureAwait(false);
+                log?.Report("[Reddit] Redgifs Token 获取完成");
 
                 var seenVideos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                await foreach (var video in _redgifsApp.Execute(username).WithCancellation(ct))
+                await foreach (var video in _redgifsApp.Execute(username)
+                                                      .WithCancellation(ct)
+                                                      .ConfigureAwait(false))
                 {
                     string filename = Path.GetFileName(new Uri(video.Url).AbsolutePath);
-
                     if (!seenVideos.Add(filename))
                         continue;
 
@@ -111,17 +108,17 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
                     if (_fileStorage.FileExistsWithCommonExtensions(output))
                     {
                         Interlocked.Increment(ref stats.Skipped);
-                        log?.Invoke($"[Skip] {filename}");
+                        log?.Report($"[Skip] {filename}");
                         continue;
                     }
 
-                    await semaphore.WaitAsync(ct);
+                    await semaphore.WaitAsync(ct).ConfigureAwait(false);
 
                     tasks.Add(DownloadVideoAsync(video, output, token, semaphore, ct, log, progress, stats));
                 }
             }
 
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
             return new RedditDownloadSummary(stats.Downloaded, stats.Failed, stats.Skipped);
         }
 
@@ -137,30 +134,36 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
             string output,
             SemaphoreSlim semaphore,
             CancellationToken ct,
-            Action<string>? log,
-            Action<int>? progress,
+            IProgress<string>? log,
+            IProgress<int>? progress,
             DownloadStats stats)
         {
             try
             {
-                string filename = Path.GetFileName(output); // 从 output 重新获取文件名用于日志
-                var result = await _downloader.DownloadAsync(new Uri(img.Url), output, new Domain.Enums.MediaDownloadContext(), ct);
+                string filename = Path.GetFileName(output);
+
+                var result = await _downloader.DownloadAsync(
+                    new Uri(img.Url),
+                    output,
+                    new MediaDownloadContext(),
+                    ct).ConfigureAwait(false);
+
                 if (result.Status == VideoStatus.Completed || result.Status == VideoStatus.Exists)
                 {
                     int newCount = Interlocked.Increment(ref stats.Downloaded);
-                    progress?.Invoke(newCount);
-                    log?.Invoke($"[Finished] {filename}");
+                    progress?.Report(newCount);
+                    log?.Report($"[Finished] {filename}");
                 }
                 else
                 {
                     Interlocked.Increment(ref stats.Failed);
-                    log?.Invoke($"[Failed] {filename}");
+                    log?.Report($"[Failed] {filename}");
                 }
             }
             catch (Exception ex)
             {
                 Interlocked.Increment(ref stats.Failed);
-                log?.Invoke($"[IMG]下载失败:{ex.Message}");
+                log?.Report($"[IMG]下载失败: {ex.Message}");
             }
             finally
             {
@@ -174,34 +177,45 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
             string token,
             SemaphoreSlim semaphore,
             CancellationToken ct,
-            Action<string>? log,
-            Action<int>? progress,
+            IProgress<string>? log,
+            IProgress<int>? progress,
             DownloadStats stats)
         {
             try
             {
                 string filename = Path.GetFileName(output);
-                var context = new MediaDownloadContext();
-                context.Headers = new()
+
+                var context = new MediaDownloadContext
                 {
-                    { "Authorization", "Bearer " + token },
-                    { "User-Agent", "Mozilla/5.0" }
+                    Headers = new()
+                    {
+                        { "Authorization", "Bearer " + token },
+                        { "User-Agent", "Mozilla/5.0" }
+                    }
                 };
-                var result = await _downloader.DownloadAsync(new Uri(video.Url), output, context, ct);
+
+                var result = await _downloader.DownloadAsync(
+                    new Uri(video.Url),
+                    output,
+                    context,
+                    ct).ConfigureAwait(false);
 
                 if (result.Status == VideoStatus.Completed)
                 {
                     int newCount = Interlocked.Increment(ref stats.Downloaded);
-                    log?.Invoke($"[Finish] {filename}");
-                    progress?.Invoke(newCount);
+                    progress?.Report(newCount);
+                    log?.Report($"[Finish] {filename}");
                 }
                 else
+                {
                     Interlocked.Increment(ref stats.Failed);
+                    log?.Report($"[Failed] {filename}");
+                }
             }
             catch (Exception ex)
             {
                 Interlocked.Increment(ref stats.Failed);
-                log?.Invoke($"[Video] 下载失败: {ex.Message}");
+                log?.Report($"[Video] 下载失败: {ex.Message}");
             }
             finally
             {
