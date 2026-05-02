@@ -21,11 +21,13 @@ namespace RedgifsDownloader.Presentation.ViewModel
         private bool _isLoggedIn;
         private bool _isVideoMode;
         private bool _isDownloading;
+        private bool _useCutoffDate;
 
         private string _username = string.Empty;
         private string _logContent = string.Empty;
         private int _downloadCount;
         private int _progress;
+        private DateTime? _cutoffDate = DateTime.Today;
 
         // ---- 日志节流：队列 + StringBuilder + UI 定时刷新 ----
         private readonly ConcurrentQueue<string> _logQueue = new();
@@ -78,6 +80,28 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(DownloadBtnText));
                 (DownloadCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
+        }
+
+        public bool UseCutoffDate
+        {
+            get => _useCutoffDate;
+            set
+            {
+                if (_useCutoffDate == value) return;
+                _useCutoffDate = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public DateTime? CutoffDate
+        {
+            get => _cutoffDate;
+            set
+            {
+                if (_cutoffDate == value) return;
+                _cutoffDate = value;
+                OnPropertyChanged();
             }
         }
 
@@ -208,10 +232,19 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 // 这里不要每次都直接改 DownloadCount（会很频繁）
                 var countProgress = new Progress<int>(p => Volatile.Write(ref _latestDownloadedCount, p));
 
+                DateTimeOffset? minCreatedUtc = null;
+                if (UseCutoffDate && CutoffDate.HasValue)
+                {
+                    var localDate = DateTime.SpecifyKind(CutoffDate.Value.Date, DateTimeKind.Local);
+                    minCreatedUtc = new DateTimeOffset(localDate).ToUniversalTime();
+                    EnqueueLog($"启用截止日期(UTC): {minCreatedUtc:yyyy-MM-dd HH:mm:ss}");
+                }
+
                 var summary = await _redditApp.DownloadUserAsync(
                     Username,
                     IsVideoMode,
                     _settings.MaxConcurrentDownloads,
+                    minCreatedUtc,
                     logProgress,
                     countProgress,
                     _cts.Token);

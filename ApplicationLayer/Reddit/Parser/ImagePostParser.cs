@@ -18,7 +18,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit.Parser
         public static IEnumerable<RedditPostDto> Extract(JsonElement post)
         {
             string title = post.GetProperty("title").GetString() ?? "";
-            string author = post.GetProperty("author").GetString() ?? "unknown";
+            DateTimeOffset? createdUtc = TryGetCreatedUtc(post);
 
             // ---------------------
             // 1) 尝试主链接 url_overridden_by_dest
@@ -33,7 +33,8 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit.Parser
                     Id = ExtractIdFromUrl(url!),
                     Title = title,
                     Url = url!,
-                    IsImage = true
+                    IsImage = true,
+                    CreatedUtc = createdUtc
                 };
                 yield break;  // ← 旧代码就是遇到直链优先返回
             }
@@ -59,7 +60,8 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit.Parser
                             Id = kv.Name,
                             Title = title,
                             Url = u!,
-                            IsImage = true
+                            IsImage = true,
+                            CreatedUtc = createdUtc
                         };
                     }
                 }
@@ -137,6 +139,24 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit.Parser
         {
             var m = IdOnlyRegex.Match(url);
             return m.Success ? m.Groups[1].Value : "unknown";
+        }
+
+        private static DateTimeOffset? TryGetCreatedUtc(JsonElement post)
+        {
+            if (!post.TryGetProperty("created_utc", out var createdNode))
+                return null;
+
+            double seconds = createdNode.ValueKind switch
+            {
+                JsonValueKind.Number when createdNode.TryGetDouble(out var n) => n,
+                JsonValueKind.String when double.TryParse(createdNode.GetString(), out var s) => s,
+                _ => -1
+            };
+
+            if (seconds < 0)
+                return null;
+
+            return DateTimeOffset.FromUnixTimeSeconds((long)Math.Floor(seconds));
         }
     }
 }

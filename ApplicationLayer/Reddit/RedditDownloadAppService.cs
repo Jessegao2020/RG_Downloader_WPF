@@ -55,6 +55,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
             string username,
             bool isVideoMode,
             int concurrency,
+            DateTimeOffset? minCreatedUtc = null,
             IProgress<string>? log = null,
             IProgress<int>? progress = null,
             CancellationToken ct = default)
@@ -69,7 +70,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
 
             if (!isVideoMode)
             {
-                await foreach (var img in _imageApp.Execute(username)
+                await foreach (var img in _imageApp.Execute(username, minCreatedUtc)
                                                    .WithCancellation(ct)
                                                    .ConfigureAwait(false))
                 {
@@ -95,7 +96,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
 
                 var seenVideos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                await foreach (var video in _redgifsApp.Execute(username)
+                await foreach (var video in _redgifsApp.Execute(username, minCreatedUtc)
                                                       .WithCancellation(ct)
                                                       .ConfigureAwait(false))
                 {

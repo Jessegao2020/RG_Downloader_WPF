@@ -14,7 +14,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
             _api = api;
         }
 
-        public async IAsyncEnumerable<RedditPostDto> Execute(string username)
+        public async IAsyncEnumerable<RedditPostDto> Execute(string username, DateTimeOffset? minCreatedUtc = null)
         {
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -26,6 +26,9 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
                 {
                     foreach (var img in ImagePostParser.Extract(post))
                     {
+                        if (minCreatedUtc.HasValue && img.CreatedUtc.HasValue && img.CreatedUtc.Value < minCreatedUtc.Value)
+                            yield break;
+
                         if (!seen.Add(img.Url))
                             continue;
 

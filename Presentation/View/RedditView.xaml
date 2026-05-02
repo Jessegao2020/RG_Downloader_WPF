@@ -23,6 +23,8 @@
                 <ColumnDefinition />
                 <ColumnDefinition Width="auto" />
                 <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
             </Grid.ColumnDefinitions>
             <Button
                 Grid.Column="0"
@@ -53,6 +55,17 @@
                 Content="Video"
                 GroupName="Mode"
                 IsChecked="{Binding IsVideoMode, Mode=TwoWay}" />
+            <CheckBox
+                Grid.Column="4"
+                Margin="10,0,0,0"
+                VerticalAlignment="Center"
+                Content="启用截止日期"
+                IsChecked="{Binding UseCutoffDate, Mode=TwoWay}" />
+            <DatePicker
+                Grid.Column="5"
+                Margin="5,0,0,0"
+                SelectedDate="{Binding CutoffDate, Mode=TwoWay}"
+                IsEnabled="{Binding UseCutoffDate}" />
         </Grid>
         <Grid Grid.Row="1" Margin="0,5,0,0">
             <Grid.ColumnDefinitions>

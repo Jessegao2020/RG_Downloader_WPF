@@ -14,7 +14,7 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
             _api = api;
         }
 
-        public async IAsyncEnumerable<VideoDto> Execute(string username)
+        public async IAsyncEnumerable<VideoDto> Execute(string username, DateTimeOffset? minCreatedUtc = null)
         {
             await foreach (var json in _api.StreamUserPostsJson(username))
             {
@@ -23,7 +23,16 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit
                 foreach (var post in RedditPostParser.EnumerateChildren(doc))
                 {
                     foreach (var video in RedgifsPostParser.Extract(post))
+                    {
+                        if (minCreatedUtc.HasValue && video.CreateDateRaw.HasValue)
+                        {
+                            var createdUtc = DateTimeOffset.FromUnixTimeSeconds(video.CreateDateRaw.Value);
+                            if (createdUtc < minCreatedUtc.Value)
+                                yield break;
+                        }
+
                         yield return video;
+                    }
                 }
             }
         }

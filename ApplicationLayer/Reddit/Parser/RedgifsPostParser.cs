@@ -56,7 +56,8 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit.Parser
                 {
                     Id = SafeGetString(post, "title") ?? "",
                     Username = SafeGetString(post, "author") ?? "unknown",
-                    Url = $"https://media.redgifs.com/{slug}.mp4"
+                    Url = $"https://media.redgifs.com/{slug}.mp4",
+                    CreateDateRaw = TryGetCreatedUtcSeconds(post)
                 };
             }
         }
@@ -65,6 +66,20 @@ namespace RedgifsDownloader.ApplicationLayer.Reddit.Parser
         {
             if (post.TryGetProperty(prop, out var elem) && elem.ValueKind == JsonValueKind.String)
                 return elem.GetString();
+
+            return null;
+        }
+
+        private static long? TryGetCreatedUtcSeconds(JsonElement post)
+        {
+            if (!post.TryGetProperty("created_utc", out var node))
+                return null;
+
+            if (node.ValueKind == JsonValueKind.Number && node.TryGetDouble(out var n))
+                return (long)Math.Floor(n);
+
+            if (node.ValueKind == JsonValueKind.String && double.TryParse(node.GetString(), out var s))
+                return (long)Math.Floor(s);
 
             return null;
         }

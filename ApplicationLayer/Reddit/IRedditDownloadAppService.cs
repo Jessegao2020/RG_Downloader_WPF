@@ -8,6 +8,7 @@
             string username,
             bool isVideoMode,
             int concurrency,
+            DateTimeOffset? minCreatedUtc = null,
             IProgress<string>? log = null,
             IProgress<int>? progress = null,
             CancellationToken ct = default);
