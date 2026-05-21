@@ -6,7 +6,7 @@ using RedgifsDownloader.Infrastructure.Redgifs;
 
 namespace RedgifsDownloader.ApplicationLayer
 {
-    internal class MediaCrawlerFactory : IMediaCrawlerFactory
+    public class MediaCrawlerFactory : IMediaCrawlerFactory
     {
         private readonly IServiceProvider _sp;
 
