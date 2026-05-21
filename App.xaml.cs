@@ -79,6 +79,7 @@ namespace RedgifsDownloader
             services.AddSingleton<IUserNotificationService, LogService>();
             services.AddSingleton<IAppSettings, AppSettings>();
             services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
+            services.AddSingleton<ISecretProtector, WindowsDpapiSecretProtector>();
             services.AddSingleton<IMediaCrawler, RedgifsCrawler>();
 
             // Redgifs 相关服务
