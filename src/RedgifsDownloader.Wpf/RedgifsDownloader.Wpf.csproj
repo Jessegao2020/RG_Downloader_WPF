@@ -19,6 +19,7 @@
     <PackageReference Include="Extended.Wpf.Toolkit" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
     <PackageReference Include="VirtualizingWrapPanel" Version="2.3.2" />
   </ItemGroup>
@@ -39,6 +40,7 @@
     <Compile Include="../../Infrastructure/WpfUiDispatcher.cs" />
     <Compile Include="../../Infrastructure/GlobalExceptionHandler.cs" />
     <Compile Include="../../Infrastructure/Settings/AppSettings.cs" />
+    <Compile Include="Infrastructure/WindowsDpapiSecretProtector.cs" />
     <Compile Include="../../ApplicationLayer/Notifications/LogService.cs" />
     <Compile Include="../../AssemblyInfo.cs" />
     <Compile Include="../../Properties/Settings.Designer.cs">
