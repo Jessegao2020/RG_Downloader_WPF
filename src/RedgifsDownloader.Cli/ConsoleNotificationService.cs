@@ -2,7 +2,7 @@ using RedgifsDownloader.ApplicationLayer.Interfaces;
 
 namespace RedgifsDownloader.Cli;
 
-public class ConsoleUserNotificationService : IUserNotificationService
+public class ConsoleNotificationService : IUserNotificationService
 {
     public void ShowMessage(string message)
     {
