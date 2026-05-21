@@ -58,7 +58,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="../../Resources/*.ico" />
+    <Resource Include="../../Resources/*.ico">
+      <Link>Resources/%(Filename)%(Extension)</Link>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>

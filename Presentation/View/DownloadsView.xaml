@@ -266,17 +266,7 @@
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         helpers:ImageSourceBehavior.AsyncImageSource="{Binding ThumbnailUrl}"
-                                        Stretch="UniformToFill">
-                                        <Image.Style>
-                                            <Style TargetType="Image">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding ThumbnailUrl}" Value="{x:Null}">
-                                                        <Setter Property="Source" Value="{x:Null}" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Image.Style>
-                                    </Image>
+                                        Stretch="UniformToFill" />
                                     <Grid VerticalAlignment="Bottom" Background="#55000000">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="auto" />
