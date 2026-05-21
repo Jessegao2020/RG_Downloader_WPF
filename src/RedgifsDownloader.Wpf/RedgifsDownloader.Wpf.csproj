@@ -1,0 +1,68 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <ApplicationIcon>../../Resources/icon.ico</ApplicationIcon>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../RedgifsDownloader.Core/RedgifsDownloader.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Extended.Wpf.Toolkit" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
+    <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
+    <PackageReference Include="VirtualizingWrapPanel" Version="2.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Include="../../App.xaml" />
+    <Page Include="../../MainWindow.xaml" />
+    <Page Include="../../Presentation/View/**/*.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../../App.xaml.cs" />
+    <Compile Include="../../MainWindow.xaml.cs" />
+    <Compile Include="../../Presentation/View/**/*.xaml.cs" />
+    <Compile Include="../../Presentation/ViewModel/**/*.cs" />
+    <Compile Include="../../Presentation/Helpers/**/*.cs" />
+    <Compile Include="../../Presentation/Converter/**/*.cs" />
+    <Compile Include="../../Infrastructure/WpfUiDispatcher.cs" />
+    <Compile Include="../../Infrastructure/WindowsDpapiSecretProtector.cs" />
+    <Compile Include="../../Infrastructure/GlobalExceptionHandler.cs" />
+    <Compile Include="../../Infrastructure/Settings/AppSettings.cs" />
+    <Compile Include="../../ApplicationLayer/Notifications/LogService.cs" />
+    <Compile Include="../../AssemblyInfo.cs" />
+    <Compile Include="../../Properties/Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../Properties/Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="../../Resources/*.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="../../README.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

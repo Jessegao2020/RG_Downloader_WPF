@@ -4,16 +4,17 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Web;
+using RedgifsDownloader.ApplicationLayer.Interfaces;
 
 namespace RedgifsDownloader.Infrastructure.Reddit
 {
     public class RedditAuthService : IRedditAuthService
     {
         private readonly HttpClient _http;
+        private readonly ISecretProtector _secretProtector;
         private readonly string _clientId = "iM34IicIqcttie1nwDJNhQ";
         private readonly string _redirectUri = "http://127.0.0.1:13579/";
         private readonly string[] _scopes = new[] { "identity", "read", "history" };
@@ -27,9 +28,10 @@ namespace RedgifsDownloader.Infrastructure.Reddit
 
         public bool IsLoggedIn => !string.IsNullOrEmpty(_accessToken) && DateTime.UtcNow < _expiresAt;
 
-        public RedditAuthService(HttpClient http)
+        public RedditAuthService(HttpClient http, ISecretProtector secretProtector)
         {
             _http = http;
+            _secretProtector = secretProtector;
             LoadTokens();
         }
 
@@ -111,7 +113,7 @@ namespace RedgifsDownloader.Infrastructure.Reddit
                     return;
 
                 byte[] encrypted = File.ReadAllBytes(_tokenFile);
-                byte[] decrypted = ProtectedData.Unprotect(encrypted, null, DataProtectionScope.CurrentUser);
+                byte[] decrypted = _secretProtector.Unprotect(encrypted);
 
                 using var doc = JsonDocument.Parse(decrypted);
                 _refreshToken = doc.RootElement.GetProperty("refresh").GetString()!;
@@ -131,7 +133,7 @@ namespace RedgifsDownloader.Infrastructure.Reddit
                 });
 
                 byte[] data = Encoding.UTF8.GetBytes(json);
-                byte[] encrypted = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
+                byte[] encrypted = _secretProtector.Protect(data);
 
                 File.WriteAllBytes(_tokenFile, encrypted);
             }
