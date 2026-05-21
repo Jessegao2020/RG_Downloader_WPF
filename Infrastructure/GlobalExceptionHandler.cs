@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 using System.Windows;
+using System.Windows.Markup;
 using System.Windows.Threading;
 
 namespace RedgifsDownloader.Infrastructure
@@ -44,24 +45,57 @@ namespace RedgifsDownloader.Infrastructure
             {
                 Directory.CreateDirectory(LogDir);
                 string logFile = Path.Combine(LogDir, $"crash_{DateTime.Now:yyyyMMdd_HHmmss}.txt");
+
                 var sb = new StringBuilder();
                 sb.AppendLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {type}");
+                sb.AppendLine();
+
                 if (ex != null)
-                {
-                    sb.AppendLine($"Type: {ex.GetType().FullName}");
-                    sb.AppendLine($"Message: {ex.Message}");
-                    sb.AppendLine($"StackTrace:\n{ex.StackTrace}");
-                }
-                else sb.AppendLine("Exception was null");
+                    sb.AppendLine(FormatExceptionChain(ex));
+                else
+                    sb.AppendLine("Exception was null");
 
                 sb.AppendLine(new string('-', 80));
                 File.WriteAllText(logFile, sb.ToString(), Encoding.UTF8);
             }
-            catch { }
+            catch
+            {
+                // Do not throw from the global exception logger.
+            }
             finally
             {
                 _isLogging = false;
             }
+        }
+
+        private static string FormatExceptionChain(Exception ex)
+        {
+            var sb = new StringBuilder();
+            int level = 0;
+
+            Exception? current = ex;
+            while (current != null)
+            {
+                sb.AppendLine($"--- Exception Level {level} ---");
+                sb.AppendLine($"Type: {current.GetType().FullName}");
+                sb.AppendLine($"Message: {current.Message}");
+
+                if (current is XamlParseException xamlEx)
+                {
+                    sb.AppendLine($"LineNumber: {xamlEx.LineNumber}");
+                    sb.AppendLine($"LinePosition: {xamlEx.LinePosition}");
+                    sb.AppendLine($"BaseUri: {xamlEx.BaseUri}");
+                }
+
+                sb.AppendLine("StackTrace:");
+                sb.AppendLine(current.StackTrace ?? "(null)");
+                sb.AppendLine();
+
+                current = current.InnerException;
+                level++;
+            }
+
+            return sb.ToString();
         }
     }
 }
