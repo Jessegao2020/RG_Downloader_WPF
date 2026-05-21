@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using RedgifsDownloader.ApplicationLayer;
 using RedgifsDownloader.ApplicationLayer.Downloads;
 using RedgifsDownloader.ApplicationLayer.DupeCleaner;
 using RedgifsDownloader.ApplicationLayer.Fikfap;

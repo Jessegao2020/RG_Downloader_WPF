@@ -6,7 +6,7 @@ using RedgifsDownloader.Domain.Interfaces;
 
 namespace RedgifsDownloader.Infrastructure.Fikfap
 {
-    internal class FikfapApiClient : IFikfapApiClient
+    public class FikfapApiClient : IFikfapApiClient
     {
         private readonly HttpClient _http;
         private readonly string _token;

@@ -5,7 +5,7 @@ using System.IO;
 
 namespace RedgifsDownloader.ApplicationLayer.ImageSimilarity
 {
-    internal class ImageSimilarityAppService : IImageSimilarityAppService
+    public class ImageSimilarityAppService : IImageSimilarityAppService
     {
         private readonly IImageHashService _hashService;
 
