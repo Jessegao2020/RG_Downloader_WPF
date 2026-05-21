@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="ApplicationLayer\**\*.cs" Exclude="ApplicationLayer\Notifications\LogService.cs" />
+    <Compile Include="Domain\**\*.cs" />
+    <Compile Include="Infrastructure\**\*.cs" Exclude="Infrastructure\GlobalExceptionHandler.cs;Infrastructure\WpfUiDispatcher.cs;Infrastructure\Settings\AppSettings.cs" />
+  </ItemGroup>
+</Project>

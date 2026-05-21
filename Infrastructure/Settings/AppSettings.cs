@@ -1,5 +1,5 @@
-﻿using RedgifsDownloader.ApplicationLayer.Settings;
 using System.IO;
+using RedgifsDownloader.ApplicationLayer.Settings;
 
 namespace RedgifsDownloader.Infrastructure.Settings
 {
@@ -15,7 +15,9 @@ namespace RedgifsDownloader.Infrastructure.Settings
 
         public string DownloadDirectory
         {
-            get => Properties.Settings.Default.DownloadDirectory;
+            get => string.IsNullOrWhiteSpace(Properties.Settings.Default.DownloadDirectory)
+                ? DefaultDownloadPath
+                : Properties.Settings.Default.DownloadDirectory;
             set => Properties.Settings.Default.DownloadDirectory = value;
         }
 

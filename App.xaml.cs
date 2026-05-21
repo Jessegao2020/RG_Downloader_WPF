@@ -2,7 +2,6 @@
 using System.Net.Http;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
-using RedgifsDownloader.ApplicationLayer;
 using RedgifsDownloader.ApplicationLayer.Downloads;
 using RedgifsDownloader.ApplicationLayer.DupeCleaner;
 using RedgifsDownloader.ApplicationLayer.Fikfap;
@@ -79,6 +78,7 @@ namespace RedgifsDownloader
             services.AddSingleton<IRedditApiClient, RedditApiClient>();
             services.AddSingleton<IUserNotificationService, LogService>();
             services.AddSingleton<IAppSettings, AppSettings>();
+            services.AddSingleton<IUiDispatcher, WpfUiDispatcher>();
             services.AddSingleton<IMediaCrawler, RedgifsCrawler>();
 
             // Redgifs 相关服务
