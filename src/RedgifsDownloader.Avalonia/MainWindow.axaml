@@ -1,0 +1,48 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="RedgifsDownloader.Avalonia.MainWindow"
+        Title="Redgifs Downloader (Avalonia MVP)"
+        Width="1100"
+        Height="720">
+  <DockPanel Margin="12" LastChildFill="True">
+    <StackPanel DockPanel.Dock="Top" Spacing="8">
+      <Grid ColumnDefinitions="Auto,220,Auto,220,Auto,120,Auto,*" RowDefinitions="Auto">
+        <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="0,0,8,0" Text="Platform"/>
+        <ComboBox Grid.Column="1" Name="PlatformComboBox" SelectedIndex="0">
+          <ComboBoxItem Content="Redgifs" />
+          <ComboBoxItem Content="Fikfap" />
+        </ComboBox>
+        <TextBlock Grid.Column="2" VerticalAlignment="Center" Margin="12,0,8,0" Text="Username"/>
+        <TextBox Grid.Column="3" Name="UsernameTextBox" Watermark="username" />
+        <TextBlock Grid.Column="4" VerticalAlignment="Center" Margin="12,0,8,0" Text="Max"/>
+        <TextBox Grid.Column="5" Name="MaxTextBox" Text="3" />
+      </Grid>
+
+      <Grid ColumnDefinitions="Auto,*,Auto,120,120" RowDefinitions="Auto">
+        <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="0,0,8,0" Text="Output folder"/>
+        <TextBox Grid.Column="1" Name="OutputFolderTextBox" />
+        <Button Grid.Column="3" Name="CrawlButton" Content="Crawl" Click="OnCrawlClick" Margin="12,0,0,0"/>
+        <Button Grid.Column="4" Name="DownloadButton" Content="Download" Click="OnDownloadClick" Margin="12,0,0,0"/>
+      </Grid>
+    </StackPanel>
+
+    <Grid RowDefinitions="2*,1*" Margin="0,12,0,0">
+      <Border Grid.Row="0" BorderThickness="1" BorderBrush="Gray" Padding="6">
+        <DataGrid Name="ResultDataGrid" AutoGenerateColumns="False" IsReadOnly="True">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="180"/>
+            <DataGridTextColumn Header="Url" Binding="{Binding Url}" Width="*"/>
+            <DataGridTextColumn Header="CreateDateRaw" Binding="{Binding CreateDateRaw}" Width="160"/>
+            <DataGridCheckBoxColumn Header="HasThumbnailUrl" Binding="{Binding HasThumbnailUrl}" Width="130"/>
+            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="130"/>
+            <DataGridTextColumn Header="Progress" Binding="{Binding Progress}" Width="90"/>
+          </DataGrid.Columns>
+        </DataGrid>
+      </Border>
+
+      <Border Grid.Row="1" BorderThickness="1" BorderBrush="Gray" Padding="6" Margin="0,8,0,0">
+        <TextBox Name="LogTextBox" AcceptsReturn="True" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" />
+      </Border>
+    </Grid>
+  </DockPanel>
+</Window>

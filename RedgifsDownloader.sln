@@ -3,11 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedgifsDownloader.Wpf", "src/RedgifsDownloader.Wpf/RedgifsDownloader.Wpf.csproj", "{49C72E8E-130D-4E97-B079-59139B1407EB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedgifsDownloader.Wpf", "src\RedgifsDownloader.Wpf\RedgifsDownloader.Wpf.csproj", "{49C72E8E-130D-4E97-B079-59139B1407EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedgifsDownloader.Core", "src/RedgifsDownloader.Core/RedgifsDownloader.Core.csproj", "{F1A8F93F-2D44-4D7E-A80F-4D83F5374BB8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedgifsDownloader.Core", "src\RedgifsDownloader.Core\RedgifsDownloader.Core.csproj", "{F1A8F93F-2D44-4D7E-A80F-4D83F5374BB8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedgifsDownloader.Cli", "src/RedgifsDownloader.Cli/RedgifsDownloader.Cli.csproj", "{ED90A2C2-BFF8-49EF-8899-97F4DA3A8C91}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedgifsDownloader.Cli", "src\RedgifsDownloader.Cli\RedgifsDownloader.Cli.csproj", "{ED90A2C2-BFF8-49EF-8899-97F4DA3A8C91}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3BAAE1B0-6984-44D2-ABEE-473C80FA3B8A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedgifsDownloader.Avalonia", "src\RedgifsDownloader.Avalonia\RedgifsDownloader.Avalonia.csproj", "{AAB864B6-BB01-4187-BB83-DAE179777285}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,11 +31,18 @@ Global
 		{ED90A2C2-BFF8-49EF-8899-97F4DA3A8C91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED90A2C2-BFF8-49EF-8899-97F4DA3A8C91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED90A2C2-BFF8-49EF-8899-97F4DA3A8C91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAB864B6-BB01-4187-BB83-DAE179777285}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAB864B6-BB01-4187-BB83-DAE179777285}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAB864B6-BB01-4187-BB83-DAE179777285}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAB864B6-BB01-4187-BB83-DAE179777285}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1F24A3B8-371B-449E-864D-5CD7D4585FD8}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AAB864B6-BB01-4187-BB83-DAE179777285} = {3BAAE1B0-6984-44D2-ABEE-473C80FA3B8A}
 	EndGlobalSection
 EndGlobal
