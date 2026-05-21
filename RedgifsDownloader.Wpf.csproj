@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseWPF>true</UseWPF>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<ApplicationIcon>Resources\icon.ico</ApplicationIcon>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="RedgifsDownloader.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="README.md" />
+		<None Remove="Resources\dupe-clean.ico" />
+		<None Remove="Resources\image-sim.ico" />
+		<None Remove="Resources\reddit.ico" />
+		<None Remove="Resources\redgifs.ico" />
+	</ItemGroup>
+	<ItemGroup>
+		<Resource Include="Resources\icon.ico" />
+	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Include="Extended.Wpf.Toolkit" Version="5.0.0" />
+	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
+	  <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
+	  <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
+	  <PackageReference Include="VirtualizingWrapPanel" Version="2.3.2" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="ApplicationLayer\**\*.cs" />
+    <Compile Remove="Domain\**\*.cs" />
+    <Compile Remove="Infrastructure\**\*.cs" />
+    <Compile Remove="Program.cs" />
+    <Compile Include="Infrastructure\GlobalExceptionHandler.cs" />
+    <Compile Include="Infrastructure\WpfUiDispatcher.cs" />
+    <Compile Include="Infrastructure\Settings\AppSettings.cs" />
+    <Compile Include="ApplicationLayer\Notifications\LogService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="README.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>
