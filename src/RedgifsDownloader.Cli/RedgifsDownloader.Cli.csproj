@@ -14,6 +14,6 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="CliAppSettings.cs" />
-    <Compile Include="ConsoleUserNotificationService.cs" />
+    <Compile Include="ConsoleNotificationService.cs" />
   </ItemGroup>
 </Project>

@@ -6,6 +6,7 @@ using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.ApplicationLayer.Notifications;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Cli;
+using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
 using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Infrastructure;
@@ -13,30 +14,116 @@ using RedgifsDownloader.Infrastructure.Fikfap;
 using RedgifsDownloader.Infrastructure.Redgifs;
 using RedgifsDownloader.Infrastructure.Settings;
 
-if (args.Length != 3 || !string.Equals(args[0], "crawl", StringComparison.OrdinalIgnoreCase) || !string.Equals(args[1], "redgifs", StringComparison.OrdinalIgnoreCase))
+if (args.Length >= 3 && string.Equals(args[0], "crawl", StringComparison.OrdinalIgnoreCase) && string.Equals(args[1], "redgifs", StringComparison.OrdinalIgnoreCase))
 {
-    PrintUsage();
-    return 1;
+    return await RunCrawlAsync(args[2]);
 }
 
-var username = args[2];
-
-var services = new ServiceCollection();
-ConfigureServices(services);
-
-using var provider = services.BuildServiceProvider();
-var appService = provider.GetRequiredService<IDownloadAppService>();
-
-await foreach (var video in appService.CrawlAsync(MediaPlatform.Redgifs, username))
+if (args.Length >= 3 && string.Equals(args[0], "download", StringComparison.OrdinalIgnoreCase) && string.Equals(args[1], "redgifs", StringComparison.OrdinalIgnoreCase))
 {
-    Console.WriteLine($"Id={video.Id}");
-    Console.WriteLine($"Url={video.Url}");
-    Console.WriteLine($"CreateDateRaw={video.CreateDateRaw}");
-    Console.WriteLine($"HasThumbnailUrl={!string.IsNullOrWhiteSpace(video.ThumbnailUrl)}");
+    return await RunDownloadAsync(args);
+}
+
+PrintUsage();
+return 1;
+
+static async Task<int> RunCrawlAsync(string username)
+{
+    using var provider = BuildProvider();
+    var appService = provider.GetRequiredService<IDownloadAppService>();
+
+    await foreach (var video in appService.CrawlAsync(MediaPlatform.Redgifs, username))
+    {
+        Console.WriteLine($"Id={video.Id}");
+        Console.WriteLine($"Url={video.Url}");
+        Console.WriteLine($"CreateDateRaw={video.CreateDateRaw}");
+        Console.WriteLine($"HasThumbnailUrl={!string.IsNullOrWhiteSpace(video.ThumbnailUrl)}");
+        Console.WriteLine();
+    }
+
+    return 0;
+}
+
+static async Task<int> RunDownloadAsync(string[] args)
+{
+    var username = args[2];
+    var output = Path.Combine(AppContext.BaseDirectory, "Downloads");
+    var max = 3;
+
+    for (var i = 3; i < args.Length; i++)
+    {
+        if (string.Equals(args[i], "--output", StringComparison.OrdinalIgnoreCase) && i + 1 < args.Length)
+        {
+            output = args[++i];
+            continue;
+        }
+
+        if (string.Equals(args[i], "--max", StringComparison.OrdinalIgnoreCase) && i + 1 < args.Length && int.TryParse(args[++i], out var parsedMax) && parsedMax > 0)
+        {
+            max = parsedMax;
+            continue;
+        }
+
+        PrintUsage();
+        return 1;
+    }
+
+    var resolvedOutput = Path.GetFullPath(output);
+    Directory.CreateDirectory(resolvedOutput);
+
+    using var provider = BuildProvider();
+    var appService = provider.GetRequiredService<IDownloadAppService>();
+    var appSettings = provider.GetRequiredService<IAppSettings>();
+    var notifier = provider.GetRequiredService<VideoChangeNotifier>();
+
+    appSettings.DownloadDirectory = resolvedOutput;
+
+    var videos = new List<Video>();
+    await foreach (var video in appService.CrawlAsync(MediaPlatform.Redgifs, username))
+    {
+        videos.Add(video);
+        if (videos.Count >= max)
+        {
+            break;
+        }
+    }
+
+    if (videos.Count == 0)
+    {
+        Console.WriteLine("No videos found.");
+        return 0;
+    }
+
+    notifier.Subscribe(video =>
+    {
+        Console.WriteLine($"[{video.Id}] Status={video.Status}, Progress={(video.Progress?.ToString("F1") ?? "-")}%");
+    });
+
+    foreach (var video in videos)
+    {
+        notifier.RegisterVideo(video);
+    }
+
+    Console.WriteLine($"Downloading {videos.Count} videos to: {resolvedOutput}");
+    var summary = await appService.DownloadAsync(videos, 1);
+
     Console.WriteLine();
+    Console.WriteLine("Final result:");
+    foreach (var video in videos)
+    {
+        Console.WriteLine($"[{video.Id}] Status={video.Status}, Progress={(video.Progress?.ToString("F1") ?? "-")}%");
+    }
+
+    Console.WriteLine($"Summary: Completed={summary.Completed}, Failed={summary.Failed}");
+    return summary.Failed > 0 ? 2 : 0;
 }
 
-return 0;
+static ServiceProvider BuildProvider()
+{
+    var services = new ServiceCollection();
+    ConfigureServices(services);
+    return services.BuildServiceProvider();
+}
 
 static void ConfigureServices(IServiceCollection services)
 {
@@ -48,7 +135,7 @@ static void ConfigureServices(IServiceCollection services)
 
     services.AddHttpClient<HttpTransferDownloader>();
     services.AddSingleton<HttpTransferDownloader>();
-    services.AddSingleton<FikfapM3u8Downloader>(sp =>
+    services.AddSingleton<FikfapM3u8Downloader>(_ =>
     {
         var http = new HttpClient();
         http.DefaultRequestHeaders.Remove("Accept-Encoding");
@@ -58,7 +145,7 @@ static void ConfigureServices(IServiceCollection services)
     services.AddSingleton<RedgifsCrawler>();
     services.AddSingleton<FikfapCrawler>();
 
-    services.AddSingleton<RedgifsAuthProvider>(sp =>
+    services.AddSingleton<RedgifsAuthProvider>(_ =>
     {
         var http = new HttpClient();
         return new RedgifsAuthProvider(http);
@@ -72,7 +159,7 @@ static void ConfigureServices(IServiceCollection services)
 
     services.AddSingleton<IFileStorage, FileStorage>();
     services.AddSingleton<IAppSettings, CliAppSettings>();
-    services.AddSingleton<IUserNotificationService, ConsoleUserNotificationService>();
+    services.AddSingleton<IUserNotificationService, ConsoleNotificationService>();
     services.AddSingleton<ISecretProtector, PlainTextSecretProtector>();
 
     services.AddSingleton<IFileNameStrategy, FileNameService>();
@@ -84,4 +171,5 @@ static void PrintUsage()
 {
     Console.WriteLine("Usage:");
     Console.WriteLine("  dotnet run --project src/RedgifsDownloader.Cli/RedgifsDownloader.Cli.csproj -- crawl redgifs <username>");
+    Console.WriteLine("  dotnet run --project src/RedgifsDownloader.Cli/RedgifsDownloader.Cli.csproj -- download redgifs <username> --output <folder> --max <count>");
 }
