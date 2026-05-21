@@ -7,6 +7,7 @@ namespace RedgifsDownloader.Presentation.Helpers
 {
     public static class ImageSourceBehavior
     {
+        private static readonly Lazy<BitmapImage?> DefaultIcon = new(CreateDefaultIcon);
         // 缓存已加载的图片，避免重复加载
         private static readonly ConcurrentDictionary<string, BitmapImage> _imageCache = new();
         // 正在加载的URL集合，避免重复加载
@@ -38,7 +39,7 @@ namespace RedgifsDownloader.Presentation.Helpers
 
             if (string.IsNullOrWhiteSpace(imageUrl))
             {
-                image.Source = null;
+                SetFallback(image);
                 return;
             }
 
@@ -51,16 +52,23 @@ namespace RedgifsDownloader.Presentation.Helpers
             }
 
             // 缓存未命中，清空旧图片，避免在容器回收时显示错误的图片
-            image.Source = null;
+            SetFallback(image);
 
             // 检查是否正在加载
             if (_loadingTasks.TryGetValue(imageUrl, out var loadingTask))
             {
                 // 等待正在进行的加载完成
                 var bitmap = await loadingTask;
-                if (bitmap != null && GetAsyncImageSource(image) == imageUrl)
+                if (GetAsyncImageSource(image) == imageUrl)
                 {
-                    image.Source = bitmap;
+                    if (bitmap != null)
+                    {
+                        image.Source = bitmap;
+                    }
+                    else
+                    {
+                        SetFallback(image);
+                    }
                 }
                 return;
             }
@@ -80,12 +88,16 @@ namespace RedgifsDownloader.Presentation.Helpers
                         image.Source = bitmap;
                     }
                 }
+                else if (GetAsyncImageSource(image) == imageUrl)
+                {
+                    SetFallback(image);
+                }
             }
             catch
             {
                 if (GetAsyncImageSource(image) == imageUrl)
                 {
-                    image.Source = null;
+                    SetFallback(image);
                 }
             }
             finally
@@ -106,6 +118,35 @@ namespace RedgifsDownloader.Presentation.Helpers
                 return null;
             }
         }
+
+        private static BitmapImage? CreateDefaultIcon()
+        {
+            try
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri("pack://application:,,,/RedgifsDownloader.Wpf;component/Resources/icon.ico", UriKind.Absolute);
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.EndInit();
+                bitmap.Freeze();
+                return bitmap;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static void SetFallback(Image image)
+        {
+            try
+            {
+                image.Source = DefaultIcon.Value;
+            }
+            catch
+            {
+                image.Source = null;
+            }
+        }
     }
 }
-
