@@ -1,0 +1,48 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+
+jobs:
+  windows-build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore solution
+        run: dotnet restore RedgifsDownloader.sln
+
+      - name: Build solution (Release)
+        run: dotnet build RedgifsDownloader.sln --configuration Release --no-restore
+
+  linux-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore Core
+        run: dotnet restore src/RedgifsDownloader.Core/RedgifsDownloader.Core.csproj
+
+      - name: Build Core (Release)
+        run: dotnet build src/RedgifsDownloader.Core/RedgifsDownloader.Core.csproj --configuration Release --no-restore
+
+      - name: Restore CLI
+        run: dotnet restore src/RedgifsDownloader.Cli/RedgifsDownloader.Cli.csproj
+
+      - name: Build CLI (Release)
+        run: dotnet build src/RedgifsDownloader.Cli/RedgifsDownloader.Cli.csproj --configuration Release --no-restore
