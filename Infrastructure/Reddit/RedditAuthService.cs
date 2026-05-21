@@ -1,10 +1,10 @@
-﻿using RedgifsDownloader.Domain.Interfaces;
+﻿using RedgifsDownloader.ApplicationLayer.Interfaces;
+using RedgifsDownloader.Domain.Interfaces;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Web;
@@ -24,12 +24,14 @@ namespace RedgifsDownloader.Infrastructure.Reddit
         private DateTime _expiresAt;
 
         private readonly string _tokenFile = System.IO.Path.Combine(AppContext.BaseDirectory, "reddit_token.json");
+        private readonly ISecretProtector _secretProtector;
 
         public bool IsLoggedIn => !string.IsNullOrEmpty(_accessToken) && DateTime.UtcNow < _expiresAt;
 
-        public RedditAuthService(HttpClient http)
+        public RedditAuthService(HttpClient http, ISecretProtector secretProtector)
         {
             _http = http;
+            _secretProtector = secretProtector;
             LoadTokens();
         }
 
@@ -111,7 +113,7 @@ namespace RedgifsDownloader.Infrastructure.Reddit
                     return;
 
                 byte[] encrypted = File.ReadAllBytes(_tokenFile);
-                byte[] decrypted = ProtectedData.Unprotect(encrypted, null, DataProtectionScope.CurrentUser);
+                byte[] decrypted = _secretProtector.Unprotect(encrypted);
 
                 using var doc = JsonDocument.Parse(decrypted);
                 _refreshToken = doc.RootElement.GetProperty("refresh").GetString()!;
@@ -131,7 +133,7 @@ namespace RedgifsDownloader.Infrastructure.Reddit
                 });
 
                 byte[] data = Encoding.UTF8.GetBytes(json);
-                byte[] encrypted = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
+                byte[] encrypted = _secretProtector.Protect(data);
 
                 File.WriteAllBytes(_tokenFile, encrypted);
             }
