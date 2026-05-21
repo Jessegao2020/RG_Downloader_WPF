@@ -1,9 +1,9 @@
 ﻿using RedgifsDownloader.ApplicationLayer.Notifications;
 using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
+using RedgifsDownloader.ApplicationLayer.Interfaces;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows;
 
 namespace RedgifsDownloader.Presentation.ViewModel
 {
@@ -11,6 +11,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
     {
         private bool _isSelected;
         private bool _lastIsFailed;
+        private readonly IUiDispatcher _uiDispatcher;
 
         public Action? RefreshFilters { get; set; }
         public Video Item { get; }
@@ -36,10 +37,11 @@ namespace RedgifsDownloader.Presentation.ViewModel
         public string Url => Item.Url.ToString();
         public string? ThumbnailUrl => Item.ThumbnailUrl;
 
-        public VideoViewModel(Video item, VideoChangeNotifier notifier)
+        public VideoViewModel(Video item, VideoChangeNotifier notifier, IUiDispatcher uiDispatcher)
         {
             Item = item;
             _lastIsFailed = item.IsFailed;
+            _uiDispatcher = uiDispatcher;
             
             // 订阅来自 Application 层的变化通知
             notifier.Subscribe(HandleVideoChanged);
@@ -51,7 +53,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
             if (video != Item) return;
             
             // 必须在 UI 线程更新
-            Application.Current.Dispatcher.Invoke(() =>
+            _uiDispatcher.Invoke(() =>
             {
                 OnPropertyChanged(nameof(Status));
                 OnPropertyChanged(nameof(Progress));
