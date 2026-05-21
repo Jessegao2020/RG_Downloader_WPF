@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using RedgifsDownloader.ApplicationLayer.Downloads;
@@ -21,6 +20,7 @@ namespace RedgifsDownloader.Presentation.ViewModel
         private readonly IUserNotificationService _logger;
         private readonly IAppSettings _settings;
         private readonly VideoChangeNotifier _notifier;
+        private readonly IUiDispatcher _uiDispatcher;
         #endregion
 
         #region 数据集合
@@ -146,12 +146,13 @@ namespace RedgifsDownloader.Presentation.ViewModel
         #endregion
 
         #region 构造函数
-        public DownloadsViewModel(IDownloadAppService downloadService, IUserNotificationService logger, IAppSettings settings, VideoChangeNotifier notifier)
+        public DownloadsViewModel(IDownloadAppService downloadService, IUserNotificationService logger, IAppSettings settings, VideoChangeNotifier notifier, IUiDispatcher uiDispatcher)
         {
             _downloadService = downloadService;
             _logger = logger;
             _settings = settings;
             _notifier = notifier;
+            _uiDispatcher = uiDispatcher;
 
             ActiveVideosView = CollectionViewSource.GetDefaultView(Videos);
             ActiveVideosView.Filter = v => { var vm = (VideoViewModel)v; return !vm.Item.IsFailed; };
@@ -255,15 +256,15 @@ namespace RedgifsDownloader.Presentation.ViewModel
                     await foreach (Video video in _downloadService.CrawlAsync(
                     platformEnum,
                     Username,
-                    msg => Application.Current.Dispatcher.Invoke(() => _logger.ShowMessage(msg)),
+                    msg => _uiDispatcher.Invoke(() => _logger.ShowMessage(msg)),
                     CancellationToken.None))
                     {
-                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        await _uiDispatcher.InvokeAsync(() =>
                         {
                             // 注册视频到通知器
                             _notifier.RegisterVideo(video);
 
-                            var vm = new VideoViewModel(video, _notifier)
+                            var vm = new VideoViewModel(video, _notifier, _uiDispatcher)
                             {
                                 RefreshFilters = () =>
                                 {
