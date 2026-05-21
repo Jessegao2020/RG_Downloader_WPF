@@ -74,17 +74,20 @@ static async Task<int> RunDownloadAsync(MediaPlatform platform, string[] args)
         return 1;
     }
 
-    if (platform == MediaPlatform.Fikfap && !TryFindFfmpegPath(out var ffmpegPath))
-    {
-        var ffmpegExecutable = OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg";
-        Console.WriteLine($"Error: {ffmpegExecutable} was not found.");
-        Console.WriteLine($"Please install FFmpeg and make sure '{ffmpegExecutable}' is available in PATH,");
-        Console.WriteLine("or place it next to the CLI executable (or in a local 'bin' subdirectory).");
-        return 3;
-    }
+    string? ffmpegPath = null;
 
     if (platform == MediaPlatform.Fikfap)
     {
+        if (!TryFindFfmpegPath(out var foundFfmpegPath))
+        {
+            var ffmpegExecutable = OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg";
+            Console.WriteLine($"Error: {ffmpegExecutable} was not found.");
+            Console.WriteLine($"Please install FFmpeg and make sure '{ffmpegExecutable}' is available in PATH,");
+            Console.WriteLine("or place it next to the CLI executable (or in a local 'bin' subdirectory).");
+            return 3;
+        }
+
+        ffmpegPath = foundFfmpegPath;
         Console.WriteLine($"Using ffmpeg: {ffmpegPath}");
     }
 
