@@ -2,45 +2,53 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="using:RedgifsDownloader.Avalonia"
         x:Class="RedgifsDownloader.Avalonia.MainWindow"
         x:DataType="local:MainWindowViewModel"
         mc:Ignorable="d"
-        Width="1100"
-        Height="700"
-        Title="Redgifs Downloader (Avalonia)">
-  <Grid RowDefinitions="Auto,Auto,*" Margin="12">
-    <Grid ColumnDefinitions="Auto,140,Auto,220,Auto,100,Auto,*" Margin="0,0,0,8">
-      <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="Platform" Margin="0,0,8,0" />
-      <ComboBox Grid.Column="1" ItemsSource="{Binding PlatformOptions}" SelectedItem="{Binding SelectedPlatform}" Margin="0,0,8,0" />
-      <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="Username" Margin="0,0,8,0" />
-      <TextBox Grid.Column="3" Text="{Binding Username}" Margin="0,0,8,0" />
-      <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="Max" Margin="0,0,8,0" />
-      <TextBox Grid.Column="5" Text="{Binding MaxCount}" Margin="0,0,8,0" />
-      <TextBlock Grid.Column="6" VerticalAlignment="Center" Text="Output" Margin="0,0,8,0" />
-      <TextBox Grid.Column="7" Text="{Binding OutputFolder}" />
-    </Grid>
+        Width="330"
+        Height="450"
+        MinWidth="330"
+        MinHeight="450"
+        Title="Redgifs Downloader">
+  <Grid RowDefinitions="Auto,*">
+    <Menu Grid.Row="0">
+      <MenuItem Header="文件">
+        <MenuItem Header="RedGifs" Command="{Binding NavigateCommand}" CommandParameter="Redgifs" />
+        <MenuItem Header="Reddit" Command="{Binding NavigateCommand}" CommandParameter="Reddit" />
+        <MenuItem Header="ImageSim" Command="{Binding NavigateCommand}" CommandParameter="ImageSim" />
+        <MenuItem Header="Dupe Cleaner" Command="{Binding NavigateCommand}" CommandParameter="Cleaner" />
+      </MenuItem>
+      <MenuItem Header="设置" Command="{Binding NavigateCommand}" CommandParameter="Settings" />
+      <MenuItem Header="关于" Command="{Binding NavigateCommand}" CommandParameter="About" />
+    </Menu>
 
-    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
-      <Button Content="Crawl" Command="{Binding CrawlCommand}" />
-      <Button Content="Download" Command="{Binding DownloadCommand}" />
-    </StackPanel>
+    <ContentControl Grid.Row="1" Content="{Binding CurrentView}">
+      <ContentControl.DataTemplates>
+        <DataTemplate DataType="local:DownloaderViewToken">
+          <Grid RowDefinitions="Auto,Auto,*" Margin="12">
+            <Grid ColumnDefinitions="Auto,100,Auto,*" Margin="0,0,0,8">
+              <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="Platform" Margin="0,0,8,0" />
+              <ComboBox Grid.Column="1" ItemsSource="{Binding $parent[Window].DataContext.PlatformOptions}" SelectedItem="{Binding $parent[Window].DataContext.SelectedPlatform}" Margin="0,0,8,0" />
+              <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="Username" Margin="0,0,8,0" />
+              <TextBox Grid.Column="3" Text="{Binding $parent[Window].DataContext.Username}" />
+            </Grid>
 
-    <Grid Grid.Row="2" ColumnDefinitions="3*,2*">
-      <DataGrid Grid.Column="0" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,8,0">
-        <DataGrid.Columns>
-          <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="2*" />
-          <DataGridTextColumn Header="Url" Binding="{Binding Url}" Width="3*" />
-          <DataGridTextColumn Header="CreateDateRaw" Binding="{Binding CreateDateRaw}" Width="*" />
-          <DataGridCheckBoxColumn Header="HasThumbnailUrl" Binding="{Binding HasThumbnailUrl}" Width="*" />
-          <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*" />
-          <DataGridTextColumn Header="Progress" Binding="{Binding Progress}" Width="*" />
-        </DataGrid.Columns>
-      </DataGrid>
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+              <Button Content="Crawl" Command="{Binding $parent[Window].DataContext.CrawlCommand}" />
+              <Button Content="Download" Command="{Binding $parent[Window].DataContext.DownloadCommand}" />
+            </StackPanel>
 
-      <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
-        <TextBox Text="{Binding Logs}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" />
-      </ScrollViewer>
-    </Grid>
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+              <TextBox Text="{Binding $parent[Window].DataContext.Logs}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" />
+            </ScrollViewer>
+          </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="sys:String">
+          <TextBlock Text="{Binding}" Margin="16" TextWrapping="Wrap" />
+        </DataTemplate>
+      </ContentControl.DataTemplates>
+    </ContentControl>
   </Grid>
 </Window>
