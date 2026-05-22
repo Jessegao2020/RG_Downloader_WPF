@@ -193,6 +193,18 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
         RefreshSelectionState();
     }
 
+    public void SyncSelectionFromDataGrid(IReadOnlyCollection<VideoRow> selectedRows)
+    {
+        var selectedSet = selectedRows.ToHashSet();
+
+        foreach (var row in ActiveVideos)
+        {
+            row.IsSelected = selectedSet.Contains(row);
+        }
+
+        RefreshSelectionState();
+    }
+
     private void SetSelection(bool s) { foreach (var row in Videos) row.IsSelected = s; IsAllSelected = s; }
     private void RefreshSelectionState() => IsAllSelected = ActiveVideos.Count > 0 && ActiveVideos.All(v => v.IsSelected);
     private void Reorder(IEnumerable<VideoRow> ordered) { var l = ordered.ToList(); Videos.Clear(); foreach (var i in l) Videos.Add(i); }

@@ -11,16 +11,26 @@
     <Grid ColumnDefinitions="Auto,220,105,80,80,*" Margin="0,0,0,5">
       <TextBlock Grid.Column="0" Text="User:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="Black" FontSize="14"/>
       <TextBox Grid.Column="1" Text="{Binding Username}" Height="28" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="Black" FontSize="14"/>
-      <ComboBox Grid.Column="2" ItemsSource="{Binding Platforms}" SelectedItem="{Binding SelectedPlatform}" Height="28" Width="100" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="Black" FontSize="14"/>
-      <ToggleButton Grid.Column="3" IsChecked="{Binding IsAdvancedMode}" Content="普通/高级" Width="75" Height="28" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="Black" FontSize="14"/>
-      <Button Grid.Column="4" Content="{Binding CrawlBtnText}" Command="{Binding CrawlCommand}" Width="75" Height="28" VerticalAlignment="Center" Foreground="Black" FontSize="14"/>
+      <ComboBox Grid.Column="2" ItemsSource="{Binding Platforms}" SelectedItem="{Binding SelectedPlatform}" Height="28" Width="100" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="Black" FontSize="14">
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding}" Foreground="Black" FontSize="14"/>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <ToggleButton Grid.Column="3" IsChecked="{Binding IsAdvancedMode}" Width="75" Height="28" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="Black" FontSize="14">
+        <TextBlock Text="普通/高级" Foreground="Black" FontSize="14"/>
+      </ToggleButton>
+      <Button Grid.Column="4" Command="{Binding CrawlCommand}" Width="75" Height="28" VerticalAlignment="Center" Foreground="Black" FontSize="14">
+        <TextBlock Text="{Binding CrawlBtnText}" Foreground="Black" FontSize="14"/>
+      </Button>
     </Grid>
 
     <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="6" Margin="0,0,0,6" IsVisible="{Binding IsAdvancedMode}">
-      <Button Content="全选" Command="{Binding SelectAllCommand}" Height="30" Foreground="Black" FontSize="14"/>
-      <Button Content="取消全选" Command="{Binding DeselectAllCommand}" Height="30" Foreground="Black" FontSize="14"/>
-      <Button Content="按名称排序" Command="{Binding SortByNameCommand}" Height="30" Foreground="Black" FontSize="14"/>
-      <Button Content="按时间排序" Command="{Binding SortByDateCommand}" Height="30" Foreground="Black" FontSize="14"/>
+      <Button Command="{Binding SelectAllCommand}" Height="30" Foreground="Black" FontSize="14"><TextBlock Text="全选" Foreground="Black" FontSize="14"/></Button>
+      <Button Command="{Binding DeselectAllCommand}" Height="30" Foreground="Black" FontSize="14"><TextBlock Text="取消全选" Foreground="Black" FontSize="14"/></Button>
+      <Button Command="{Binding SortByNameCommand}" Height="30" Foreground="Black" FontSize="14"><TextBlock Text="按名称排序" Foreground="Black" FontSize="14"/></Button>
+      <Button Command="{Binding SortByDateCommand}" Height="30" Foreground="Black" FontSize="14"><TextBlock Text="按时间排序" Foreground="Black" FontSize="14"/></Button>
       <CheckBox Content="显示标题" IsChecked="{Binding IsCaptionVisible}" VerticalAlignment="Center" Foreground="Black" FontSize="14"/>
     </StackPanel>
 
@@ -29,7 +39,8 @@
                 RowHeight="28" ColumnHeaderHeight="28" FontSize="13"
                 HeadersVisibility="Column" GridLinesVisibility="All" BorderThickness="1"
                 CanUserResizeColumns="True" CanUserSortColumns="False"
-                PointerPressed="ActiveVideosGrid_PointerPressed">
+                SelectionMode="Extended" SelectionUnit="FullRow"
+                SelectionChanged="ActiveVideosGrid_SelectionChanged">
         <DataGrid.Columns>
           <DataGridTemplateColumn Header="" Width="35" CanUserResize="True">
             <DataGridTemplateColumn.CellTemplate>
@@ -54,15 +65,15 @@
     <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,Auto,Auto,*" Margin="0,5,0,0">
       <TextBlock Grid.Column="0" Text="结果:" VerticalAlignment="Center" Foreground="Black" FontSize="14"/>
       <TextBlock Grid.Column="1" Text="{Binding VideosCount}" VerticalAlignment="Center" Margin="4,0,10,0" Foreground="Black" FontSize="14"/>
-      <Button Grid.Column="2" Content="D/L Folder" Command="{Binding OpenDownloadFolderCommand}" Width="90" Height="30" Margin="0,0,5,0" Foreground="Black" FontSize="14"/>
-      <Button Grid.Column="3" Content="{Binding DownloadBtnText}" Command="{Binding DownloadCommand}" Width="80" Height="30" Margin="0,0,5,0" Foreground="Black" FontSize="14"/>
-      <Button Grid.Column="4" Content="停止" Command="{Binding StopCommand}" Width="60" Height="30" HorizontalAlignment="Left" Foreground="Black" FontSize="14"/>
+      <Button Grid.Column="2" Command="{Binding OpenDownloadFolderCommand}" Width="90" Height="30" Margin="0,0,5,0" Foreground="Black" FontSize="14"><TextBlock Text="D/L Folder" Foreground="Black" FontSize="14"/></Button>
+      <Button Grid.Column="3" Command="{Binding DownloadCommand}" Width="80" Height="30" Margin="0,0,5,0" Foreground="Black" FontSize="14"><TextBlock Text="{Binding DownloadBtnText}" Foreground="Black" FontSize="14"/></Button>
+      <Button Grid.Column="4" Command="{Binding StopCommand}" Width="60" Height="30" HorizontalAlignment="Left" Foreground="Black" FontSize="14"><TextBlock Text="停止" Foreground="Black" FontSize="14"/></Button>
     </Grid>
 
     <Grid Grid.Row="4" ColumnDefinitions="Auto,Auto,Auto,*" Margin="0,5,0,0">
       <TextBlock Grid.Column="0" Text="{Binding FailedCount, StringFormat=失败: {0}}" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="Black" FontSize="14"/>
       <TextBlock Grid.Column="1" Text="{Binding CompletedCount, StringFormat=已下载: {0}}" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="Black" FontSize="14"/>
-      <Button Grid.Column="2" Content="全部重试" Command="{Binding RetryAllCommand}" Width="90" Height="30" HorizontalAlignment="Left" Foreground="Black" FontSize="14"/>
+      <Button Grid.Column="2" Command="{Binding RetryAllCommand}" Width="90" Height="30" HorizontalAlignment="Left" Foreground="Black" FontSize="14"><TextBlock Text="全部重试" Foreground="Black" FontSize="14"/></Button>
     </Grid>
 
     <DataGrid Grid.Row="5" ItemsSource="{Binding FailedVideos}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,5,0,0" MaxHeight="160"
