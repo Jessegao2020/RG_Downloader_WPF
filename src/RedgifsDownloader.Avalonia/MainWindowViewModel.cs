@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RedgifsDownloader.ApplicationLayer.Downloads;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.ApplicationLayer.Notifications;
+using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
 
