@@ -167,7 +167,34 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
             RaiseCounts();
         }
     }
+    public void ToggleSelection(VideoRow row)
+    {
+        row.IsSelected = !row.IsSelected;
+        RefreshSelectionState();
+    }
+
+    public void SelectRange(VideoRow start, VideoRow end)
+    {
+        var items = ActiveVideos.ToList();
+        var startIndex = items.IndexOf(start);
+        var endIndex = items.IndexOf(end);
+        if (startIndex < 0 || endIndex < 0)
+        {
+            return;
+        }
+
+        var from = Math.Min(startIndex, endIndex);
+        var to = Math.Max(startIndex, endIndex);
+        for (var i = from; i <= to; i++)
+        {
+            items[i].IsSelected = true;
+        }
+
+        RefreshSelectionState();
+    }
+
     private void SetSelection(bool s) { foreach (var row in Videos) row.IsSelected = s; IsAllSelected = s; }
+    private void RefreshSelectionState() => IsAllSelected = ActiveVideos.Count > 0 && ActiveVideos.All(v => v.IsSelected);
     private void Reorder(IEnumerable<VideoRow> ordered) { var l = ordered.ToList(); Videos.Clear(); foreach (var i in l) Videos.Add(i); }
     private void RefreshVisibleCollections()
     {
