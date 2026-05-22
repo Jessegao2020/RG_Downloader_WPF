@@ -9,7 +9,6 @@ using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Infrastructure;
 using RedgifsDownloader.Infrastructure.Fikfap;
 using RedgifsDownloader.Infrastructure.Redgifs;
-using RedgifsDownloader.Infrastructure.Settings;
 
 namespace RedgifsDownloader.Avalonia;
 
@@ -50,7 +49,7 @@ internal static class ServiceConfiguration
         });
 
         services.AddSingleton<IFileStorage, FileStorage>();
-        services.AddSingleton<IAppSettings, AppSettings>();
+        services.AddSingleton<IAppSettings, AvaloniaAppSettings>();
         services.AddSingleton<IUserNotificationService, NullUserNotificationService>();
         services.AddSingleton<ISecretProtector, PlainTextSecretProtector>();
 
