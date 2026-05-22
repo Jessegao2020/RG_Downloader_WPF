@@ -39,7 +39,7 @@
                 RowHeight="28" ColumnHeaderHeight="28" FontSize="13"
                 HeadersVisibility="Column" GridLinesVisibility="All" BorderThickness="1"
                 CanUserResizeColumns="True" CanUserSortColumns="False"
-                SelectionMode="Extended" SelectionUnit="FullRow"
+                SelectionMode="Extended"
                 SelectionChanged="ActiveVideosGrid_SelectionChanged">
         <DataGrid.Columns>
           <DataGridTemplateColumn Header="" Width="35" CanUserResize="True">
