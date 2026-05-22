@@ -5,7 +5,6 @@
              xmlns:vm="using:RedgifsDownloader.Avalonia.ViewModels"
              x:Class="RedgifsDownloader.Avalonia.Views.DownloadsView"
              x:DataType="vm:DownloadsViewModel"
-             FontFamily="Segoe UI, Microsoft YaHei UI, Noto Sans CJK SC, Noto Sans, Arial"
              FontSize="14"
              mc:Ignorable="d">
   <Grid RowDefinitions="Auto,Auto,*,Auto,Auto,*" Margin="8">
