@@ -6,14 +6,13 @@
              x:Class="RedgifsDownloader.Avalonia.Views.DownloadsView"
              x:DataType="vm:DownloadsViewModel"
              mc:Ignorable="d">
-  <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="12">
-    <Grid ColumnDefinitions="Auto,160,Auto,120,Auto,Auto,*" Margin="0,0,0,8">
-      <TextBlock Grid.Column="0" Text="User:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-      <TextBox Grid.Column="1" Text="{Binding Username}" Margin="0,0,8,0"/>
-      <TextBlock Grid.Column="2" Text="Platform:" VerticalAlignment="Center" Margin="0,0,8,0"/>
-      <ComboBox Grid.Column="3" ItemsSource="{Binding Platforms}" SelectedItem="{Binding SelectedPlatform}" Margin="0,0,8,0"/>
-      <ToggleButton Grid.Column="4" IsChecked="{Binding IsAdvancedMode}" Content="普通 / 高级" Margin="0,0,8,0"/>
-      <Button Grid.Column="5" Content="{Binding CrawlBtnText}" Command="{Binding CrawlCommand}"/>
+  <Grid RowDefinitions="Auto,Auto,*,Auto,Auto,*" Margin="10">
+    <Grid ColumnDefinitions="Auto,220,110,80,80,*" Margin="0,0,0,6">
+      <TextBlock Grid.Column="0" Text="User:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+      <TextBox Grid.Column="1" Text="{Binding Username}" Height="27" VerticalAlignment="Center" Margin="0,0,5,0"/>
+      <ComboBox Grid.Column="2" ItemsSource="{Binding Platforms}" SelectedItem="{Binding SelectedPlatform}" Height="28" VerticalAlignment="Center" Margin="0,0,5,0"/>
+      <ToggleButton Grid.Column="3" IsChecked="{Binding IsAdvancedMode}" Content="普通/高级" Width="75" Height="28" VerticalAlignment="Center" Margin="0,0,5,0"/>
+      <Button Grid.Column="4" Content="{Binding CrawlBtnText}" Command="{Binding CrawlCommand}" Width="75" Height="28" VerticalAlignment="Center"/>
     </Grid>
 
     <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8" IsVisible="{Binding IsAdvancedMode}">
@@ -27,36 +26,35 @@
     <Grid Grid.Row="2">
       <DataGrid ItemsSource="{Binding ActiveVideos}" AutoGenerateColumns="False" IsReadOnly="False">
         <DataGrid.Columns>
-          <DataGridCheckBoxColumn Header="选中" Binding="{Binding IsSelected}" Width="60"/>
-          <DataGridTextColumn Header="Id / Title" Binding="{Binding Id}" Width="*"/>
-          <DataGridTextColumn Header="日期" Binding="{Binding DisplayCreateDate}" Width="150"/>
-          <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120"/>
-          <DataGridTextColumn Header="Progress" Binding="{Binding Progress}" Width="90"/>
+          <DataGridCheckBoxColumn Header="选中" Binding="{Binding IsSelected}" Width="35"/>
+          <DataGridTextColumn Header="Title / Id" Binding="{Binding Id}" Width="*"/>
+          <DataGridTextColumn Header="日期" Binding="{Binding DisplayCreateDate}" Width="80"/>
+          <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="70"/>
+          <DataGridTextColumn Header="进度" Binding="{Binding Progress}" Width="70"/>
         </DataGrid.Columns>
       </DataGrid>
       <TextBlock Text="高级缩略图模式稍后实现" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,8,0" IsVisible="{Binding IsAdvancedMode}"/>
     </Grid>
 
-    <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*" Margin="0,8,0,0">
+    <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,Auto,Auto,*" Margin="0,8,0,0">
       <TextBlock Grid.Column="0" Text="结果:" VerticalAlignment="Center"/>
       <TextBlock Grid.Column="1" Text="{Binding VideosCount}" VerticalAlignment="Center" Margin="4,0,10,0"/>
       <Button Grid.Column="2" Content="D/L Folder" Command="{Binding OpenDownloadFolderCommand}" Margin="0,0,8,0"/>
       <Button Grid.Column="3" Content="{Binding DownloadBtnText}" Command="{Binding DownloadCommand}" Margin="0,0,8,0"/>
-      <Button Grid.Column="4" Content="停止" Command="{Binding StopCommand}" Margin="0,0,8,0"/>
-      <TextBlock Grid.Column="5" Text="{Binding FailedCount, StringFormat=失败: {0}}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-      <TextBlock Grid.Column="6" Text="{Binding CompletedCount, StringFormat=已下载: {0}}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-      <Button Grid.Column="7" Content="全部重试" Command="{Binding RetryAllCommand}" HorizontalAlignment="Left"/>
+      <Button Grid.Column="4" Content="停止" Command="{Binding StopCommand}" HorizontalAlignment="Left"/>
     </Grid>
 
-    <ItemsControl Grid.Row="4" ItemsSource="{Binding FailedVideos}" Margin="0,8,0,0">
-      <ItemsControl.ItemTemplate>
-        <DataTemplate>
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="{Binding Id}" />
-            <TextBlock Text="{Binding Status}" />
-          </StackPanel>
-        </DataTemplate>
-      </ItemsControl.ItemTemplate>
-    </ItemsControl>
+    <Grid Grid.Row="4" ColumnDefinitions="Auto,Auto,Auto,*" Margin="0,6,0,0">
+      <TextBlock Grid.Column="0" Text="{Binding FailedCount, StringFormat=失败: {0}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+      <TextBlock Grid.Column="1" Text="{Binding CompletedCount, StringFormat=已下载: {0}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+      <Button Grid.Column="2" Content="全部重试" Command="{Binding RetryAllCommand}" HorizontalAlignment="Left"/>
+    </Grid>
+
+    <DataGrid Grid.Row="5" ItemsSource="{Binding FailedVideos}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,6,0,0" MaxHeight="160">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="失败项 Id" Binding="{Binding Id}" Width="*"/>
+        <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="120"/>
+      </DataGrid.Columns>
+    </DataGrid>
   </Grid>
 </UserControl>
