@@ -5,55 +5,62 @@
              xmlns:vm="using:RedgifsDownloader.Avalonia.ViewModels"
              x:Class="RedgifsDownloader.Avalonia.Views.DownloadsView"
              x:DataType="vm:DownloadsViewModel"
+             FontFamily="Segoe UI, Microsoft YaHei UI, Noto Sans CJK SC, Noto Sans, Arial"
+             FontSize="14"
              mc:Ignorable="d">
-  <Grid RowDefinitions="Auto,Auto,*,Auto,Auto,*" Margin="10">
-    <Grid ColumnDefinitions="Auto,220,110,80,80,*" Margin="0,0,0,6">
+  <Grid RowDefinitions="Auto,Auto,*,Auto,Auto,*" Margin="8">
+    <Grid ColumnDefinitions="Auto,220,105,80,80,*" Margin="0,0,0,5">
       <TextBlock Grid.Column="0" Text="User:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-      <TextBox Grid.Column="1" Text="{Binding Username}" Height="27" VerticalAlignment="Center" Margin="0,0,5,0"/>
-      <ComboBox Grid.Column="2" ItemsSource="{Binding Platforms}" SelectedItem="{Binding SelectedPlatform}" Height="28" VerticalAlignment="Center" Margin="0,0,5,0"/>
+      <TextBox Grid.Column="1" Text="{Binding Username}" Height="28" VerticalAlignment="Center" Margin="0,0,5,0"/>
+      <ComboBox Grid.Column="2" ItemsSource="{Binding Platforms}" SelectedItem="{Binding SelectedPlatform}" Height="28" Width="100" VerticalAlignment="Center" Margin="0,0,5,0"/>
       <ToggleButton Grid.Column="3" IsChecked="{Binding IsAdvancedMode}" Content="普通/高级" Width="75" Height="28" VerticalAlignment="Center" Margin="0,0,5,0"/>
       <Button Grid.Column="4" Content="{Binding CrawlBtnText}" Command="{Binding CrawlCommand}" Width="75" Height="28" VerticalAlignment="Center"/>
     </Grid>
 
-    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8" IsVisible="{Binding IsAdvancedMode}">
-      <Button Content="全选" Command="{Binding SelectAllCommand}"/>
-      <Button Content="取消全选" Command="{Binding DeselectAllCommand}"/>
-      <Button Content="按名称排序" Command="{Binding SortByNameCommand}"/>
-      <Button Content="按时间排序" Command="{Binding SortByDateCommand}"/>
-      <CheckBox Content="显示标题" IsChecked="{Binding IsCaptionVisible}"/>
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="6" Margin="0,0,0,6" IsVisible="{Binding IsAdvancedMode}">
+      <Button Content="全选" Command="{Binding SelectAllCommand}" Height="30"/>
+      <Button Content="取消全选" Command="{Binding DeselectAllCommand}" Height="30"/>
+      <Button Content="按名称排序" Command="{Binding SortByNameCommand}" Height="30"/>
+      <Button Content="按时间排序" Command="{Binding SortByDateCommand}" Height="30"/>
+      <CheckBox Content="显示标题" IsChecked="{Binding IsCaptionVisible}" VerticalAlignment="Center"/>
     </StackPanel>
 
     <Grid Grid.Row="2">
-      <DataGrid ItemsSource="{Binding ActiveVideos}" AutoGenerateColumns="False" IsReadOnly="False">
+      <DataGrid ItemsSource="{Binding ActiveVideos}" AutoGenerateColumns="False" IsReadOnly="False"
+                RowHeight="28" ColumnHeaderHeight="28" FontSize="13"
+                HeadersVisibility="Column" GridLinesVisibility="All" BorderThickness="1"
+                CanUserResizeColumns="True" CanUserSortColumns="False">
         <DataGrid.Columns>
-          <DataGridCheckBoxColumn Header="选中" Binding="{Binding IsSelected}" Width="35"/>
-          <DataGridTextColumn Header="Title / Id" Binding="{Binding Id}" Width="*"/>
-          <DataGridTextColumn Header="日期" Binding="{Binding DisplayCreateDate}" Width="80"/>
-          <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="70"/>
-          <DataGridTextColumn Header="进度" Binding="{Binding Progress}" Width="70"/>
+          <DataGridCheckBoxColumn Header="选中" Binding="{Binding IsSelected}" Width="35" CanUserResize="True"/>
+          <DataGridTextColumn Header="Title / Id" Binding="{Binding Id}" Width="*" CanUserResize="True"/>
+          <DataGridTextColumn Header="日期" Binding="{Binding DisplayCreateDate}" Width="90" CanUserResize="True"/>
+          <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="80" CanUserResize="True"/>
+          <DataGridTextColumn Header="进度" Binding="{Binding Progress}" Width="80" CanUserResize="True"/>
         </DataGrid.Columns>
       </DataGrid>
       <TextBlock Text="高级缩略图模式稍后实现" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,8,0" IsVisible="{Binding IsAdvancedMode}"/>
     </Grid>
 
-    <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,Auto,Auto,*" Margin="0,8,0,0">
+    <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,Auto,Auto,*" Margin="0,5,0,0">
       <TextBlock Grid.Column="0" Text="结果:" VerticalAlignment="Center"/>
       <TextBlock Grid.Column="1" Text="{Binding VideosCount}" VerticalAlignment="Center" Margin="4,0,10,0"/>
-      <Button Grid.Column="2" Content="D/L Folder" Command="{Binding OpenDownloadFolderCommand}" Margin="0,0,8,0"/>
-      <Button Grid.Column="3" Content="{Binding DownloadBtnText}" Command="{Binding DownloadCommand}" Margin="0,0,8,0"/>
-      <Button Grid.Column="4" Content="停止" Command="{Binding StopCommand}" HorizontalAlignment="Left"/>
+      <Button Grid.Column="2" Content="D/L Folder" Command="{Binding OpenDownloadFolderCommand}" Width="90" Height="30" Margin="0,0,5,0"/>
+      <Button Grid.Column="3" Content="{Binding DownloadBtnText}" Command="{Binding DownloadCommand}" Width="80" Height="30" Margin="0,0,5,0"/>
+      <Button Grid.Column="4" Content="停止" Command="{Binding StopCommand}" Width="60" Height="30" HorizontalAlignment="Left"/>
     </Grid>
 
-    <Grid Grid.Row="4" ColumnDefinitions="Auto,Auto,Auto,*" Margin="0,6,0,0">
+    <Grid Grid.Row="4" ColumnDefinitions="Auto,Auto,Auto,*" Margin="0,5,0,0">
       <TextBlock Grid.Column="0" Text="{Binding FailedCount, StringFormat=失败: {0}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
       <TextBlock Grid.Column="1" Text="{Binding CompletedCount, StringFormat=已下载: {0}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-      <Button Grid.Column="2" Content="全部重试" Command="{Binding RetryAllCommand}" HorizontalAlignment="Left"/>
+      <Button Grid.Column="2" Content="全部重试" Command="{Binding RetryAllCommand}" Width="90" Height="30" HorizontalAlignment="Left"/>
     </Grid>
 
-    <DataGrid Grid.Row="5" ItemsSource="{Binding FailedVideos}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,6,0,0" MaxHeight="160">
+    <DataGrid Grid.Row="5" ItemsSource="{Binding FailedVideos}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,5,0,0" MaxHeight="160"
+              RowHeight="28" ColumnHeaderHeight="28" FontSize="13" HeadersVisibility="Column" GridLinesVisibility="All" BorderThickness="1"
+              CanUserResizeColumns="True" CanUserSortColumns="False">
       <DataGrid.Columns>
-        <DataGridTextColumn Header="失败项 Id" Binding="{Binding Id}" Width="*"/>
-        <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="120"/>
+        <DataGridTextColumn Header="失败项 Id" Binding="{Binding Id}" Width="*" CanUserResize="True"/>
+        <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="120" CanUserResize="True"/>
       </DataGrid.Columns>
     </DataGrid>
   </Grid>

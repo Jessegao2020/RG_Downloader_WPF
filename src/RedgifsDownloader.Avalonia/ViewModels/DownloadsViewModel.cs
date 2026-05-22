@@ -27,6 +27,7 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
     private bool _isCrawling;
     private bool _isDownloading;
     private string _statusMessage = string.Empty;
+    private CancellationTokenSource? _cts;
 
     public DownloadsViewModel()
     {
@@ -37,7 +38,7 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
         _notifier.Subscribe(OnVideoChanged);
         CrawlCommand = new AsyncCommand(CrawlAsync, () => !IsCrawling && !IsDownloading);
         DownloadCommand = new AsyncCommand(DownloadAsync, () => !IsCrawling && !IsDownloading);
-        StopCommand = new RelayCommand(_ => { IsCrawling = false; IsDownloading = false; StatusMessage = "已请求停止（当前版本将在本轮任务结束后生效）"; });
+        StopCommand = new RelayCommand(_ => _cts?.Cancel(), () => IsCrawling || IsDownloading);
         RetryAllCommand = new AsyncCommand(RetryAllAsync, () => !IsCrawling && !IsDownloading);
         OpenDownloadFolderCommand = new RelayCommand(_ => OpenDownloadFolder());
         SelectAllCommand = new RelayCommand(_ => SetSelection(true));
@@ -79,7 +80,8 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
         Videos.Clear(); ActiveVideos.Clear(); FailedVideos.Clear(); _rowsById.Clear(); IsAllSelected = false; IsCrawling = true;
         try
         {
-            await foreach (var video in _downloadAppService.CrawlAsync(ParsePlatform(), Username, _ => { }))
+            _cts = new CancellationTokenSource();
+            await foreach (var video in _downloadAppService.CrawlAsync(ParsePlatform(), Username, _ => { }, _cts.Token))
             {
                 var row = VideoRow.From(video);
                 _rowsById[video.Id] = row;
@@ -97,7 +99,18 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
             }
             StatusMessage = $"爬取完成，共 {Videos.Count} 条";
         }
-        finally { RefreshVisibleCollections(); IsCrawling = false; RaiseCounts(); }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "爬取已取消";
+        }
+        finally
+        {
+            RefreshVisibleCollections();
+            IsCrawling = false;
+            _cts?.Dispose();
+            _cts = null;
+            RaiseCounts();
+        }
     }
 
     private async Task DownloadAsync()
@@ -107,11 +120,32 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
         IsDownloading = true; Directory.CreateDirectory(_appSettings.DownloadDirectory);
         try
         {
-            var summary = await _downloadAppService.DownloadAsync(selected, _appSettings.MaxConcurrentDownloads);
+            _cts = new CancellationTokenSource();
+            var summary = await _downloadAppService.DownloadAsync(selected, _appSettings.MaxConcurrentDownloads, _cts.Token);
             StatusMessage = $"下载完成：成功 {summary.Completed}，失败 {summary.Failed}";
             RefreshVisibleCollections(); RaiseCounts();
         }
-        finally { IsDownloading = false; }
+        catch (OperationCanceledException)
+        {
+            foreach (var video in selected.Where(v => v.Status is not (VideoStatus.Completed or VideoStatus.Exists)))
+            {
+                video.MarkCanceled();
+                if (_rowsById.TryGetValue(video.Id, out var row))
+                {
+                    row.Update(video);
+                }
+            }
+
+            RefreshVisibleCollections();
+            RaiseCounts();
+            StatusMessage = "下载已取消";
+        }
+        finally
+        {
+            IsDownloading = false;
+            _cts?.Dispose();
+            _cts = null;
+        }
     }
 
     private async Task RetryAllAsync() { foreach (var row in FailedVideos) row.IsSelected = true; await DownloadAsync(); }
@@ -158,7 +192,7 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
             or nameof(VideoStatus.UnknownError)
             or nameof(VideoStatus.Canceled);
     private MediaPlatform ParsePlatform() => string.Equals(SelectedPlatform, "Fikfap", StringComparison.OrdinalIgnoreCase) ? MediaPlatform.Fikfap : MediaPlatform.Redgifs;
-    private void RaiseState() { OnPropertyChanged(nameof(CrawlBtnText)); OnPropertyChanged(nameof(DownloadBtnText)); (CrawlCommand as AsyncCommand)?.RaiseCanExecuteChanged(); (DownloadCommand as AsyncCommand)?.RaiseCanExecuteChanged(); (RetryAllCommand as AsyncCommand)?.RaiseCanExecuteChanged(); }
+    private void RaiseState() { OnPropertyChanged(nameof(CrawlBtnText)); OnPropertyChanged(nameof(DownloadBtnText)); (CrawlCommand as AsyncCommand)?.RaiseCanExecuteChanged(); (DownloadCommand as AsyncCommand)?.RaiseCanExecuteChanged(); (RetryAllCommand as AsyncCommand)?.RaiseCanExecuteChanged(); (StopCommand as RelayCommand)?.RaiseCanExecuteChanged(); }
     private void RaiseCounts() { OnPropertyChanged(nameof(VideosCount)); OnPropertyChanged(nameof(CompletedCount)); OnPropertyChanged(nameof(FailedCount)); }
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? n = null) { if (EqualityComparer<T>.Default.Equals(field, value)) return false; field = value; OnPropertyChanged(n); return true; }
     private void OnPropertyChanged([CallerMemberName] string? n = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
@@ -195,9 +229,10 @@ public sealed class AsyncCommand(Func<Task> action, Func<bool>? canExecute = nul
     public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 }
 
-public sealed class RelayCommand(Action<object?> execute) : ICommand
+public sealed class RelayCommand(Action<object?> execute, Func<bool>? canExecute = null) : ICommand
 {
     public event EventHandler? CanExecuteChanged;
-    public bool CanExecute(object? parameter) => true;
+    public bool CanExecute(object? parameter) => canExecute?.Invoke() ?? true;
     public void Execute(object? parameter) => execute(parameter);
+    public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 }
