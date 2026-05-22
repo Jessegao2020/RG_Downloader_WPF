@@ -27,6 +27,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private string _maxCount = "3";
     private string _outputFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "RG_Downloads");
     private string _logs = string.Empty;
+    private object _currentView = new DownloaderViewToken();
 
     public MainWindowViewModel()
     {
@@ -38,6 +39,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         CrawlCommand = new AsyncCommand(CrawlAsync);
         DownloadCommand = new AsyncCommand(DownloadAsync);
+        NavigateCommand = new RelayCommand(Navigate);
     }
 
     public ObservableCollection<VideoRow> Items { get; } = [];
@@ -48,12 +50,29 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public string MaxCount { get => _maxCount; set => SetField(ref _maxCount, value); }
     public string OutputFolder { get => _outputFolder; set => SetField(ref _outputFolder, value); }
     public string Logs { get => _logs; private set => SetField(ref _logs, value); }
+    public object CurrentView { get => _currentView; private set => SetField(ref _currentView, value); }
 
     public ICommand CrawlCommand { get; }
     public ICommand DownloadCommand { get; }
+    public ICommand NavigateCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+
+    private void Navigate(object? parameter)
+    {
+        var target = parameter?.ToString();
+        CurrentView = target switch
+        {
+            "Redgifs" or "Fikfap" => new DownloaderViewToken(),
+            "Reddit" => "Reddit view is not implemented yet",
+            "ImageSim" => "ImageSim view is not implemented yet",
+            "Cleaner" => "Dupe Cleaner view is not implemented yet",
+            "Settings" => "Settings view is not implemented yet",
+            "About" => "Redgifs Downloader (Avalonia)\nThis page is not implemented yet",
+            _ => "Unknown view"
+        };
+    }
     private async Task CrawlAsync()
     {
         Items.Clear();
@@ -184,4 +203,13 @@ public sealed class AsyncCommand(Func<Task> action) : ICommand
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
     }
+}
+
+public sealed class DownloaderViewToken;
+
+public sealed class RelayCommand(Action<object?> execute) : ICommand
+{
+    public event EventHandler? CanExecuteChanged;
+    public bool CanExecute(object? parameter) => true;
+    public void Execute(object? parameter) => execute(parameter);
 }
