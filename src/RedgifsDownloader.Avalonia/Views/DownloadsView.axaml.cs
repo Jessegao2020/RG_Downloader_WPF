@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using Avalonia.Visuals;
 using RedgifsDownloader.Avalonia.ViewModels;
 
 namespace RedgifsDownloader.Avalonia.Views;
