@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:RedgifsDownloader.Avalonia"
+        x:Class="RedgifsDownloader.Avalonia.MainWindow"
+        x:DataType="local:MainWindowViewModel"
+        mc:Ignorable="d"
+        Width="1100"
+        Height="700"
+        Title="Redgifs Downloader (Avalonia)">
+  <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="8">
+    <Grid ColumnDefinitions="Auto,140,Auto,220,Auto,100,Auto,*" ColumnSpacing="8">
+      <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="Platform" />
+      <ComboBox Grid.Column="1" ItemsSource="{Binding PlatformOptions}" SelectedItem="{Binding SelectedPlatform}" />
+      <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="Username" />
+      <TextBox Grid.Column="3" Text="{Binding Username}" />
+      <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="Max" />
+      <TextBox Grid.Column="5" Text="{Binding MaxCount}" />
+      <TextBlock Grid.Column="6" VerticalAlignment="Center" Text="Output" />
+      <TextBox Grid.Column="7" Text="{Binding OutputFolder}" />
+    </Grid>
+
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+      <Button Content="Crawl" Command="{Binding CrawlCommand}" />
+      <Button Content="Download" Command="{Binding DownloadCommand}" />
+    </StackPanel>
+
+    <Grid Grid.Row="2" ColumnDefinitions="3*,2*" ColumnSpacing="8">
+      <DataGrid Grid.Column="0" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="2*" />
+          <DataGridTextColumn Header="Url" Binding="{Binding Url}" Width="3*" />
+          <DataGridTextColumn Header="CreateDateRaw" Binding="{Binding CreateDateRaw}" Width="*" />
+          <DataGridCheckBoxColumn Header="HasThumbnailUrl" Binding="{Binding HasThumbnailUrl}" Width="*" />
+          <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*" />
+          <DataGridTextColumn Header="Progress" Binding="{Binding Progress}" Width="*" />
+        </DataGrid.Columns>
+      </DataGrid>
+
+      <TextBox Grid.Column="1" Text="{Binding Logs}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" />
+    </Grid>
+  </Grid>
+</Window>
