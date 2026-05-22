@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
-using Avalonia.Visuals;
 using RedgifsDownloader.Avalonia.ViewModels;
 
 namespace RedgifsDownloader.Avalonia.Views;
@@ -24,12 +23,25 @@ public partial class DownloadsView : UserControl
             return;
         }
 
-        if (e.Source is Visual visual && visual.GetSelfAndVisualAncestors().OfType<CheckBox>().Any())
+        if (e.Source is not Control sourceControl)
         {
             return;
         }
 
-        if (e.Source is not Control control || control.DataContext is not VideoRow row)
+        if (sourceControl.GetSelfAndVisualAncestors().OfType<CheckBox>().Any())
+        {
+            return;
+        }
+
+        var row = sourceControl.GetSelfAndVisualAncestors()
+            .OfType<DataGridRow>()
+            .Select(r => r.DataContext)
+            .OfType<VideoRow>()
+            .FirstOrDefault();
+
+        row ??= sourceControl.DataContext as VideoRow;
+
+        if (row is null)
         {
             return;
         }
