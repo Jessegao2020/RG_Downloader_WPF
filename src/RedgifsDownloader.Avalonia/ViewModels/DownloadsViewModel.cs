@@ -47,8 +47,8 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
     }
 
     public ObservableCollection<VideoRow> Videos { get; } = [];
+    public ObservableCollection<VideoRow> ActiveVideos { get; } = [];
     public ObservableCollection<VideoRow> FailedVideos { get; } = [];
-    public IEnumerable<VideoRow> ActiveVideos => Videos;
     public IReadOnlyList<string> Platforms { get; } = ["Redgifs", "Fikfap"];
     public string SelectedPlatform { get => _selectedPlatform; set => SetField(ref _selectedPlatform, value); }
     public string Username { get => _username; set => SetField(ref _username, value); }
@@ -76,16 +76,28 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
 
     private async Task CrawlAsync()
     {
-        Videos.Clear(); FailedVideos.Clear(); _rowsById.Clear(); IsAllSelected = false; IsCrawling = true;
+        Videos.Clear(); ActiveVideos.Clear(); FailedVideos.Clear(); _rowsById.Clear(); IsAllSelected = false; IsCrawling = true;
         try
         {
             await foreach (var video in _downloadAppService.CrawlAsync(ParsePlatform(), Username, _ => { }))
             {
-                var row = VideoRow.From(video); _rowsById[video.Id] = row; Videos.Add(row); _notifier.RegisterVideo(video);
+                var row = VideoRow.From(video);
+                _rowsById[video.Id] = row;
+                Videos.Add(row);
+                if (!IsFailedStatus(row.Status))
+                {
+                    ActiveVideos.Add(row);
+                }
+                else
+                {
+                    FailedVideos.Add(row);
+                }
+
+                _notifier.RegisterVideo(video);
             }
             StatusMessage = $"爬取完成，共 {Videos.Count} 条";
         }
-        finally { IsCrawling = false; RaiseCounts(); }
+        finally { RefreshVisibleCollections(); IsCrawling = false; RaiseCounts(); }
     }
 
     private async Task DownloadAsync()
@@ -97,7 +109,7 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
         {
             var summary = await _downloadAppService.DownloadAsync(selected, _appSettings.MaxConcurrentDownloads);
             StatusMessage = $"下载完成：成功 {summary.Completed}，失败 {summary.Failed}";
-            RefreshFailed(); RaiseCounts();
+            RefreshVisibleCollections(); RaiseCounts();
         }
         finally { IsDownloading = false; }
     }
@@ -112,10 +124,39 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
             UseShellExecute = true
         });
     }
-    private void OnVideoChanged(Video video) { if (_rowsById.TryGetValue(video.Id, out var row)) { row.Update(video); RefreshFailed(); RaiseCounts(); } }
+    private void OnVideoChanged(Video video)
+    {
+        if (_rowsById.TryGetValue(video.Id, out var row))
+        {
+            row.Update(video);
+            RefreshVisibleCollections();
+            RaiseCounts();
+        }
+    }
     private void SetSelection(bool s) { foreach (var row in Videos) row.IsSelected = s; IsAllSelected = s; }
     private void Reorder(IEnumerable<VideoRow> ordered) { var l = ordered.ToList(); Videos.Clear(); foreach (var i in l) Videos.Add(i); }
-    private void RefreshFailed() { var failed = Videos.Where(v => v.Status.Contains("Failed", StringComparison.OrdinalIgnoreCase)).ToList(); FailedVideos.Clear(); foreach (var row in failed) FailedVideos.Add(row); }
+    private void RefreshVisibleCollections()
+    {
+        ActiveVideos.Clear();
+        FailedVideos.Clear();
+        foreach (var row in Videos)
+        {
+            if (IsFailedStatus(row.Status))
+            {
+                FailedVideos.Add(row);
+                continue;
+            }
+
+            ActiveVideos.Add(row);
+        }
+    }
+
+    private static bool IsFailedStatus(string status) =>
+        status is nameof(VideoStatus.Failed)
+            or nameof(VideoStatus.NetworkError)
+            or nameof(VideoStatus.WriteError)
+            or nameof(VideoStatus.UnknownError)
+            or nameof(VideoStatus.Canceled);
     private MediaPlatform ParsePlatform() => string.Equals(SelectedPlatform, "Fikfap", StringComparison.OrdinalIgnoreCase) ? MediaPlatform.Fikfap : MediaPlatform.Redgifs;
     private void RaiseState() { OnPropertyChanged(nameof(CrawlBtnText)); OnPropertyChanged(nameof(DownloadBtnText)); (CrawlCommand as AsyncCommand)?.RaiseCanExecuteChanged(); (DownloadCommand as AsyncCommand)?.RaiseCanExecuteChanged(); (RetryAllCommand as AsyncCommand)?.RaiseCanExecuteChanged(); }
     private void RaiseCounts() { OnPropertyChanged(nameof(VideosCount)); OnPropertyChanged(nameof(CompletedCount)); OnPropertyChanged(nameof(FailedCount)); }
