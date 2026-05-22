@@ -4,7 +4,7 @@ namespace RedgifsDownloader.Avalonia;
 
 internal sealed class AvaloniaAppSettings : IAppSettings
 {
-    public int MaxConcurrentDownloads { get; set; } = 1;
+    public int MaxConcurrentDownloads { get; set; } = 3;
 
     public string DownloadDirectory { get; set; } =
         Path.Combine(
