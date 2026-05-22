@@ -24,6 +24,7 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
     private bool _isAdvancedMode;
     private bool _isCaptionVisible = true;
     private bool _isAllSelected;
+    private bool _suppressAllSelectedSync;
     private bool _isCrawling;
     private bool _isDownloading;
     private string _statusMessage = string.Empty;
@@ -55,7 +56,24 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
     public string Username { get => _username; set => SetField(ref _username, value); }
     public bool IsAdvancedMode { get => _isAdvancedMode; set => SetField(ref _isAdvancedMode, value); }
     public bool IsCaptionVisible { get => _isCaptionVisible; set => SetField(ref _isCaptionVisible, value); }
-    public bool IsAllSelected { get => _isAllSelected; set => SetField(ref _isAllSelected, value); }
+    public bool IsAllSelected
+    {
+        get => _isAllSelected;
+        set
+        {
+            if (!SetField(ref _isAllSelected, value))
+            {
+                return;
+            }
+
+            if (_suppressAllSelectedSync)
+            {
+                return;
+            }
+
+            SetSelection(value);
+        }
+    }
     public bool IsCrawling { get => _isCrawling; private set { if (SetField(ref _isCrawling, value)) RaiseState(); } }
     public bool IsDownloading { get => _isDownloading; private set { if (SetField(ref _isDownloading, value)) RaiseState(); } }
     public string StatusMessage { get => _statusMessage; private set => SetField(ref _statusMessage, value); }
@@ -205,8 +223,24 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
         RefreshSelectionState();
     }
 
-    private void SetSelection(bool s) { foreach (var row in Videos) row.IsSelected = s; IsAllSelected = s; }
-    private void RefreshSelectionState() => IsAllSelected = ActiveVideos.Count > 0 && ActiveVideos.All(v => v.IsSelected);
+    private void SetSelection(bool s)
+    {
+        foreach (var row in Videos)
+        {
+            row.IsSelected = s;
+        }
+
+        _suppressAllSelectedSync = true;
+        IsAllSelected = s;
+        _suppressAllSelectedSync = false;
+    }
+
+    private void RefreshSelectionState()
+    {
+        _suppressAllSelectedSync = true;
+        IsAllSelected = ActiveVideos.Count > 0 && ActiveVideos.All(v => v.IsSelected);
+        _suppressAllSelectedSync = false;
+    }
     private void Reorder(IEnumerable<VideoRow> ordered) { var l = ordered.ToList(); Videos.Clear(); foreach (var i in l) Videos.Add(i); }
     private void RefreshVisibleCollections()
     {

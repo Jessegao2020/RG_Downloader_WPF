@@ -42,7 +42,12 @@
                 SelectionMode="Extended"
                 SelectionChanged="ActiveVideosGrid_SelectionChanged">
         <DataGrid.Columns>
-          <DataGridTemplateColumn Header="" Width="35" CanUserResize="True">
+          <DataGridTemplateColumn Width="35" CanUserResize="True">
+            <DataGridTemplateColumn.Header>
+              <CheckBox IsChecked="{Binding DataContext.IsAllSelected, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center" />
+            </DataGridTemplateColumn.Header>
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
                 <CheckBox
@@ -53,10 +58,10 @@
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
-          <DataGridTextColumn Header="Title / Id" Binding="{Binding Id}" Width="*" CanUserResize="True"/>
+          <DataGridTextColumn Header="Title" Binding="{Binding Id}" Width="*" CanUserResize="True"/>
           <DataGridTextColumn Header="日期" Binding="{Binding DisplayCreateDate}" Width="90" CanUserResize="True"/>
           <DataGridTextColumn Header="状态" Binding="{Binding Status}" Width="80" CanUserResize="True"/>
-          <DataGridTextColumn Header="进度" Binding="{Binding Progress}" Width="80" CanUserResize="True"/>
+          <DataGridTextColumn Header="进度" Binding="{Binding Progress}" Width="70" CanUserResize="True"/>
         </DataGrid.Columns>
       </DataGrid>
       <TextBlock Text="高级缩略图模式稍后实现" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,8,0" IsVisible="{Binding IsAdvancedMode}" Foreground="Black" FontSize="14"/>
