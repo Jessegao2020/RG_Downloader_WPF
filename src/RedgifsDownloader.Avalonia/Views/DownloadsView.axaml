@@ -45,6 +45,8 @@
           <DataGridTemplateColumn Width="35" CanUserResize="True">
             <DataGridTemplateColumn.Header>
               <CheckBox IsChecked="{Binding DataContext.IsAllSelected, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay}"
+                        Command="{Binding DataContext.SelectAllCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                        CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center" />
             </DataGridTemplateColumn.Header>
