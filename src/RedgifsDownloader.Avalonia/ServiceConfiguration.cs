@@ -64,8 +64,5 @@ internal static class ServiceConfiguration
 
 internal sealed class NullUserNotificationService : IUserNotificationService
 {
-    public void ShowError(string message) { }
-    public void ShowInfo(string message) { }
-    public void ShowSuccess(string message) { }
-    public void ShowWarning(string message) { }
+    public void ShowMessage(string message) { }
 }
