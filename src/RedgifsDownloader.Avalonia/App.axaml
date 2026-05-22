@@ -4,9 +4,5 @@
   <Application.Styles>
     <FluentTheme />
     <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
-    <Style Selector="Control">
-      <Setter Property="FontFamily" Value="Segoe UI, Microsoft YaHei UI, Noto Sans CJK SC, Noto Sans, Arial"/>
-      <Setter Property="FontSize" Value="14"/>
-    </Style>
   </Application.Styles>
 </Application>
