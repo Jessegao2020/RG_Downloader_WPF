@@ -127,7 +127,7 @@ public partial class MainWindow : Window
     {
         Id = video.Id,
         Url = video.Url.ToString(),
-        CreateDateRaw = video.CreateDateRaw,
+        CreateDateRaw = video.CreateDateRaw?.ToString() ?? string.Empty,
         HasThumbnailUrl = !string.IsNullOrWhiteSpace(video.ThumbnailUrl),
         Status = video.Status.ToString(),
         Progress = video.Progress.HasValue ? $"{video.Progress.Value:F1}%" : "-"

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using RedgifsDownloader.ApplicationLayer;
 using RedgifsDownloader.ApplicationLayer.Downloads;
 using RedgifsDownloader.ApplicationLayer.Fikfap;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
