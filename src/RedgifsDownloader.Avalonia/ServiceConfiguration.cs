@@ -9,6 +9,7 @@ using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Infrastructure;
 using RedgifsDownloader.Infrastructure.Fikfap;
 using RedgifsDownloader.Infrastructure.Redgifs;
+using RedgifsDownloader.Infrastructure.Settings;
 
 namespace RedgifsDownloader.Avalonia;
 
