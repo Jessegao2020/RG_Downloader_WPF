@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using RedgifsDownloader.ApplicationLayer.Settings;
 
@@ -8,14 +9,14 @@ namespace RedgifsDownloader.Avalonia.ViewModels;
 
 public sealed class SettingsViewModel : INotifyPropertyChanged
 {
-    private readonly IAppSettings _appSettings;
+    private readonly IAppSettings? _appSettings;
     private string _downloadDirectory = string.Empty;
     private int _maxConcurrentDownloads = 3;
     private string _saveStatus = string.Empty;
 
     public SettingsViewModel()
     {
-        if (Avalonia.Controls.Design.IsDesignMode)
+        if (Design.IsDesignMode)
         {
             SaveCommand = new RelayCommand(_ => { });
             return;
@@ -52,6 +53,12 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
 
     private void Save()
     {
+        if (_appSettings is null)
+        {
+            SaveStatus = "Design mode";
+            return;
+        }
+
         _appSettings.DownloadDirectory = string.IsNullOrWhiteSpace(DownloadDirectory)
             ? _appSettings.DownloadDirectory
             : DownloadDirectory.Trim();
