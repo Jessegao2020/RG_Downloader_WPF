@@ -10,6 +10,8 @@
     d:DesignWidth="450"
     d:DesignHeight="550"
     mc:Ignorable="d">
+
+
     <Grid
         RowDefinitions="Auto,Auto,1.5*,Auto,Auto,*"
         Margin="8">
@@ -155,19 +157,53 @@
                 BorderThickness="1"
                 CanUserResizeColumns="True"
                 CanUserSortColumns="False"
-                SelectionMode="Extended"
-                SelectionChanged="ActiveVideosGrid_SelectionChanged">
+                SelectionMode="Extended">
+
+                <DataGrid.Styles>
+                    <Style
+                        Selector="DataGridColumnHeader">
+                        <Setter
+                            Property="Padding"
+                            Value="0" />
+                        <Setter
+                            Property="MinWidth"
+                            Value="0" />
+                        <Setter
+                            Property="HorizontalContentAlignment"
+                            Value="Center" />
+                        <Setter
+                            Property="VerticalContentAlignment"
+                            Value="Center" />
+
+                        <Style
+                            Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                            <Setter
+                                Property="Margin"
+                                Value="0" />
+                            <Setter
+                                Property="Padding"
+                                Value="0" />
+                            <Setter
+                                Property="HorizontalAlignment"
+                                Value="Center" />
+                            <Setter
+                                Property="VerticalAlignment"
+                                Value="Center" />
+                        </Style>
+                    </Style>
+                </DataGrid.Styles>
+
                 <DataGrid.Columns>
                     <DataGridTemplateColumn
-                        Width="32"
-                        MinWidth="32"
-                        MaxWidth="34"
+                        Width="53"
                         CanUserResize="True">
                         <DataGridTemplateColumn.Header>
                             <CheckBox
                                 IsChecked="{Binding DataContext.IsAllSelected, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay}"
                                 HorizontalAlignment="Center"
-                                VerticalAlignment="Center" />
+                                VerticalAlignment="Center"
+                                Margin="0"
+                                Padding="0" />
                         </DataGridTemplateColumn.Header>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -179,21 +215,45 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
+
                     <DataGridTextColumn
-                        Header="Title"
-                        Binding="{Binding Id}"
                         Width="*"
-                        CanUserResize="True" />
+                        CanUserResize="True"
+                        Binding="{Binding Id}">
+                        <DataGridTextColumn.Header>
+                            <TextBlock
+                                Text="Title"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Margin="8,0,0,0" />
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
+
                     <DataGridTextColumn
-                        Header="日期"
-                        Binding="{Binding DisplayCreateDate}"
                         Width="100"
-                        CanUserResize="True" />
+                        CanUserResize="True"
+                        Binding="{Binding DisplayCreateDate}">
+                        <DataGridTextColumn.Header>
+                            <TextBlock
+                                Text="日期"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Margin="8,0,0,0" />
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
+
                     <DataGridTextColumn
-                        Header="状态"
-                        Binding="{Binding DisplayStatus}"
                         Width="100"
-                        CanUserResize="True" />
+                        CanUserResize="True"
+                        Binding="{Binding DisplayStatus}">
+                        <DataGridTextColumn.Header>
+                            <TextBlock
+                                Text="状态"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Margin="8,0,0,0" />
+                        </DataGridTextColumn.Header>
+                    </DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
             <ListBox
