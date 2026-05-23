@@ -201,6 +201,7 @@
                 </DataGrid.Columns>
             </DataGrid>
             <ListBox
+                x:Name="AdvancedVideosListBox"
                 ItemsSource="{Binding ActiveVideos}"
                 IsVisible="{Binding IsAdvancedMode}"
                 SelectionMode="Multiple"
@@ -213,7 +214,7 @@
                 </ListBox.ItemsPanel>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Border Width="150" Height="200" Margin="2" BorderBrush="Gray" BorderThickness="1">
+                        <Border Width="150" Height="200" Margin="2" BorderBrush="{Binding SelectedBorderBrush}" BorderThickness="{Binding SelectedBorderThickness}" PointerPressed="ThumbnailCard_PointerPressed">
                             <Grid RowDefinitions="*,Auto">
                                 <Border Background="#FFEFEFEF">
                                     <Image Source="{Binding ThumbnailImage}" Stretch="UniformToFill" />

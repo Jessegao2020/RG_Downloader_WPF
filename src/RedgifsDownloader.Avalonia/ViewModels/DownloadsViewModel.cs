@@ -11,6 +11,7 @@ using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using RedgifsDownloader.Avalonia.Services;
 
@@ -313,7 +314,22 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
 public sealed class VideoRow : INotifyPropertyChanged
 {
     private bool _isSelected; private string _status = string.Empty; private string _progress = string.Empty; private string _displayStatus = string.Empty;
-    public bool IsSelected { get => _isSelected; set => SetField(ref _isSelected, value); }
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set
+        {
+            if (!SetField(ref _isSelected, value))
+            {
+                return;
+            }
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedBorderBrush)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedBorderThickness)));
+        }
+    }
+    public IBrush SelectedBorderBrush => IsSelected ? Brushes.Blue : Brushes.Gray;
+    public Thickness SelectedBorderThickness => IsSelected ? new Thickness(3) : new Thickness(1);
     public string Id { get; private set; } = string.Empty;
     public string Url { get; private set; } = string.Empty;
     public long? CreateDateRaw { get; private set; }
@@ -351,7 +367,17 @@ public sealed class VideoRow : INotifyPropertyChanged
         };
     }
     public event PropertyChangedEventHandler? PropertyChanged;
-    private void SetField<T>(ref T field, T value, [CallerMemberName] string? n = null) { if (EqualityComparer<T>.Default.Equals(field, value)) return; field = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n)); }
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? n = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return false;
+        }
+
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
+        return true;
+    }
 }
 
 public sealed class AsyncCommand(Func<Task> action, Func<bool>? canExecute = null) : ICommand
