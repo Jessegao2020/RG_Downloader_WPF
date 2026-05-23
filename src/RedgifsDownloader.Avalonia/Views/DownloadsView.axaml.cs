@@ -207,7 +207,7 @@ public partial class DownloadsView : UserControl
         ResetDragState();
     }
 
-    private void AdvancedThumbnailListBox_PointerLeave(object? sender, PointerEventArgs e)
+    private void AdvancedThumbnailListBox_PointerExited(object? sender, PointerEventArgs e)
     {
         if (DataContext is not DownloadsViewModel viewModel)
         {
