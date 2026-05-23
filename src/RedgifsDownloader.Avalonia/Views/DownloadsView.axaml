@@ -191,12 +191,7 @@
                     <DataGridTextColumn
                         Header="状态"
                         Binding="{Binding DisplayStatus}"
-                        Width="80"
-                        CanUserResize="True" />
-                    <DataGridTextColumn
-                        Header="进度"
-                        Binding="{Binding Progress}"
-                        Width="70"
+                        Width="90"
                         CanUserResize="True" />
                 </DataGrid.Columns>
             </DataGrid>
