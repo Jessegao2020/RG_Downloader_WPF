@@ -10,6 +10,7 @@ using RedgifsDownloader.ApplicationLayer.Notifications;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
+using Avalonia.Controls;
 
 namespace RedgifsDownloader.Avalonia.ViewModels;
 
@@ -32,6 +33,25 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
 
     public DownloadsViewModel()
     {
+        if (Design.IsDesignMode)
+{
+    _downloadAppService = null!;
+    _appSettings = null!;
+    _notifier = null!;
+
+    RetryAllCommand = new RelayCommand(_ => { });
+    OpenDownloadFolderCommand = new RelayCommand(_ => { });
+    SelectAllCommand = new RelayCommand(_ => { });
+    DeselectAllCommand = new RelayCommand(_ => { });
+    SortByNameCommand = new RelayCommand(_ => { });
+    SortByDateCommand = new RelayCommand(_ => { });
+    CrawlCommand = new RelayCommand(_ => { });
+    DownloadCommand = new RelayCommand(_ => { });
+    StopCommand = new RelayCommand(_ => { });
+
+    return;
+}
+
         var provider = Program.Services;
         _downloadAppService = provider.GetRequiredService<IDownloadAppService>();
         _appSettings = provider.GetRequiredService<IAppSettings>();
