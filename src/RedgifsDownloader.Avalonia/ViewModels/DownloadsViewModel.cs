@@ -267,7 +267,20 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
         IsAllSelected = ActiveVideos.Count > 0 && ActiveVideos.All(v => v.IsSelected);
         _suppressAllSelectedSync = false;
     }
-    private void Reorder(IEnumerable<VideoRow> ordered) { var l = ordered.ToList(); Videos.Clear(); foreach (var i in l) Videos.Add(i); }
+    private void Reorder(IEnumerable<VideoRow> ordered)
+    {
+        var list = ordered.ToList();
+
+        Videos.Clear();
+        foreach (var item in list)
+        {
+            Videos.Add(item);
+        }
+
+        RefreshVisibleCollections();
+        RefreshSelectionState();
+        RaiseCounts();
+    }
     private void RefreshVisibleCollections()
     {
         ActiveVideos.Clear();
@@ -299,7 +312,7 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
 
 public sealed class VideoRow : INotifyPropertyChanged
 {
-    private bool _isSelected; private string _status = string.Empty; private string _progress = string.Empty;
+    private bool _isSelected; private string _status = string.Empty; private string _progress = string.Empty; private string _displayStatus = string.Empty;
     public bool IsSelected { get => _isSelected; set => SetField(ref _isSelected, value); }
     public string Id { get; private set; } = string.Empty;
     public string Url { get; private set; } = string.Empty;
@@ -311,13 +324,32 @@ public sealed class VideoRow : INotifyPropertyChanged
     public Bitmap? ThumbnailImage { get => _thumbnailImage; set => SetField(ref _thumbnailImage, value); }
     public string Status { get => _status; private set => SetField(ref _status, value); }
     public string Progress { get => _progress; private set => SetField(ref _progress, value); }
+    public string DisplayStatus { get => _displayStatus; private set => SetField(ref _displayStatus, value); }
     public Video Item { get; private set; } = default!;
     public static VideoRow From(Video video)
     {
         var row = new VideoRow { Id = video.Id, Url = video.Url.ToString(), CreateDateRaw = video.CreateDateRaw, DisplayCreateDate = video.CreateDateRaw is long t ? DateTimeOffset.FromUnixTimeSeconds(t).ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "-", HasThumbnailUrl = !string.IsNullOrWhiteSpace(video.ThumbnailUrl), ThumbnailUrl = video.ThumbnailUrl, Item = video };
         row.Update(video); return row;
     }
-    public void Update(Video video) { Item = video; Status = video.Status.ToString(); Progress = video.Progress?.ToString("F1") ?? "-"; }
+    public void Update(Video video)
+    {
+        Item = video;
+        Status = video.Status.ToString();
+        Progress = video.Progress?.ToString("F1") ?? "-";
+        DisplayStatus = video.Status switch
+        {
+            VideoStatus.Pending => "",
+            VideoStatus.Downloading => video.Progress.HasValue ? $"{video.Progress.Value:F1}%" : "下载中",
+            VideoStatus.Completed => "完成",
+            VideoStatus.Exists => "已存在",
+            VideoStatus.Failed => "失败",
+            VideoStatus.Canceled => "已取消",
+            VideoStatus.NetworkError => "网络错误",
+            VideoStatus.WriteError => "写入错误",
+            VideoStatus.UnknownError => "未知错误",
+            _ => ""
+        };
+    }
     public event PropertyChangedEventHandler? PropertyChanged;
     private void SetField<T>(ref T field, T value, [CallerMemberName] string? n = null) { if (EqualityComparer<T>.Default.Equals(field, value)) return; field = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n)); }
 }

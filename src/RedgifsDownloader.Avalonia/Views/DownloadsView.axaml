@@ -190,7 +190,7 @@
                         CanUserResize="True" />
                     <DataGridTextColumn
                         Header="状态"
-                        Binding="{Binding Status}"
+                        Binding="{Binding DisplayStatus}"
                         Width="80"
                         CanUserResize="True" />
                     <DataGridTextColumn
@@ -222,7 +222,7 @@
                                     <StackPanel>
                                         <TextBlock Text="{Binding Id}" Foreground="White" IsVisible="{Binding DataContext.IsCaptionVisible, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                                         <TextBlock Text="{Binding DisplayCreateDate}" Foreground="White" IsVisible="{Binding DataContext.IsCaptionVisible, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                                        <TextBlock Text="{Binding Status}" Foreground="White" />
+                                        <TextBlock Text="{Binding DisplayStatus}" Foreground="White" />
                                     </StackPanel>
                                 </Border>
                                 <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5" />
