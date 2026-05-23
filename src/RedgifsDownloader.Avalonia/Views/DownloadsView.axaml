@@ -201,12 +201,15 @@
                 </DataGrid.Columns>
             </DataGrid>
             <ListBox
-                x:Name="AdvancedVideosListBox"
+                x:Name="AdvancedThumbnailListBox"
                 ItemsSource="{Binding ActiveVideos}"
                 IsVisible="{Binding IsAdvancedMode}"
                 SelectionMode="Multiple"
                 Background="Transparent"
-                BorderThickness="0">
+                BorderThickness="0"
+                PointerMoved="AdvancedThumbnailListBox_PointerMoved"
+                PointerReleased="AdvancedThumbnailListBox_PointerReleased"
+                PointerLeave="AdvancedThumbnailListBox_PointerLeave">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel />
