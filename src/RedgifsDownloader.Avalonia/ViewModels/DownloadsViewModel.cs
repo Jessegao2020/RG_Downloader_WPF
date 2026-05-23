@@ -311,6 +311,11 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
         IsAllSelected = ActiveVideos.Count > 0 && ActiveVideos.All(v => v.IsSelected);
         _suppressAllSelectedSync = false;
     }
+
+    public void SetStatusMessage(string message)
+    {
+        StatusMessage = message;
+    }
     private void Reorder(IEnumerable<VideoRow> ordered)
     {
         var list = ordered.ToList();

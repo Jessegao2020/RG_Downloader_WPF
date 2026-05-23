@@ -157,7 +157,9 @@
                 BorderThickness="1"
                 CanUserResizeColumns="True"
                 CanUserSortColumns="False"
-                SelectionMode="Extended">
+                SelectionMode="Extended"
+                SelectionChanged="ActiveVideosGrid_SelectionChanged"
+                DoubleTapped="ActiveVideosGrid_DoubleTapped">
 
                 <DataGrid.Styles>
                     <Style
@@ -280,7 +282,8 @@
                             Margin="2"
                             BorderBrush="{Binding SelectedBorderBrush}"
                             BorderThickness="{Binding SelectedBorderThickness}"
-                            PointerPressed="ThumbnailCard_PointerPressed">
+                            PointerPressed="ThumbnailCard_PointerPressed"
+                            DoubleTapped="ThumbnailCard_DoubleTapped">
                             <Grid
                                 RowDefinitions="*,Auto">
                                 <Border

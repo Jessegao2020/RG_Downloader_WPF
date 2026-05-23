@@ -18,4 +18,8 @@
   <ItemGroup>
     <ProjectReference Include="../RedgifsDownloader.Core/RedgifsDownloader.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="../../Resources/icon.ico" Link="Assets/icon.ico" />
+  </ItemGroup>
 </Project>
