@@ -10,6 +10,7 @@ using RedgifsDownloader.Infrastructure;
 using RedgifsDownloader.Infrastructure.Fikfap;
 using RedgifsDownloader.Infrastructure.Redgifs;
 using RedgifsDownloader.Infrastructure.Settings;
+using RedgifsDownloader.Avalonia.Services;
 
 namespace RedgifsDownloader.Avalonia;
 
@@ -53,6 +54,9 @@ internal static class ServiceConfiguration
         services.AddSingleton<IAppSettings, AvaloniaAppSettings>();
         services.AddSingleton<IUserNotificationService, NullUserNotificationService>();
         services.AddSingleton<ISecretProtector, PlainTextSecretProtector>();
+
+        services.AddHttpClient<ThumbnailLoader>();
+        services.AddSingleton<ThumbnailLoader>();
 
         services.AddSingleton<IFileNameStrategy, FileNameService>();
         services.AddSingleton<IFikfapApiClient, FikfapApiClient>();
