@@ -217,7 +217,7 @@
                 </ListBox.ItemsPanel>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Border Width="150" Height="200" Margin="2" BorderBrush="{Binding SelectedBorderBrush}" BorderThickness="{Binding SelectedBorderThickness}" PointerPressed="ThumbnailCard_PointerPressed">
+                        <Border Classes="thumbnail-card" Width="150" Height="200" Margin="2" BorderBrush="{Binding SelectedBorderBrush}" BorderThickness="{Binding SelectedBorderThickness}" PointerPressed="ThumbnailCard_PointerPressed">
                             <Grid RowDefinitions="*,Auto">
                                 <Border Background="#FFEFEFEF">
                                     <Image Source="{Binding ThumbnailImage}" Stretch="UniformToFill" />

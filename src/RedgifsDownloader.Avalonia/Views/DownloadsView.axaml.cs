@@ -102,16 +102,18 @@ public partial class DownloadsView : UserControl
         return sourceControl.GetSelfAndVisualAncestors().OfType<CheckBox>().Any();
     }
 
-    private static VideoRow? FindVideoRowFromSource(object? source)
+    private VideoRow? FindVideoRowAtPointer(PointerEventArgs e)
     {
-        if (source is Control control)
+        var point = e.GetPosition(AdvancedThumbnailListBox);
+        var hit = AdvancedThumbnailListBox.InputHitTest(point);
+
+        if (hit is Control control)
         {
             return control.GetSelfAndVisualAncestors()
                        .OfType<Control>()
                        .Select(c => c.DataContext)
                        .OfType<VideoRow>()
-                       .FirstOrDefault()
-                   ?? control.DataContext as VideoRow;
+                       .FirstOrDefault();
         }
 
         return null;
@@ -162,7 +164,7 @@ public partial class DownloadsView : UserControl
             viewModel.BeginRangeSelect();
         }
 
-        var row = FindVideoRowFromSource(e.Source);
+        var row = FindVideoRowAtPointer(e);
         if (row is null)
         {
             return;
