@@ -37,6 +37,44 @@ public partial class DownloadsView : UserControl
         viewModel.SyncSelectionFromDataGrid(dataGrid.SelectedItems.OfType<VideoRow>().ToList());
     }
 
+    private async Task CopyRowUrlAsync(VideoRow? row)
+    {
+        if (row is null || string.IsNullOrWhiteSpace(row.Url) || DataContext is not DownloadsViewModel viewModel)
+        {
+            return;
+        }
+
+        try
+        {
+            await (TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(row.Url) ?? Task.CompletedTask);
+            viewModel.SetStatusMessage("已复制 URL");
+        }
+        catch
+        {
+            viewModel.SetStatusMessage("复制 URL 失败");
+        }
+    }
+
+    private async void ActiveVideosGrid_DoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (IsPointerOnCheckbox(e.Source))
+        {
+            return;
+        }
+
+        if (e.Source is not Control sourceControl)
+        {
+            return;
+        }
+
+        var row = sourceControl.GetSelfAndVisualAncestors()
+            .OfType<DataGridRow>()
+            .Select(r => r.DataContext)
+            .OfType<VideoRow>()
+            .FirstOrDefault();
+        await CopyRowUrlAsync(row);
+    }
+
 
     private void ThumbnailCard_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
@@ -256,6 +294,22 @@ public partial class DownloadsView : UserControl
             viewModel.CrawlCommand.Execute(null);
         }
 
+        e.Handled = true;
+    }
+
+    private async void ThumbnailCard_DoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (IsPointerOnCheckbox(e.Source))
+        {
+            return;
+        }
+
+        if (sender is not Border border || border.DataContext is not VideoRow row)
+        {
+            return;
+        }
+
+        await CopyRowUrlAsync(row);
         e.Handled = true;
     }
 }
