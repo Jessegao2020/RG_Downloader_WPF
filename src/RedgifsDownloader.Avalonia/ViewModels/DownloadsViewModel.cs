@@ -24,6 +24,7 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
     private readonly VideoChangeNotifier _notifier;
     private readonly ThumbnailLoader _thumbnailLoader;
     private readonly Dictionary<string, VideoRow> _rowsById = [];
+    private readonly Dictionary<VideoRow, bool> _selectionOriginalStates = [];
     private string _selectedPlatform = "Redgifs";
     private string _username = string.Empty;
     private bool _isAdvancedMode;
@@ -238,6 +239,46 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
         RefreshSelectionState();
     }
 
+    public void BeginRangeSelect()
+    {
+        _selectionOriginalStates.Clear();
+        foreach (var row in ActiveVideos)
+        {
+            _selectionOriginalStates[row] = row.IsSelected;
+        }
+    }
+
+    public void RangeSelect(int fromIndex, int toIndex, int touchedMinIndex, int touchedMaxIndex)
+    {
+        if (fromIndex < 0 || toIndex < 0 || fromIndex >= ActiveVideos.Count || toIndex >= ActiveVideos.Count)
+        {
+            return;
+        }
+
+        var currentStart = Math.Min(fromIndex, toIndex);
+        var currentEnd = Math.Max(fromIndex, toIndex);
+
+        for (var i = 0; i < ActiveVideos.Count; i++)
+        {
+            var row = ActiveVideos[i];
+            if (i >= touchedMinIndex && i <= touchedMaxIndex)
+            {
+                row.IsSelected = i >= currentStart && i <= currentEnd;
+            }
+            else if (_selectionOriginalStates.TryGetValue(row, out var originalState))
+            {
+                row.IsSelected = originalState;
+            }
+        }
+
+        RefreshSelectionState();
+    }
+
+    public void EndRangeSelect()
+    {
+        _selectionOriginalStates.Clear();
+    }
+
     public void SyncSelectionFromDataGrid(IReadOnlyCollection<VideoRow> selectedRows)
     {
         var selectedSet = selectedRows.ToHashSet();
@@ -262,7 +303,7 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
         _suppressAllSelectedSync = false;
     }
 
-    private void RefreshSelectionState()
+    public void RefreshSelectionState()
     {
         _suppressAllSelectedSync = true;
         IsAllSelected = ActiveVideos.Count > 0 && ActiveVideos.All(v => v.IsSelected);
