@@ -12,11 +12,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public MainWindowViewModel()
     {
         DownloadsViewModel = new DownloadsViewModel();
+        SettingsViewModel = new SettingsViewModel();
         CurrentView = DownloadsViewModel;
         NavigateCommand = new RelayCommand(Navigate);
     }
 
     public DownloadsViewModel DownloadsViewModel { get; }
+    public SettingsViewModel SettingsViewModel { get; }
     public object? CurrentView { get => _currentView; private set => SetField(ref _currentView, value); }
     public ICommand NavigateCommand { get; }
 
@@ -31,7 +33,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             "Reddit" => "Reddit view is not implemented yet",
             "ImageSim" => "ImageSim view is not implemented yet",
             "Cleaner" => "Dupe Cleaner view is not implemented yet",
-            "Settings" => "Settings view is not implemented yet",
+            "Settings" => SettingsViewModel,
             "About" => "Redgifs Downloader (Avalonia)\nThis page is not implemented yet",
             _ => "Unknown view"
         };

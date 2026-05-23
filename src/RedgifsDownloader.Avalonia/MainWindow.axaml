@@ -31,6 +31,9 @@
         <DataTemplate DataType="vm:DownloadsViewModel">
           <views:DownloadsView />
         </DataTemplate>
+        <DataTemplate DataType="vm:SettingsViewModel">
+          <views:SettingsView />
+        </DataTemplate>
         <DataTemplate DataType="sys:String">
           <TextBlock Text="{Binding}" Margin="16" TextWrapping="Wrap" />
         </DataTemplate>
