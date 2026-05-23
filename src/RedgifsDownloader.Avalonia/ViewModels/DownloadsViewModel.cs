@@ -374,7 +374,7 @@ public sealed class VideoRow : INotifyPropertyChanged
     public string Id { get; private set; } = string.Empty;
     public string Url { get; private set; } = string.Empty;
     public long? CreateDateRaw { get; private set; }
-    public string DisplayCreateDate { get; private set; } = "-";
+    public string DisplayCreateDate { get; private set; } = "";
     public bool HasThumbnailUrl { get; private set; }
     public string? ThumbnailUrl { get; private set; }
     private Bitmap? _thumbnailImage;
@@ -385,7 +385,7 @@ public sealed class VideoRow : INotifyPropertyChanged
     public Video Item { get; private set; } = default!;
     public static VideoRow From(Video video)
     {
-        var row = new VideoRow { Id = video.Id, Url = video.Url.ToString(), CreateDateRaw = video.CreateDateRaw, DisplayCreateDate = video.CreateDateRaw is long t ? DateTimeOffset.FromUnixTimeSeconds(t).ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "-", HasThumbnailUrl = !string.IsNullOrWhiteSpace(video.ThumbnailUrl), ThumbnailUrl = video.ThumbnailUrl, Item = video };
+        var row = new VideoRow { Id = video.Id, Url = video.Url.ToString(), CreateDateRaw = video.CreateDateRaw, DisplayCreateDate = video.CreateDateRaw is long t ? DateTimeOffset.FromUnixTimeSeconds(t).ToLocalTime().ToString("MM/dd/yy") : "", HasThumbnailUrl = !string.IsNullOrWhiteSpace(video.ThumbnailUrl), ThumbnailUrl = video.ThumbnailUrl, Item = video };
         row.Update(video); return row;
     }
     public void Update(Video video)

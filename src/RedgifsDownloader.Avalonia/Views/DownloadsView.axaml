@@ -160,8 +160,10 @@
                 SelectionChanged="ActiveVideosGrid_SelectionChanged">
                 <DataGrid.Columns>
                     <DataGridTemplateColumn
-                        Width="45"
-                        CanUserResize="True">
+                        Width="32"
+                        MinWidth="32"
+                        MaxWidth="34"
+                        CanUserResize="False">
                         <DataGridTemplateColumn.Header>
                             <CheckBox
                                 IsChecked="{Binding DataContext.IsAllSelected, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay}"
@@ -186,12 +188,12 @@
                     <DataGridTextColumn
                         Header="日期"
                         Binding="{Binding DisplayCreateDate}"
-                        Width="90"
+                        Width="75"
                         CanUserResize="True" />
                     <DataGridTextColumn
                         Header="状态"
                         Binding="{Binding DisplayStatus}"
-                        Width="90"
+                        Width="75"
                         CanUserResize="True" />
                 </DataGrid.Columns>
             </DataGrid>
