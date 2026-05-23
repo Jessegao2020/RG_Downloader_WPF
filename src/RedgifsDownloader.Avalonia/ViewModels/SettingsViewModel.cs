@@ -1,7 +1,10 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using RedgifsDownloader.ApplicationLayer.Settings;
 
@@ -19,6 +22,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         if (Design.IsDesignMode)
         {
             SaveCommand = new RelayCommand(_ => { });
+            BrowseFolderCommand = new RelayCommand(_ => { });
             return;
         }
 
@@ -27,6 +31,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         _maxConcurrentDownloads = ClampConcurrent(_appSettings.MaxConcurrentDownloads);
 
         SaveCommand = new RelayCommand(_ => Save());
+        BrowseFolderCommand = new AsyncCommand(BrowseFolderAsync);
     }
 
     public string DownloadDirectory
@@ -48,6 +53,7 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     }
 
     public ICommand SaveCommand { get; }
+    public ICommand BrowseFolderCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -68,6 +74,40 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
         DownloadDirectory = _appSettings.DownloadDirectory;
         MaxConcurrentDownloads = _appSettings.MaxConcurrentDownloads;
         SaveStatus = "设置已保存";
+    }
+
+
+
+    private async Task BrowseFolderAsync()
+    {
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            return;
+        }
+
+        var topLevel = desktop.MainWindow;
+        if (topLevel is null)
+        {
+            return;
+        }
+
+        var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "选择下载目录",
+            AllowMultiple = false
+        });
+
+        var folder = folders.FirstOrDefault();
+        if (folder is null)
+        {
+            return;
+        }
+
+        var path = folder.TryGetLocalPath();
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            DownloadDirectory = path;
+        }
     }
 
     private static int ClampConcurrent(int value) => Math.Clamp(value, 1, 20);
