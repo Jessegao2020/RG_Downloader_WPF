@@ -209,7 +209,7 @@
                 BorderThickness="0"
                 PointerMoved="AdvancedThumbnailListBox_PointerMoved"
                 PointerReleased="AdvancedThumbnailListBox_PointerReleased"
-                PointerLeave="AdvancedThumbnailListBox_PointerLeave">
+                PointerExited="AdvancedThumbnailListBox_PointerExited">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel />
