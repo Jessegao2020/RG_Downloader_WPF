@@ -11,6 +11,8 @@ using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.Domain.Entities;
 using RedgifsDownloader.Domain.Enums;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
+using RedgifsDownloader.Avalonia.Services;
 
 namespace RedgifsDownloader.Avalonia.ViewModels;
 
@@ -19,6 +21,7 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
     private readonly IDownloadAppService _downloadAppService;
     private readonly IAppSettings _appSettings;
     private readonly VideoChangeNotifier _notifier;
+    private readonly ThumbnailLoader _thumbnailLoader;
     private readonly Dictionary<string, VideoRow> _rowsById = [];
     private string _selectedPlatform = "Redgifs";
     private string _username = string.Empty;
@@ -38,6 +41,7 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
     _downloadAppService = null!;
     _appSettings = null!;
     _notifier = null!;
+    _thumbnailLoader = null!;
 
     RetryAllCommand = new RelayCommand(_ => { });
     OpenDownloadFolderCommand = new RelayCommand(_ => { });
@@ -56,6 +60,7 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
         _downloadAppService = provider.GetRequiredService<IDownloadAppService>();
         _appSettings = provider.GetRequiredService<IAppSettings>();
         _notifier = provider.GetRequiredService<VideoChangeNotifier>();
+        _thumbnailLoader = provider.GetRequiredService<ThumbnailLoader>();
         _notifier.Subscribe(OnVideoChanged);
         CrawlCommand = new AsyncCommand(CrawlAsync, () => !IsCrawling && !IsDownloading);
         DownloadCommand = new AsyncCommand(DownloadAsync, () => !IsCrawling && !IsDownloading);
@@ -134,6 +139,7 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
                 }
 
                 _notifier.RegisterVideo(video);
+                _ = _thumbnailLoader.LoadAsync(row);
             }
             StatusMessage = $"爬取完成，共 {Videos.Count} 条";
         }
@@ -300,12 +306,15 @@ public sealed class VideoRow : INotifyPropertyChanged
     public long? CreateDateRaw { get; private set; }
     public string DisplayCreateDate { get; private set; } = "-";
     public bool HasThumbnailUrl { get; private set; }
+    public string? ThumbnailUrl { get; private set; }
+    private Bitmap? _thumbnailImage;
+    public Bitmap? ThumbnailImage { get => _thumbnailImage; set => SetField(ref _thumbnailImage, value); }
     public string Status { get => _status; private set => SetField(ref _status, value); }
     public string Progress { get => _progress; private set => SetField(ref _progress, value); }
     public Video Item { get; private set; } = default!;
     public static VideoRow From(Video video)
     {
-        var row = new VideoRow { Id = video.Id, Url = video.Url.ToString(), CreateDateRaw = video.CreateDateRaw, DisplayCreateDate = video.CreateDateRaw is long t ? DateTimeOffset.FromUnixTimeSeconds(t).ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "-", HasThumbnailUrl = !string.IsNullOrWhiteSpace(video.ThumbnailUrl), Item = video };
+        var row = new VideoRow { Id = video.Id, Url = video.Url.ToString(), CreateDateRaw = video.CreateDateRaw, DisplayCreateDate = video.CreateDateRaw is long t ? DateTimeOffset.FromUnixTimeSeconds(t).ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "-", HasThumbnailUrl = !string.IsNullOrWhiteSpace(video.ThumbnailUrl), ThumbnailUrl = video.ThumbnailUrl, Item = video };
         row.Update(video); return row;
     }
     public void Update(Video video) { Item = video; Status = video.Status.ToString(); Progress = video.Progress?.ToString("F1") ?? "-"; }
