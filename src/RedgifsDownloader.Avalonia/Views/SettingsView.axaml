@@ -10,7 +10,18 @@
     <TextBlock Text="设置" FontSize="20" FontWeight="Bold"/>
 
     <TextBlock Text="下载目录"/>
-    <TextBox Text="{Binding DownloadDirectory}" Watermark="请输入下载目录路径" />
+    <Grid ColumnDefinitions="*,Auto">
+      <TextBox
+          Grid.Column="0"
+          Text="{Binding DownloadDirectory}"
+          Watermark="请输入下载目录路径"
+          Margin="0,0,6,0" />
+      <Button
+          Grid.Column="1"
+          Command="{Binding BrowseFolderCommand}">
+        <TextBlock Text="浏览..." />
+      </Button>
+    </Grid>
 
     <TextBlock Text="最大并发数 (1-20)"/>
     <NumericUpDown Value="{Binding MaxConcurrentDownloads}" Minimum="1" Maximum="20" FormatString="N0"/>
