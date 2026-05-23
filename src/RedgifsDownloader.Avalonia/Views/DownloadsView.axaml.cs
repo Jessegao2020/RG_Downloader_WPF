@@ -1,5 +1,6 @@
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using RedgifsDownloader.Avalonia.ViewModels;
 
@@ -20,5 +21,25 @@ public partial class DownloadsView : UserControl
         }
 
         viewModel.SyncSelectionFromDataGrid(dataGrid.SelectedItems.OfType<VideoRow>().ToList());
+    }
+
+    private void UserBox_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter)
+        {
+            return;
+        }
+
+        if (DataContext is not DownloadsViewModel viewModel)
+        {
+            return;
+        }
+
+        if (viewModel.CrawlCommand.CanExecute(null))
+        {
+            viewModel.CrawlCommand.Execute(null);
+        }
+
+        e.Handled = true;
     }
 }
