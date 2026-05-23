@@ -14,6 +14,8 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using RedgifsDownloader.Avalonia.Services;
+using Avalonia;
+
 
 namespace RedgifsDownloader.Avalonia.ViewModels;
 

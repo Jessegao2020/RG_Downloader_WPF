@@ -9,10 +9,10 @@
         x:Class="RedgifsDownloader.Avalonia.MainWindow"
         x:DataType="local:MainWindowViewModel"
         mc:Ignorable="d"
-        Width="400"
-        Height="500"
-        MinWidth="400"
-        MinHeight="500"
+        Width="450"
+        Height="550"
+        MinWidth="450"
+        MinHeight="550"
         Title="Redgifs Downloader v1.0.1">
   <Grid RowDefinitions="Auto,*">
     <Menu Grid.Row="0">

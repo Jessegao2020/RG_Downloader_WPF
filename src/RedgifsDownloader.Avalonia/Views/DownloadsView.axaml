@@ -7,8 +7,8 @@
     x:Class="RedgifsDownloader.Avalonia.Views.DownloadsView"
     x:DataType="vm:DownloadsViewModel"
     FontSize="14"
-    d:DesignWidth="400"
-    d:DesignHeight="500"
+    d:DesignWidth="450"
+    d:DesignHeight="550"
     mc:Ignorable="d">
     <Grid
         RowDefinitions="Auto,Auto,1.5*,Auto,Auto,*"
@@ -37,7 +37,6 @@
                 ItemsSource="{Binding Platforms}"
                 SelectedItem="{Binding SelectedPlatform}"
                 Height="24"
-                
                 VerticalAlignment="Center"
                 Margin="0,0,5,0"
                 Foreground="Black">
@@ -163,7 +162,7 @@
                         Width="32"
                         MinWidth="32"
                         MaxWidth="34"
-                        CanUserResize="False">
+                        CanUserResize="True">
                         <DataGridTemplateColumn.Header>
                             <CheckBox
                                 IsChecked="{Binding DataContext.IsAllSelected, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay}"
@@ -188,12 +187,12 @@
                     <DataGridTextColumn
                         Header="日期"
                         Binding="{Binding DisplayCreateDate}"
-                        Width="75"
+                        Width="100"
                         CanUserResize="True" />
                     <DataGridTextColumn
                         Header="状态"
                         Binding="{Binding DisplayStatus}"
-                        Width="75"
+                        Width="100"
                         CanUserResize="True" />
                 </DataGrid.Columns>
             </DataGrid>
@@ -214,19 +213,45 @@
                 </ListBox.ItemsPanel>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Border Classes="thumbnail-card" Width="150" Height="200" Margin="2" BorderBrush="{Binding SelectedBorderBrush}" BorderThickness="{Binding SelectedBorderThickness}" PointerPressed="ThumbnailCard_PointerPressed">
-                            <Grid RowDefinitions="*,Auto">
-                                <Border Background="#FFEFEFEF">
-                                    <Image Source="{Binding ThumbnailImage}" Stretch="UniformToFill" />
+                        <Border
+                            Classes="thumbnail-card"
+                            Width="150"
+                            Height="200"
+                            Margin="2"
+                            BorderBrush="{Binding SelectedBorderBrush}"
+                            BorderThickness="{Binding SelectedBorderThickness}"
+                            PointerPressed="ThumbnailCard_PointerPressed">
+                            <Grid
+                                RowDefinitions="*,Auto">
+                                <Border
+                                    Background="#FFEFEFEF">
+                                    <Image
+                                        Source="{Binding ThumbnailImage}"
+                                        Stretch="UniformToFill" />
                                 </Border>
-                                <Border Grid.Row="1" Background="#80000000" Padding="4">
+                                <Border
+                                    Grid.Row="1"
+                                    Background="#80000000"
+                                    Padding="4">
                                     <StackPanel>
-                                        <TextBlock Text="{Binding Id}" Foreground="White" IsVisible="{Binding DataContext.IsCaptionVisible, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                                        <TextBlock Text="{Binding DisplayCreateDate}" Foreground="White" IsVisible="{Binding DataContext.IsCaptionVisible, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                                        <TextBlock Text="{Binding DisplayStatus}" Foreground="White" />
+                                        <TextBlock
+                                            Text="{Binding Id}"
+                                            Foreground="White"
+                                            IsVisible="{Binding DataContext.IsCaptionVisible, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                                        <TextBlock
+                                            Text="{Binding DisplayCreateDate}"
+                                            Foreground="White"
+                                            IsVisible="{Binding DataContext.IsCaptionVisible, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                                        <TextBlock
+                                            Text="{Binding DisplayStatus}"
+                                            Foreground="White" />
                                     </StackPanel>
                                 </Border>
-                                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5" />
+                                <CheckBox
+                                    IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Top"
+                                    Margin="5" />
                             </Grid>
                         </Border>
                     </DataTemplate>
