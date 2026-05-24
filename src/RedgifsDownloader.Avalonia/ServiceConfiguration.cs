@@ -5,10 +5,13 @@ using RedgifsDownloader.ApplicationLayer.Fikfap;
 using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.ApplicationLayer.Notifications;
 using RedgifsDownloader.ApplicationLayer.Settings;
+using RedgifsDownloader.ApplicationLayer.Reddit;
 using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Infrastructure;
 using RedgifsDownloader.Infrastructure.Fikfap;
 using RedgifsDownloader.Infrastructure.Redgifs;
+using RedgifsDownloader.Infrastructure.Reddit;
+using RedgifsDownloader.Avalonia.ViewModels;
 using RedgifsDownloader.Infrastructure.Settings;
 using RedgifsDownloader.Avalonia.Services;
 
@@ -61,6 +64,15 @@ internal static class ServiceConfiguration
         services.AddSingleton<IFileNameStrategy, FileNameService>();
         services.AddSingleton<IFikfapApiClient, FikfapApiClient>();
         services.AddSingleton(new FikfapSession { Token = Guid.NewGuid().ToString() });
+
+        services.AddSingleton<ITransferDownloader>(sp => sp.GetRequiredService<HttpTransferDownloader>());
+        services.AddSingleton<IRedditApiClient, RedditApiClient>();
+        services.AddHttpClient<IRedditAuthService, RedditAuthService>();
+        services.AddSingleton<RedditFetchImagesAppService>();
+        services.AddSingleton<RedditFetchRedgifsAppService>();
+        services.AddSingleton<IRedditDownloadAppService, RedditDownloadAppService>();
+
+        services.AddTransient<RedditViewModel>();
 
         return services.BuildServiceProvider();
     }

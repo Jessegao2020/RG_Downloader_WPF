@@ -34,6 +34,9 @@
         <DataTemplate DataType="vm:SettingsViewModel">
           <views:SettingsView />
         </DataTemplate>
+        <DataTemplate DataType="vm:RedditViewModel">
+          <views:RedditView />
+        </DataTemplate>
         <DataTemplate DataType="sys:String">
           <TextBlock Text="{Binding}" Margin="16" TextWrapping="Wrap" />
         </DataTemplate>
