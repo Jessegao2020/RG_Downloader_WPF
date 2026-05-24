@@ -40,6 +40,9 @@
         <DataTemplate DataType="vm:ImageSimilarityViewModel">
           <views:ImageSimilarityView />
         </DataTemplate>
+        <DataTemplate DataType="vm:DupePicsCleanerViewModel">
+          <views:DupePicsCleanerView />
+        </DataTemplate>
         <DataTemplate DataType="sys:String">
           <TextBlock Text="{Binding}" Margin="16" TextWrapping="Wrap" />
         </DataTemplate>

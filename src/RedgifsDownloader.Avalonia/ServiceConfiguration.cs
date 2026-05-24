@@ -7,6 +7,7 @@ using RedgifsDownloader.ApplicationLayer.Notifications;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.ApplicationLayer.Reddit;
 using RedgifsDownloader.ApplicationLayer.ImageSimilarity;
+using RedgifsDownloader.ApplicationLayer.DupeCleaner;
 using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Infrastructure;
 using RedgifsDownloader.Infrastructure.Fikfap;
@@ -76,9 +77,11 @@ internal static class ServiceConfiguration
         services.AddSingleton<IImageHashService, ImageHashService>();
         services.AddSingleton<IImageSimilarityAppService, ImageSimilarityAppService>();
         services.AddSingleton<IDupeFileMoveService, FileMoveService>();
+        services.AddSingleton<DupeCleanerAppService>();
 
         services.AddTransient<RedditViewModel>();
         services.AddTransient<ImageSimilarityViewModel>();
+        services.AddTransient<DupePicsCleanerViewModel>();
 
         return services.BuildServiceProvider();
     }

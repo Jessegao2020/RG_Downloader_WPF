@@ -16,6 +16,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         SettingsViewModel = new SettingsViewModel();
         RedditViewModel = Program.Services.GetRequiredService<RedditViewModel>();
         ImageSimilarityViewModel = Program.Services.GetRequiredService<ImageSimilarityViewModel>();
+        DupePicsCleanerViewModel = Program.Services.GetRequiredService<DupePicsCleanerViewModel>();
         CurrentView = DownloadsViewModel;
         NavigateCommand = new RelayCommand(Navigate);
     }
@@ -24,6 +25,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public SettingsViewModel SettingsViewModel { get; }
     public RedditViewModel RedditViewModel { get; }
     public ImageSimilarityViewModel ImageSimilarityViewModel { get; }
+    public DupePicsCleanerViewModel DupePicsCleanerViewModel { get; }
     public object? CurrentView { get => _currentView; private set => SetField(ref _currentView, value); }
     public ICommand NavigateCommand { get; }
 
@@ -37,7 +39,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             "Redgifs" or "Fikfap" => DownloadsViewModel,
             "Reddit" => RedditViewModel,
             "ImageSim" => ImageSimilarityViewModel,
-            "Cleaner" => "Dupe Cleaner view is not implemented yet",
+            "Cleaner" => DupePicsCleanerViewModel,
             "Settings" => SettingsViewModel,
             "About" => "Redgifs Downloader (Avalonia)\nThis page is not implemented yet",
             _ => "Unknown view"
