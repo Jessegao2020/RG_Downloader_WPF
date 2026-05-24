@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using RedgifsDownloader.Avalonia.ViewModels;
+using Avalonia.Platform.Storage;
 
 namespace RedgifsDownloader.Avalonia.Views;
 
