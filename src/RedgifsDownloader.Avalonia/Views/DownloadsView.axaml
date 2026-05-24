@@ -151,7 +151,7 @@
                 IsVisible="{Binding !IsAdvancedMode}"
                 ItemsSource="{Binding ActiveVideos}"
                 AutoGenerateColumns="False"
-                IsReadOnly="False"
+                IsReadOnly="True"
                 RowHeight="28"
                 ColumnHeaderHeight="28"
                 FontSize="13"
