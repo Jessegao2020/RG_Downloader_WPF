@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RedgifsDownloader.Avalonia.ViewModels"
+             x:Class="RedgifsDownloader.Avalonia.Views.ImageSimilarityView"
+             x:DataType="vm:ImageSimilarityViewModel"
+             mc:Ignorable="d">
+  <Grid Margin="8" RowDefinitions="Auto,Auto,Auto,Auto,*" ColumnDefinitions="Auto,*,Auto">
+    <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="路径" />
+    <TextBox Grid.Row="0" Grid.Column="1" Margin="8,0,8,0" Text="{Binding FolderPath}" />
+    <Button Grid.Row="0" Grid.Column="2" Content="选择" Click="SelectFolder_OnClick" />
+
+    <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" Text="阈值" />
+    <NumericUpDown Grid.Row="1"
+                   Grid.Column="1"
+                   Margin="8,8,0,0"
+                   HorizontalAlignment="Left"
+                   Width="80"
+                   Minimum="0.01"
+                   Maximum="1"
+                   Increment="0.01"
+                   FormatString="F2"
+                   Value="{Binding Threshold}" />
+
+    <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,10,0,0" Orientation="Horizontal" Spacing="8">
+      <Button Content="开始筛选" Command="{Binding ExecuteCommand}" />
+      <Button Content="前往文件夹" Command="{Binding GoToFolderCommand}" />
+    </StackPanel>
+
+    <ProgressBar Grid.Row="3"
+                 Grid.Column="0"
+                 Grid.ColumnSpan="3"
+                 Margin="0,10,0,0"
+                 Height="4"
+                 Minimum="0"
+                 Maximum="100"
+                 Value="{Binding ProgressValue}"
+                 IsIndeterminate="{Binding IsBusy}" />
+
+    <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,10,0,0" BorderBrush="Gray" BorderThickness="1" Padding="6">
+      <Grid RowDefinitions="Auto,*">
+        <TextBlock Grid.Row="0" Text="日志" FontWeight="Bold" />
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+          <TextBox x:Name="LogBox"
+                   Foreground="Gray"
+                   IsReadOnly="True"
+                   AcceptsReturn="True"
+                   TextWrapping="Wrap"
+                   Text="{Binding Logger, Mode=OneWay}"
+                   TextChanged="LogBox_OnTextChanged" />
+        </ScrollViewer>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

@@ -6,6 +6,7 @@ using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.ApplicationLayer.Notifications;
 using RedgifsDownloader.ApplicationLayer.Settings;
 using RedgifsDownloader.ApplicationLayer.Reddit;
+using RedgifsDownloader.ApplicationLayer.ImageSimilarity;
 using RedgifsDownloader.Domain.Interfaces;
 using RedgifsDownloader.Infrastructure;
 using RedgifsDownloader.Infrastructure.Fikfap;
@@ -13,6 +14,7 @@ using RedgifsDownloader.Infrastructure.Redgifs;
 using RedgifsDownloader.Infrastructure.Reddit;
 using RedgifsDownloader.Avalonia.ViewModels;
 using RedgifsDownloader.Infrastructure.Settings;
+using RedgifsDownloader.Infrastructure.ImageSim;
 using RedgifsDownloader.Avalonia.Services;
 
 namespace RedgifsDownloader.Avalonia;
@@ -71,8 +73,11 @@ internal static class ServiceConfiguration
         services.AddSingleton<RedditFetchImagesAppService>();
         services.AddSingleton<RedditFetchRedgifsAppService>();
         services.AddSingleton<IRedditDownloadAppService, RedditDownloadAppService>();
+        services.AddSingleton<IImageSimilarityAppService, ImageSimilarityAppService>();
+        services.AddSingleton<IDupeFileMoveService, FileMoveService>();
 
         services.AddTransient<RedditViewModel>();
+        services.AddTransient<ImageSimilarityViewModel>();
 
         return services.BuildServiceProvider();
     }

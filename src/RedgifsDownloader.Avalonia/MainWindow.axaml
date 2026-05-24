@@ -37,6 +37,9 @@
         <DataTemplate DataType="vm:RedditViewModel">
           <views:RedditView />
         </DataTemplate>
+        <DataTemplate DataType="vm:ImageSimilarityViewModel">
+          <views:ImageSimilarityView />
+        </DataTemplate>
         <DataTemplate DataType="sys:String">
           <TextBlock Text="{Binding}" Margin="16" TextWrapping="Wrap" />
         </DataTemplate>
