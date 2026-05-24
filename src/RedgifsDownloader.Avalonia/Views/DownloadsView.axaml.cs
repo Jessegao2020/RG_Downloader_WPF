@@ -39,7 +39,7 @@ public partial class DownloadsView : UserControl
 
     private async Task CopyRowUrlAsync(VideoRow? row)
     {
-        if (row is null || string.IsNullOrWhiteSpace(row.Url) || DataContext is not DownloadsViewModel viewModel)
+        if (row is null || string.IsNullOrWhiteSpace(row.Url))
         {
             return;
         }
@@ -47,11 +47,13 @@ public partial class DownloadsView : UserControl
         try
         {
             await (TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(row.Url) ?? Task.CompletedTask);
-            viewModel.SetStatusMessage($"已复制 URL: {row.Id}");
+            var owner = TopLevel.GetTopLevel(this) as Window;
+            ToastWindow.Show(owner, $"已复制 URL:\n{row.Url}");
         }
         catch
         {
-            viewModel.SetStatusMessage("复制 URL 失败");
+            var owner = TopLevel.GetTopLevel(this) as Window;
+            ToastWindow.Show(owner, "复制 URL 失败");
         }
     }
 

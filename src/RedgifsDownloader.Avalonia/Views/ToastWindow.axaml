@@ -1,0 +1,27 @@
+<Window
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="RedgifsDownloader.Avalonia.Views.ToastWindow"
+    Width="260"
+    Height="80"
+    CanResize="False"
+    ShowInTaskbar="False"
+    Topmost="True"
+    SystemDecorations="None"
+    Background="Transparent"
+    ShowActivated="False"
+    WindowStartupLocation="Manual">
+    <Border
+        Background="#DD222222"
+        CornerRadius="8"
+        Padding="12"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Stretch">
+        <TextBlock
+            x:Name="MessageText"
+            TextWrapping="Wrap"
+            Foreground="White"
+            FontSize="14"
+            VerticalAlignment="Center" />
+    </Border>
+</Window>
