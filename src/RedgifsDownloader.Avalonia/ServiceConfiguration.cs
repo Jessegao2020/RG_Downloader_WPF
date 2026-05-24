@@ -16,6 +16,7 @@ using RedgifsDownloader.Infrastructure.Reddit;
 using RedgifsDownloader.Avalonia.ViewModels;
 using RedgifsDownloader.Infrastructure.Settings;
 using RedgifsDownloader.Infrastructure.ImageSim;
+using RedgifsDownloader.Infrastructure.DupeCleaner;
 using RedgifsDownloader.Avalonia.Services;
 
 namespace RedgifsDownloader.Avalonia;
@@ -77,6 +78,8 @@ internal static class ServiceConfiguration
         services.AddSingleton<IImageHashService, ImageHashService>();
         services.AddSingleton<IImageSimilarityAppService, ImageSimilarityAppService>();
         services.AddSingleton<IDupeFileMoveService, FileMoveService>();
+        services.AddSingleton<IDupeCleanerService, DupeCleanerService>();
+        services.AddSingleton<IRenameService, DupeRenameService>();
         services.AddSingleton<DupeCleanerAppService>();
 
         services.AddTransient<RedditViewModel>();
