@@ -13,7 +13,7 @@
 
 
     <Grid
-        RowDefinitions="Auto,Auto,1.5*,Auto,Auto,Auto,*"
+        RowDefinitions="Auto,Auto,1.5*,Auto,Auto,*"
         Margin="8">
         <Grid
             ColumnDefinitions="Auto,*,Auto,Auto,Auto"
@@ -426,15 +426,9 @@
             </Button>
         </Grid>
 
-        <TextBlock
-            Grid.Row="5"
-            Text="{Binding StatusMessage}"
-            Foreground="Green"
-            FontSize="13"
-            Margin="0,4,0,0" />
 
         <DataGrid
-            Grid.Row="6"
+            Grid.Row="5"
             ItemsSource="{Binding FailedVideos}"
             AutoGenerateColumns="False"
             IsReadOnly="True"
