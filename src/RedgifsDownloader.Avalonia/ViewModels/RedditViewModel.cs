@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Input;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Threading;
 using RedgifsDownloader.ApplicationLayer.Reddit;
 using RedgifsDownloader.ApplicationLayer.Settings;
