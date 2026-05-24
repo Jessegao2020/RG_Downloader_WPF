@@ -292,7 +292,7 @@
                                 <Border
                                     Background="#FFEFEFEF">
                                     <Image
-                                        Source="{Binding ThumbnailImage}"
+                                        Source="{Binding ThumbnailImage, TargetNullValue=avares://RedgifsDownloader.Avalonia/Assets/icon.ico}"
                                         Stretch="UniformToFill" />
                                 </Border>
                                 <Border
