@@ -47,7 +47,7 @@ public partial class DownloadsView : UserControl
         try
         {
             await (TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(row.Url) ?? Task.CompletedTask);
-            viewModel.SetStatusMessage("已复制 URL");
+            viewModel.SetStatusMessage($"已复制 URL: {row.Id}");
         }
         catch
         {
