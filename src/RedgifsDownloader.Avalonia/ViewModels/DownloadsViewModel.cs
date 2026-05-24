@@ -208,12 +208,21 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
     }
     private void OnVideoChanged(Video video)
     {
-        if (_rowsById.TryGetValue(video.Id, out var row))
+        if (!_rowsById.TryGetValue(video.Id, out var row))
         {
-            row.Update(video);
-            RefreshVisibleCollections();
-            RaiseCounts();
+            return;
         }
+
+        var wasFailed = row.IsFailed;
+        row.Update(video);
+        var isFailed = row.IsFailed;
+
+        if (wasFailed != isFailed)
+        {
+            RefreshVisibleCollections();
+        }
+
+        RaiseCounts();
     }
     public void ToggleSelection(VideoRow row)
     {
@@ -389,6 +398,11 @@ public sealed class VideoRow : INotifyPropertyChanged
     public string Status { get => _status; private set => SetField(ref _status, value); }
     public string Progress { get => _progress; private set => SetField(ref _progress, value); }
     public string DisplayStatus { get => _displayStatus; private set => SetField(ref _displayStatus, value); }
+    public bool IsFailed => Status is nameof(VideoStatus.Failed)
+        or nameof(VideoStatus.NetworkError)
+        or nameof(VideoStatus.WriteError)
+        or nameof(VideoStatus.UnknownError)
+        or nameof(VideoStatus.Canceled);
     public Video Item { get; private set; } = default!;
     public static VideoRow From(Video video)
     {
