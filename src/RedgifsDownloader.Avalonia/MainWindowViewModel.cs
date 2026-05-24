@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
 using RedgifsDownloader.Avalonia.ViewModels;
 
 namespace RedgifsDownloader.Avalonia;
@@ -13,12 +14,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     {
         DownloadsViewModel = new DownloadsViewModel();
         SettingsViewModel = new SettingsViewModel();
+        RedditViewModel = Program.Services.GetRequiredService<RedditViewModel>();
         CurrentView = DownloadsViewModel;
         NavigateCommand = new RelayCommand(Navigate);
     }
 
     public DownloadsViewModel DownloadsViewModel { get; }
     public SettingsViewModel SettingsViewModel { get; }
+    public RedditViewModel RedditViewModel { get; }
     public object? CurrentView { get => _currentView; private set => SetField(ref _currentView, value); }
     public ICommand NavigateCommand { get; }
 
@@ -30,7 +33,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         CurrentView = target switch
         {
             "Redgifs" or "Fikfap" => DownloadsViewModel,
-            "Reddit" => "Reddit view is not implemented yet",
+            "Reddit" => RedditViewModel,
             "ImageSim" => "ImageSim view is not implemented yet",
             "Cleaner" => "Dupe Cleaner view is not implemented yet",
             "Settings" => SettingsViewModel,
