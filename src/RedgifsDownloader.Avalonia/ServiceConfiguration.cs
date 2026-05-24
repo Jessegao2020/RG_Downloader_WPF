@@ -73,6 +73,7 @@ internal static class ServiceConfiguration
         services.AddSingleton<RedditFetchImagesAppService>();
         services.AddSingleton<RedditFetchRedgifsAppService>();
         services.AddSingleton<IRedditDownloadAppService, RedditDownloadAppService>();
+        services.AddSingleton<IImageHashService, ImageHashService>();
         services.AddSingleton<IImageSimilarityAppService, ImageSimilarityAppService>();
         services.AddSingleton<IDupeFileMoveService, FileMoveService>();
 
