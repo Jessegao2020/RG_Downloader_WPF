@@ -1,32 +1,52 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="using:RedgifsDownloader.Avalonia.ViewModels"
-             x:Class="RedgifsDownloader.Avalonia.Views.SettingsView"
-             x:DataType="vm:SettingsViewModel"
-             mc:Ignorable="d">
-  <StackPanel Margin="16" Spacing="10">
-    <TextBlock Text="设置" FontSize="20" FontWeight="Bold"/>
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:RedgifsDownloader.Avalonia.ViewModels"
+    x:Class="RedgifsDownloader.Avalonia.Views.SettingsView"
+    x:DataType="vm:SettingsViewModel"
+    mc:Ignorable="d">
+    <StackPanel
+        Margin="16"
+        Spacing="10">
+        <TextBlock
+            Text="设置"
+            FontSize="20"
+            FontWeight="Bold" />
 
-    <TextBlock Text="下载目录"/>
-    <Grid ColumnDefinitions="*,Auto">
-      <TextBox
-          Grid.Column="0"
-          Text="{Binding DownloadDirectory}"
-          Watermark="请输入下载目录路径"
-          Margin="0,0,6,0" />
-      <Button
-          Grid.Column="1"
-          Command="{Binding BrowseFolderCommand}">
-        <TextBlock Text="浏览..." />
-      </Button>
-    </Grid>
+        <TextBlock
+            Text="下载目录" />
+        <Grid
+            ColumnDefinitions="*,Auto">
+            <TextBox
+                Grid.Column="0"
+                Text="{Binding DownloadDirectory}"
+                Watermark="请输入下载目录路径"
+                Margin="0,0,6,0" />
+            <Button
+                Grid.Column="1"
+                Command="{Binding BrowseFolderCommand}">
+                <TextBlock
+                    Text="浏览..." />
+            </Button>
+        </Grid>
 
-    <TextBlock Text="最大并发数 (1-20)"/>
-    <NumericUpDown Value="{Binding MaxConcurrentDownloads}" Minimum="1" Maximum="20" FormatString="N0"/>
+        <TextBlock
+            Text="最大并发数 (1-20)" />
+        <NumericUpDown
+            Value="{Binding MaxConcurrentDownloads}"
+            Minimum="1"
+            Maximum="20"
+            FormatString="N0" />
 
-    <Button Content="保存" Command="{Binding SaveCommand}" Width="100" HorizontalAlignment="Left"/>
-    <TextBlock Text="{Binding SaveStatus}" Foreground="Green"/>
-  </StackPanel>
+        <Button
+            Content="保存"
+            Command="{Binding SaveCommand}"
+            Width="100"
+            HorizontalAlignment="Left" />
+        <TextBlock
+            Text="{Binding SaveStatus}"
+            Foreground="Green" />
+    </StackPanel>
 </UserControl>

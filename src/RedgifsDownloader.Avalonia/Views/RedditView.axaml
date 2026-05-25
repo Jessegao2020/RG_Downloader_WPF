@@ -1,75 +1,132 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="using:RedgifsDownloader.Avalonia.ViewModels"
-             x:Class="RedgifsDownloader.Avalonia.Views.RedditView"
-             x:DataType="vm:RedditViewModel"
-             mc:Ignorable="d">
-  <Grid Margin="8" RowDefinitions="Auto,Auto,Auto,*">
-    <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,Auto,*" Margin="0,0,0,6">
-      <Button Grid.Column="0"
-              Height="28"
-              MinWidth="70"
-              HorizontalAlignment="Left"
-              Command="{Binding LoginCommand}">
-        <TextBlock Text="{Binding LoginBtnText}" Foreground="Black" FontSize="14" />
-      </Button>
-      <TextBlock Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" Text="Mode:" />
-      <RadioButton Grid.Column="2" Margin="8,0,0,0" VerticalAlignment="Center" Content="Image" GroupName="Mode" IsChecked="{Binding IsImageMode, Mode=TwoWay}" />
-      <RadioButton Grid.Column="3" Margin="8,0,0,0" VerticalAlignment="Center" Content="Video" GroupName="Mode" IsChecked="{Binding IsVideoMode, Mode=TwoWay}" />
-    </Grid>
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:RedgifsDownloader.Avalonia.ViewModels"
+    x:Class="RedgifsDownloader.Avalonia.Views.RedditView"
+    x:DataType="vm:RedditViewModel"
+    mc:Ignorable="d">
+    <Grid
+        Margin="8"
+        RowDefinitions="Auto,Auto,Auto,*">
+        <Grid
+            Grid.Row="0"
+            ColumnDefinitions="Auto,Auto,Auto,Auto,*"
+            Margin="0,0,0,6">
+            <Button
+                Grid.Column="0"
+                Height="28"
+                MinWidth="70"
+                HorizontalAlignment="Left"
+                Command="{Binding LoginCommand}">
+                <TextBlock
+                    Text="{Binding LoginBtnText}"
+                    Foreground="Black"
+                    FontSize="14" />
+            </Button>
+            <TextBlock
+                Grid.Column="1"
+                Margin="8,0,0,0"
+                VerticalAlignment="Center"
+                Text="Mode:" />
+            <RadioButton
+                Grid.Column="2"
+                Margin="8,0,0,0"
+                VerticalAlignment="Center"
+                Content="Image"
+                GroupName="Mode"
+                IsChecked="{Binding IsImageMode, Mode=TwoWay}" />
+            <RadioButton
+                Grid.Column="3"
+                Margin="8,0,0,0"
+                VerticalAlignment="Center"
+                Content="Video"
+                GroupName="Mode"
+                IsChecked="{Binding IsVideoMode, Mode=TwoWay}" />
+        </Grid>
 
-    <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,*" Margin="0,0,0,6">
-      <CheckBox Grid.Column="0" VerticalAlignment="Center" Content="启用截止日期" IsChecked="{Binding UseCutoffDate, Mode=TwoWay}" />
-      <DatePicker Grid.Column="1"
-                  Width="120"
-                  Margin="8,0,0,0"
-                  VerticalAlignment="Center"
-                  SelectedDate="{Binding CutoffDate, Mode=TwoWay}"
-                  IsEnabled="{Binding UseCutoffDate}" />
-    </Grid>
+        <Grid
+            Grid.Row="1"
+            ColumnDefinitions="Auto,Auto,*"
+            Margin="0,0,0,6">
+            <CheckBox
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Content="启用截止日期"
+                IsChecked="{Binding UseCutoffDate, Mode=TwoWay}" />
+            <DatePicker
+                Grid.Column="1"
+                Width="120"
+                Margin="8,0,0,0"
+                VerticalAlignment="Center"
+                SelectedDate="{Binding CutoffDate, Mode=TwoWay}"
+                IsEnabled="{Binding UseCutoffDate}" />
+        </Grid>
 
-    <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,8">
-      <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="Username" />
-      <TextBox Grid.Column="1" Height="28" Margin="8,0,0,0" Text="{Binding Username}" />
-      <Button Grid.Column="2"
-              Height="28"
-              MinWidth="80"
-              Margin="8,0,0,0"
-              HorizontalAlignment="Right"
-              Command="{Binding DownloadCommand}">
-        <TextBlock Text="{Binding DownloadBtnText}" Foreground="Black" FontSize="14" />
-      </Button>
-    </Grid>
+        <Grid
+            Grid.Row="2"
+            ColumnDefinitions="Auto,*,Auto"
+            Margin="0,0,0,8">
+            <TextBlock
+                Grid.Column="0"
+                VerticalAlignment="Center"
+                Text="Username" />
+            <TextBox
+                Grid.Column="1"
+                Height="28"
+                Margin="8,0,0,0"
+                Text="{Binding Username}" />
+            <Button
+                Grid.Column="2"
+                Height="28"
+                MinWidth="80"
+                Margin="8,0,0,0"
+                HorizontalAlignment="Right"
+                Command="{Binding DownloadCommand}">
+                <TextBlock
+                    Text="{Binding DownloadBtnText}"
+                    Foreground="Black"
+                    FontSize="14" />
+            </Button>
+        </Grid>
 
-    <Border Grid.Row="3"
+        <Border
+            Grid.Row="3"
             BorderBrush="Gray"
             BorderThickness="1"
             Padding="6">
-      <Grid RowDefinitions="Auto,Auto,*">
-        <TextBlock Grid.Row="0"
-                   Text="输出日志"
-                   FontWeight="Bold"
-                   Margin="0,0,0,5" />
-        <StackPanel Grid.Row="1"
+            <Grid
+                RowDefinitions="Auto,Auto,*">
+                <TextBlock
+                    Grid.Row="0"
+                    Text="输出日志"
+                    FontWeight="Bold"
+                    Margin="0,0,0,5" />
+                <StackPanel
+                    Grid.Row="1"
                     Margin="0,0,0,5"
                     Orientation="Horizontal">
-          <TextBlock Text="已下载:" />
-          <TextBlock Margin="5,0,0,0" Text="{Binding DownloadCount}" />
-        </StackPanel>
-        <ScrollViewer Grid.Row="2"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Auto">
-          <TextBox x:Name="LogBox"
-                   Foreground="Gray"
-                   IsReadOnly="True"
-                   AcceptsReturn="True"
-                   TextWrapping="Wrap"
-                   Text="{Binding LogContent, Mode=OneWay}"
-                   TextChanged="LogBox_OnTextChanged" />
-        </ScrollViewer>
-      </Grid>
-    </Border>
-  </Grid>
+                    <TextBlock
+                        Text="已下载:" />
+                    <TextBlock
+                        Margin="5,0,0,0"
+                        Text="{Binding DownloadCount}" />
+                </StackPanel>
+                <ScrollViewer
+                    Grid.Row="2"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Auto">
+                    <TextBox
+                        x:Name="LogBox"
+                        Foreground="Gray"
+                        IsReadOnly="True"
+                        AcceptsReturn="True"
+                        TextWrapping="Wrap"
+                        Text="{Binding LogContent, Mode=OneWay}"
+                        TextChanged="LogBox_OnTextChanged" />
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
 </UserControl>
