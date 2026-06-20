@@ -1,8 +1,103 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="RedgifsDownloader.Avalonia.App">
-  <Application.Styles>
+
+    <Application.Styles>
     <FluentTheme />
+
+    <!-- 修复 Linux 下月份年份标题裁切 -->
+    <Style Selector="CalendarItem /template/ Button#PART_HeaderButton">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid>
+                    <TextBlock
+                        Text="{TemplateBinding Content}"
+                        Margin="12,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        FontFamily="DejaVu Sans"
+                        FontSize="14"
+                        Foreground="{TemplateBinding Foreground}" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <!-- 固定在输入框下方，禁止上下翻转 -->
+    <Style Selector="CalendarDatePicker /template/ Popup#PART_Popup">
+        <Setter Property="Placement" Value="Bottom" />
+        <Setter Property="PlacementConstraintAdjustment"
+                Value="SlideX,SlideY" />
+        <Setter Property="VerticalOffset" Value="2" />
+    </Style>
+
+    <!-- 固定在输入框下方，不允许翻转到上方 -->
+    <Style Selector="CalendarDatePicker /template/ Popup#PART_Popup">
+        <Setter Property="Placement" Value="Bottom" />
+        <Setter Property="PlacementConstraintAdjustment"
+                Value="SlideX,SlideY" />
+        <Setter Property="VerticalOffset" Value="2" />
+    </Style>
+
+    <!-- 只限制宽度，不锁死高度 -->
+    <Style Selector="CalendarDatePicker /template/ Calendar#PART_Calendar">
+        <Setter Property="MinWidth" Value="260" />
+        <Setter Property="FontSize" Value="13" />
+    </Style>
+
+    <!-- 覆盖 Fluent 默认的294最小宽度 -->
+    <Style Selector="CalendarItem /template/ Border > Grid">
+        <Setter Property="MinWidth" Value="260" />
+    </Style>
+
+    <!-- 两种视图使用相同最小高度，但允许内容继续撑开 -->
+    <Style Selector="CalendarItem /template/ Grid#PART_MonthView">
+        <Setter Property="MinHeight" Value="250" />
+    </Style>
+
+    <Style Selector="CalendarItem /template/ Grid#PART_YearView">
+        <Setter Property="MinHeight" Value="250" />
+    </Style>
+
+    <!-- 日期格子 -->
+    <Style Selector="CalendarDayButton">
+        <Setter Property="MinWidth" Value="32" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Margin" Value="1" />
+    </Style>
+
+    <!-- 月份和年份格子 -->
+    <Style Selector="CalendarButton">
+        <Setter Property="MinWidth" Value="32" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Margin" Value="1" />
+    </Style>
+
+    <!-- 月份/年份视图必须使用相同高度 -->
+    <Style Selector="CalendarItem /template/ Grid#PART_YearView">
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Height" Value="242" />
+    </Style>
+
+    <!-- 日期格子 -->
+    <Style Selector="CalendarDayButton">
+        <Setter Property="MinWidth" Value="32" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Margin" Value="1" />
+    </Style>
+
+    <!-- 月份和年份格子 -->
+    <Style Selector="CalendarButton">
+        <Setter Property="MinWidth" Value="32" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Margin" Value="1" />
+    </Style>
+
     <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
-  </Application.Styles>
+</Application.Styles>
+
 </Application>

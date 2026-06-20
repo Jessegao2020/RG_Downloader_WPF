@@ -26,7 +26,7 @@ public sealed class RedditViewModel : INotifyPropertyChanged
     private string _username = string.Empty;
     private int _downloadCount;
     private string _logContent = string.Empty;
-    private DateTimeOffset? _cutoffDate = DateTimeOffset.Now.Date;
+    private DateTime? _cutoffDate = DateTime.Today;
 
     public RedditViewModel()
     {
@@ -102,7 +102,11 @@ public sealed class RedditViewModel : INotifyPropertyChanged
     }
 
     public bool UseCutoffDate { get => _useCutoffDate; set => SetField(ref _useCutoffDate, value); }
-    public DateTimeOffset? CutoffDate { get => _cutoffDate; set => SetField(ref _cutoffDate, value); }
+    public DateTime? CutoffDate
+    {
+        get => _cutoffDate;
+        set => SetField(ref _cutoffDate, value);
+    }
 
     public string Username
     {
@@ -167,8 +171,15 @@ public sealed class RedditViewModel : INotifyPropertyChanged
             DateTimeOffset? minCreatedUtc = null;
             if (UseCutoffDate && CutoffDate.HasValue)
             {
-                minCreatedUtc = CutoffDate.Value.ToUniversalTime();
-                AppendLog($"启用截止日期(UTC): {minCreatedUtc:yyyy-MM-dd HH:mm:ss}");
+                var localDate = DateTime.SpecifyKind(
+                    CutoffDate.Value.Date,
+                    DateTimeKind.Local);
+
+                minCreatedUtc = new DateTimeOffset(localDate).ToUniversalTime();
+
+                AppendLog(
+                    $"启用截止日期(本地): {CutoffDate.Value:yyyy-MM-dd}，" +
+                    $"UTC: {minCreatedUtc:yyyy-MM-dd HH:mm:ss}");
             }
 
             var logProgress = new Progress<string>(AppendLog);

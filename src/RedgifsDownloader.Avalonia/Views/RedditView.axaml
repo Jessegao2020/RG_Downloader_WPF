@@ -7,6 +7,11 @@
     x:Class="RedgifsDownloader.Avalonia.Views.RedditView"
     x:DataType="vm:RedditViewModel"
     mc:Ignorable="d">
+    
+    <UserControl.Resources>
+       
+    </UserControl.Resources>
+    
     <Grid
         Margin="8"
         RowDefinitions="Auto,Auto,Auto,*">
@@ -55,11 +60,16 @@
                 VerticalAlignment="Center"
                 Content="启用截止日期"
                 IsChecked="{Binding UseCutoffDate, Mode=TwoWay}" />
-            <DatePicker
+            <CalendarDatePicker
                 Grid.Column="1"
-                Width="120"
+                Width="150"
+                Height="32"
+                HorizontalAlignment="Left"
                 Margin="8,0,0,0"
                 VerticalAlignment="Center"
+                SelectedDateFormat="Custom"
+                CustomDateFormatString="yyyy-MM-dd"
+                Watermark="选择日期"
                 SelectedDate="{Binding CutoffDate, Mode=TwoWay}"
                 IsEnabled="{Binding UseCutoffDate}" />
         </Grid>
