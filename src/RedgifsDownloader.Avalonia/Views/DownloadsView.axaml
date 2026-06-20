@@ -9,6 +9,7 @@
     FontSize="14"
     d:DesignWidth="450"
     d:DesignHeight="550"
+    x:CompileBindings="True"
     mc:Ignorable="d">
 
 
@@ -204,14 +205,14 @@
                         CanUserResize="True">
                         <DataGridTemplateColumn.Header>
                             <CheckBox
-                                IsChecked="{Binding DataContext.IsAllSelected, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay}"
+                                IsChecked="{Binding $parent[UserControl].((vm:DownloadsViewModel)DataContext).IsAllSelected, Mode=TwoWay}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 Margin="0"
                                 Padding="0" />
                         </DataGridTemplateColumn.Header>
                         <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
+                            <DataTemplate x:DataType="vm:VideoRow">
                                 <CheckBox
                                     IsChecked="{Binding IsSelected, Mode=TwoWay}"
                                     HorizontalAlignment="Center"
@@ -277,7 +278,7 @@
                     </ItemsPanelTemplate>
                 </ListBox.ItemsPanel>
                 <ListBox.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="vm:VideoRow">
                         <Border
                             Classes="thumbnail-card"
                             Width="150"
@@ -303,11 +304,11 @@
                                         <TextBlock
                                             Text="{Binding Id}"
                                             Foreground="White"
-                                            IsVisible="{Binding DataContext.IsCaptionVisible, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                                            IsVisible="{Binding $parent[UserControl].((vm:DownloadsViewModel)DataContext).IsCaptionVisible}" />
                                         <TextBlock
                                             Text="{Binding DisplayCreateDate}"
                                             Foreground="White"
-                                            IsVisible="{Binding DataContext.IsCaptionVisible, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                                            IsVisible="{Binding $parent[UserControl].((vm:DownloadsViewModel)DataContext).IsCaptionVisible}" />
                                         <TextBlock
                                             Text="{Binding DisplayStatus}"
                                             Foreground="White" />

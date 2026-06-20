@@ -5,7 +5,8 @@
              xmlns:vm="using:RedgifsDownloader.Avalonia.ViewModels"
              x:Class="RedgifsDownloader.Avalonia.Views.DupePicsCleanerView"
              x:DataType="vm:DupePicsCleanerViewModel"
-             mc:Ignorable="d">
+             mc:Ignorable="d"
+             x:CompileBindings="True">
   <Grid Margin="8" RowDefinitions="Auto,Auto,*" ColumnDefinitions="Auto,*,Auto">
     <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="路径:" />
     <TextBox Grid.Row="0" Grid.Column="1" Margin="8,0,8,0" Text="{Binding TargetFolder}" />

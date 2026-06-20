@@ -6,7 +6,8 @@
     xmlns:vm="using:RedgifsDownloader.Avalonia.ViewModels"
     x:Class="RedgifsDownloader.Avalonia.Views.SettingsView"
     x:DataType="vm:SettingsViewModel"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    x:CompileBindings="True">
     <StackPanel
         Margin="16"
         Spacing="10">
