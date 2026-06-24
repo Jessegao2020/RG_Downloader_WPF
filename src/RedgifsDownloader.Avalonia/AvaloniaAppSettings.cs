@@ -1,16 +1,11 @@
 using System.Text.Json;
 using RedgifsDownloader.ApplicationLayer.Settings;
+using RedgifsDownloader.Avalonia.Serialization;
 
 namespace RedgifsDownloader.Avalonia;
 
 internal sealed class AvaloniaAppSettings : IAppSettings
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true,
-        PropertyNameCaseInsensitive = true
-    };
-
     private static readonly string SettingsFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "RedgifsDownloader",
@@ -40,13 +35,15 @@ internal sealed class AvaloniaAppSettings : IAppSettings
         DownloadDirectory = NormalizeDirectory(DownloadDirectory, CreateDefaults().DownloadDirectory);
         MaxConcurrentDownloads = ClampConcurrent(MaxConcurrentDownloads);
 
-        var dto = new SettingsDto
+        var dto = new AvaloniaSettingsData
         {
             DownloadDirectory = DownloadDirectory,
             MaxConcurrentDownloads = MaxConcurrentDownloads
         };
 
-        var json = JsonSerializer.Serialize(dto, JsonOptions);
+        var json = JsonSerializer.Serialize(
+            dto,
+            AvaloniaJsonContext.Default.AvaloniaSettingsData);
         File.WriteAllText(SettingsFilePath, json);
     }
 
@@ -60,7 +57,9 @@ internal sealed class AvaloniaAppSettings : IAppSettings
             }
 
             var json = File.ReadAllText(SettingsFilePath);
-            var dto = JsonSerializer.Deserialize<SettingsDto>(json, JsonOptions);
+            var dto = JsonSerializer.Deserialize(
+                json,
+                AvaloniaJsonContext.Default.AvaloniaSettingsData);
             var defaults = CreateDefaults();
 
             DownloadDirectory = NormalizeDirectory(dto?.DownloadDirectory, defaults.DownloadDirectory);
@@ -74,7 +73,7 @@ internal sealed class AvaloniaAppSettings : IAppSettings
         }
     }
 
-    private static SettingsDto CreateDefaults() => new()
+    private static AvaloniaSettingsData CreateDefaults() => new()
     {
         DownloadDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
@@ -86,10 +85,4 @@ internal sealed class AvaloniaAppSettings : IAppSettings
 
     private static string NormalizeDirectory(string? path, string fallback)
         => string.IsNullOrWhiteSpace(path) ? fallback : path.Trim();
-
-    private sealed class SettingsDto
-    {
-        public string DownloadDirectory { get; set; } = string.Empty;
-        public int MaxConcurrentDownloads { get; set; } = 3;
-    }
 }
