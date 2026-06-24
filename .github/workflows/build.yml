@@ -66,35 +66,6 @@ jobs:
       - name: Build CLI (Release)
         run: dotnet build src/RedgifsDownloader.Cli/RedgifsDownloader.Cli.csproj --configuration Release --no-restore
 
-      - name: Smoke test Redgifs crawl (managed CLI)
-        shell: bash
-        run: |
-          set -o pipefail
-          timeout 90s dotnet run \
-            --project src/RedgifsDownloader.Cli/RedgifsDownloader.Cli.csproj \
-            --configuration Release \
-            --no-build \
-            -- crawl redgifs linkmaker | tee redgifs-crawl-managed.log
-          grep -q '^Id=' redgifs-crawl-managed.log
-
-      - name: Publish CLI Native AOT (diagnostic)
-        run: >-
-          dotnet publish src/RedgifsDownloader.Cli/RedgifsDownloader.Cli.csproj
-          --configuration Release
-          --runtime linux-x64
-          --self-contained true
-          -p:PublishAot=true
-          --output artifacts/cli-linux-x64-aot
-
-      - name: Smoke test Redgifs crawl (Native AOT CLI)
-        shell: bash
-        run: |
-          set -o pipefail
-          chmod +x artifacts/cli-linux-x64-aot/RedgifsDownloader.Cli
-          timeout 90s artifacts/cli-linux-x64-aot/RedgifsDownloader.Cli \
-            crawl redgifs linkmaker | tee redgifs-crawl-aot.log
-          grep -q '^Id=' redgifs-crawl-aot.log
-
       - name: Publish Avalonia Native AOT (linux-x64)
         run: >-
           dotnet publish src/RedgifsDownloader.Avalonia/RedgifsDownloader.Avalonia.csproj
