@@ -6,6 +6,7 @@
     xmlns:vm="using:RedgifsDownloader.Avalonia.ViewModels"
     x:Class="RedgifsDownloader.Avalonia.Views.RedditView"
     x:DataType="vm:RedditViewModel"
+    x:CompileBindings="True"
     mc:Ignorable="d">
     
     <UserControl.Resources>

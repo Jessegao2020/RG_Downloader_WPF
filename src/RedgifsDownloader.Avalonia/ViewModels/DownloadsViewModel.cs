@@ -40,25 +40,27 @@ public sealed class DownloadsViewModel : INotifyPropertyChanged
 
     public DownloadsViewModel()
     {
+        Videos.CollectionChanged += (_, _) => OnPropertyChanged(nameof(VideosCount));
+
         if (Design.IsDesignMode)
-{
-    _downloadAppService = null!;
-    _appSettings = null!;
-    _notifier = null!;
-    _thumbnailLoader = null!;
+        {
+            _downloadAppService = null!;
+            _appSettings = null!;
+            _notifier = null!;
+            _thumbnailLoader = null!;
 
-    RetryAllCommand = new RelayCommand(_ => { });
-    OpenDownloadFolderCommand = new RelayCommand(_ => { });
-    SelectAllCommand = new RelayCommand(_ => { });
-    DeselectAllCommand = new RelayCommand(_ => { });
-    SortByNameCommand = new RelayCommand(_ => { });
-    SortByDateCommand = new RelayCommand(_ => { });
-    CrawlCommand = new RelayCommand(_ => { });
-    DownloadCommand = new RelayCommand(_ => { });
-    StopCommand = new RelayCommand(_ => { });
+            RetryAllCommand = new RelayCommand(_ => { });
+            OpenDownloadFolderCommand = new RelayCommand(_ => { });
+            SelectAllCommand = new RelayCommand(_ => { });
+            DeselectAllCommand = new RelayCommand(_ => { });
+            SortByNameCommand = new RelayCommand(_ => { });
+            SortByDateCommand = new RelayCommand(_ => { });
+            CrawlCommand = new RelayCommand(_ => { });
+            DownloadCommand = new RelayCommand(_ => { });
+            StopCommand = new RelayCommand(_ => { });
 
-    return;
-}
+            return;
+        }
 
         var provider = Program.Services;
         _downloadAppService = provider.GetRequiredService<IDownloadAppService>();

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;
+using RedgifsDownloader.Avalonia.Serialization;
 
 namespace RedgifsDownloader.Avalonia;
 
@@ -15,12 +16,12 @@ public partial class MainWindow : Window
             "RedgifsDownloader",
             "window-state.json");
 
-    private WindowPlacement? _normalPlacement;
+    private WindowPlacementData? _normalPlacement;
 
     public MainWindow()
     {
         InitializeComponent();
-        DataContext = new MainWindowViewModel();
+        DataContext = Program.MainViewModel;
 
         Opened += (_, _) =>
         {
@@ -43,7 +44,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        _normalPlacement = new WindowPlacement
+        _normalPlacement = new WindowPlacementData
         {
             X = Position.X,
             Y = Position.Y,
@@ -63,7 +64,9 @@ public partial class MainWindow : Window
             }
 
             var json = File.ReadAllText(WindowStateFile);
-            var placement = JsonSerializer.Deserialize<WindowPlacement>(json);
+            var placement = JsonSerializer.Deserialize(
+                json,
+                AvaloniaJsonContext.Default.WindowPlacementData);
 
             if (placement is null)
             {
@@ -117,7 +120,7 @@ public partial class MainWindow : Window
                 CaptureNormalPlacement();
             }
 
-            var placement = _normalPlacement ?? new WindowPlacement
+            var placement = _normalPlacement ?? new WindowPlacementData
             {
                 X = Position.X,
                 Y = Position.Y,
@@ -141,10 +144,7 @@ public partial class MainWindow : Window
 
             var json = JsonSerializer.Serialize(
                 placement,
-                new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
+                AvaloniaJsonContext.Default.WindowPlacementData);
 
             File.WriteAllText(WindowStateFile, json);
         }
@@ -152,18 +152,5 @@ public partial class MainWindow : Window
         {
             // 保存失败不应该影响程序正常关闭。
         }
-    }
-
-    private sealed record WindowPlacement
-    {
-        public int X { get; init; }
-
-        public int Y { get; init; }
-
-        public double Width { get; init; } = 450;
-
-        public double Height { get; init; } = 550;
-
-        public WindowState State { get; init; } = WindowState.Normal;
     }
 }

@@ -24,8 +24,22 @@ jobs:
       - name: Build solution (Release)
         run: dotnet build RedgifsDownloader.sln --configuration Release --no-restore
 
+      - name: Publish Avalonia Native AOT (win-x64)
+        run: >-
+          dotnet publish src/RedgifsDownloader.Avalonia/RedgifsDownloader.Avalonia.csproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          --output artifacts/win-x64
+
+      - name: Upload Windows Native AOT artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RedgifsDownloader-win-x64-native-aot
+          path: artifacts/win-x64
+
   linux-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,6 +48,11 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+
+      - name: Install Native AOT prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang zlib1g-dev
 
       - name: Restore Core
         run: dotnet restore src/RedgifsDownloader.Core/RedgifsDownloader.Core.csproj
@@ -46,3 +65,17 @@ jobs:
 
       - name: Build CLI (Release)
         run: dotnet build src/RedgifsDownloader.Cli/RedgifsDownloader.Cli.csproj --configuration Release --no-restore
+
+      - name: Publish Avalonia Native AOT (linux-x64)
+        run: >-
+          dotnet publish src/RedgifsDownloader.Avalonia/RedgifsDownloader.Avalonia.csproj
+          --configuration Release
+          --runtime linux-x64
+          --self-contained true
+          --output artifacts/linux-x64
+
+      - name: Upload Linux Native AOT artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RedgifsDownloader-linux-x64-native-aot
+          path: artifacts/linux-x64
