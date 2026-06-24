@@ -1,5 +1,6 @@
 ﻿using RedgifsDownloader.ApplicationLayer.Interfaces;
 using RedgifsDownloader.Domain.Interfaces;
+using RedgifsDownloader.Infrastructure.Serialization;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -126,11 +127,14 @@ namespace RedgifsDownloader.Infrastructure.Reddit
         {
             try
             {
-                var json = JsonSerializer.Serialize(new
+                var tokenCache = new RedditTokenCache
                 {
-                    refresh = _refreshToken,
-                    expires = _expiresAt
-                });
+                    Refresh = _refreshToken,
+                    Expires = _expiresAt
+                };
+                var json = JsonSerializer.Serialize(
+                    tokenCache,
+                    DownloaderJsonContext.Default.RedditTokenCache);
 
                 byte[] data = Encoding.UTF8.GetBytes(json);
                 byte[] encrypted = _secretProtector.Protect(data);
