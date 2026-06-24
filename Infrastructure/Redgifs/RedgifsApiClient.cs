@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using RedgifsDownloader.Domain.Interfaces;
+using RedgifsDownloader.Infrastructure.Serialization;
 
 namespace RedgifsDownloader.Infrastructure.Redgifs
 {
@@ -18,7 +19,7 @@ namespace RedgifsDownloader.Infrastructure.Redgifs
         }
 
         public async IAsyncEnumerable<RedgifsVideoResponse> FetchUserVideosAsync(
-            string username, 
+            string username,
             int pageSize = 40,
             [EnumeratorCancellation] CancellationToken ct = default)
         {
@@ -28,7 +29,7 @@ namespace RedgifsDownloader.Infrastructure.Redgifs
             while (hasMore && !ct.IsCancellationRequested)
             {
                 var pageData = await FetchPageAsync(username, page, pageSize, ct);
-                
+
                 if (pageData?.Gifs == null || pageData.Gifs.Count == 0)
                 {
                     hasMore = false;
@@ -45,8 +46,8 @@ namespace RedgifsDownloader.Infrastructure.Redgifs
         }
 
         private async Task<RedgifsPageResponse?> FetchPageAsync(
-            string username, 
-            int page, 
+            string username,
+            int page,
             int count,
             CancellationToken ct)
         {
@@ -64,7 +65,7 @@ namespace RedgifsDownloader.Infrastructure.Redgifs
             try
             {
                 var response = await _http.SendAsync(request, ct);
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync(ct);
@@ -72,11 +73,10 @@ namespace RedgifsDownloader.Infrastructure.Redgifs
                 }
 
                 var json = await response.Content.ReadAsStringAsync(ct);
-                
-                return JsonSerializer.Deserialize<RedgifsPageResponse>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+
+                return JsonSerializer.Deserialize(
+                    json,
+                    DownloaderJsonContext.Default.RedgifsPageResponse);
             }
             catch (Exception ex)
             {
@@ -113,4 +113,3 @@ namespace RedgifsDownloader.Infrastructure.Redgifs
     }
     #endregion
 }
-
