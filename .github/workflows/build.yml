@@ -66,6 +66,17 @@ jobs:
       - name: Build CLI (Release)
         run: dotnet build src/RedgifsDownloader.Cli/RedgifsDownloader.Cli.csproj --configuration Release --no-restore
 
+      - name: Smoke test Redgifs crawl
+        shell: bash
+        run: |
+          set -o pipefail
+          timeout 90s dotnet run \
+            --project src/RedgifsDownloader.Cli/RedgifsDownloader.Cli.csproj \
+            --configuration Release \
+            --no-build \
+            -- crawl redgifs linkmaker | tee redgifs-crawl.log
+          grep -q '^Id=' redgifs-crawl.log
+
       - name: Publish Avalonia Native AOT (linux-x64)
         run: >-
           dotnet publish src/RedgifsDownloader.Avalonia/RedgifsDownloader.Avalonia.csproj
