@@ -38,9 +38,9 @@ namespace RedgifsDownloader.Presentation.ViewModel
         private int _latestDownloadedCount;
 
         // 可按你 UI 体验调整
-        private const int UiTickMs = 100;           // UI 每 100ms 刷一次
-        private const int MaxLinesPerTick = 200;    // 每次最多处理多少行日志
-        private const int MaxLogChars = 200_000;    // 最大日志字符数（避免无限增长拖垮 TextBox）
+        private const int UiTickMs = 250;           // UI 每 100ms 刷一次
+        private const int MaxLinesPerTick = 1000;    // 每次最多处理多少行日志
+        private const int MaxLogChars = 80_000;    // 最大日志字符数（避免无限增长拖垮 TextBox）
 
         public string LoginBtnText => IsLoggedIn ? "Logged In" : "Login";
         public string DownloadBtnText => IsDownloading ? "Stop" : "Download";
@@ -227,10 +227,11 @@ namespace RedgifsDownloader.Presentation.ViewModel
                 EnqueueLog("开始下载...");
 
                 // Progress<T> 在 UI 线程创建：Report 会自动 marshal 回 UI 线程
-                var logProgress = new Progress<string>(EnqueueLog);
+                IProgress<string> logProgress = new DirectProgress<string>(EnqueueLog);
 
-                // 这里不要每次都直接改 DownloadCount（会很频繁）
-                var countProgress = new Progress<int>(p => Volatile.Write(ref _latestDownloadedCount, p));
+                IProgress<int> countProgress =
+                    new DirectProgress<int>(
+                        p => Volatile.Write(ref _latestDownloadedCount, p));
 
                 DateTimeOffset? minCreatedUtc = null;
                 if (UseCutoffDate && CutoffDate.HasValue)

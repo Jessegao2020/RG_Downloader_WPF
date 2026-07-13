@@ -244,4 +244,20 @@ public sealed class RedditViewModel : INotifyPropertyChanged
         (LoginCommand as AsyncCommand)?.RaiseCanExecuteChanged();
         (DownloadCommand as AsyncCommand)?.RaiseCanExecuteChanged();
     }
+
+    private sealed class DirectProgress<T> : IProgress<T>
+    {
+        private readonly Action<T> _handler;
+
+        public DirectProgress(Action<T> handler)
+        {
+            _handler = handler ??
+                throw new ArgumentNullException(nameof(handler));
+        }
+
+        public void Report(T value)
+        {
+            _handler(value);
+        }
+    }
 }
