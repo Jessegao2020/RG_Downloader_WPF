@@ -10,9 +10,21 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        Services = ServiceConfiguration.BuildProvider();
-        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-        Services.Dispose();
+        AvaloniaGlobalExceptionHandler.RegisterBackgroundHandlers();
+
+        try
+        {
+            Services = ServiceConfiguration.BuildProvider();
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception ex)
+        {
+            AvaloniaGlobalExceptionHandler.HandleFatal("Main", ex);
+        }
+        finally
+        {
+            Services?.Dispose();
+        }
     }
 
     public static AppBuilder BuildAvaloniaApp()
